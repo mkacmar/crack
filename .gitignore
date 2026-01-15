@@ -1,0 +1,7 @@
+crack
+dist/
+*.exe
+*.exe~
+*.dll
+*.so
+*.dylib
