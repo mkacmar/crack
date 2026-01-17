@@ -76,3 +76,7 @@ crack analyze --profile=hardened --debuginfod --debuginfod-urls=https://debuginf
 | `arm-mte` | [ARM Memory Tagging Extension](https://clang.llvm.org/docs/MemtagSanitizer.html) | | ✓ | ✓ | | ✓ |
 | `arm-pac` | [ARM Pointer Authentication](https://gcc.gnu.org/onlinedocs/gcc/AArch64-Options.html#index-mbranch-protection) | ✓ | ✓ | ✓ | | |
 | `arm-shadow-call-stack` | [ARM Shadow Call Stack](https://clang.llvm.org/docs/ShadowCallStack.html) (also RISC-V) | | ✓ | ✓ | | |
+
+## License
+
+MIT License - see [LICENSE](LICENSE) for details.
