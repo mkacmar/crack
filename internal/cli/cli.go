@@ -12,6 +12,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/mkacmar/crack/internal/debuginfo"
 	"github.com/mkacmar/crack/internal/model"
 	"github.com/mkacmar/crack/internal/output"
 	"github.com/mkacmar/crack/internal/profile"
@@ -85,10 +86,10 @@ func (a *App) printAnalyzeUsage(prog string) {
 	fmt.Fprintf(os.Stderr, "  -p, --parallel int          Number of files to analyze in parallel (default %d)\n", runtime.NumCPU())
 	fmt.Fprintf(os.Stderr, "\nDebuginfod options:\n")
 	fmt.Fprintf(os.Stderr, "  -d, --debuginfod            Fetch debug symbols from debuginfod servers\n")
-	fmt.Fprintf(os.Stderr, "      --debuginfod-urls       Debuginfod server URLs (default \"https://debuginfod.elfutils.org\")\n")
+	fmt.Fprintf(os.Stderr, "      --debuginfod-urls       Debuginfod server URLs (default %q)\n", debuginfo.DefaultServerURL)
 	fmt.Fprintf(os.Stderr, "      --debuginfod-cache      Debuginfod cache directory (default \"%s\")\n", getDefaultCacheDir())
-	fmt.Fprintf(os.Stderr, "      --debuginfod-timeout    Debuginfod HTTP timeout (default 30s)\n")
-	fmt.Fprintf(os.Stderr, "      --debuginfod-retries    Debuginfod max retries per server (default 3)\n")
+	fmt.Fprintf(os.Stderr, "      --debuginfod-timeout    Debuginfod HTTP timeout (default %v)\n", debuginfo.DefaultTimeout)
+	fmt.Fprintf(os.Stderr, "      --debuginfod-retries    Debuginfod max retries per server (default %d)\n", debuginfo.DefaultRetries)
 	fmt.Fprintf(os.Stderr, "\nProfiles:\n")
 	for _, name := range profile.Names() {
 		if name == "recommended" {
@@ -135,10 +136,10 @@ func (a *App) runAnalyze(prog string, args []string) int {
 	fs.IntVar(&parallel, "p", runtime.NumCPU(), "")
 	fs.BoolVar(&useDebuginfod, "debuginfod", false, "")
 	fs.BoolVar(&useDebuginfod, "d", false, "")
-	fs.StringVar(&debuginfodURLs, "debuginfod-urls", "https://debuginfod.elfutils.org", "")
+	fs.StringVar(&debuginfodURLs, "debuginfod-urls", debuginfo.DefaultServerURL, "")
 	fs.StringVar(&debuginfodCache, "debuginfod-cache", "", "")
-	fs.DurationVar(&debuginfodTimeout, "debuginfod-timeout", 30*time.Second, "")
-	fs.IntVar(&debuginfodRetries, "debuginfod-retries", 3, "")
+	fs.DurationVar(&debuginfodTimeout, "debuginfod-timeout", debuginfo.DefaultTimeout, "")
+	fs.IntVar(&debuginfodRetries, "debuginfod-retries", debuginfo.DefaultRetries, "")
 
 	fs.Usage = func() {
 		a.printAnalyzeUsage(prog)

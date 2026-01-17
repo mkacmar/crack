@@ -16,6 +16,12 @@ import (
 	"github.com/mkacmar/crack/internal/version"
 )
 
+const (
+	DefaultServerURL = "https://debuginfod.elfutils.org"
+	DefaultTimeout   = 30 * time.Second
+	DefaultRetries   = 3
+)
+
 func userAgent() string {
 	return "crack/" + version.Version + " (Compiler Hardening Checker; +https://github.com/mkacmar/crack)"
 }
