@@ -2,8 +2,8 @@ package output
 
 import (
 	"fmt"
+	"maps"
 	"slices"
-	"sort"
 	"strings"
 
 	"github.com/mkacmar/crack/internal/model"
@@ -34,7 +34,7 @@ func AggregateFindings(report *model.ScanResults) *AggregatedReport {
 		processFileScanResult(agg, result)
 	}
 
-	sort.Strings(agg.PassedAll)
+	slices.Sort(agg.PassedAll)
 	return agg
 }
 
@@ -127,12 +127,7 @@ func addToFlags(flags map[string]map[string]bool, flag, path string) {
 }
 
 func mapKeys(m map[string]bool) []string {
-	keys := make([]string, 0, len(m))
-	for k := range m {
-		keys = append(keys, k)
-	}
-	sort.Strings(keys)
-	return keys
+	return slices.Sorted(maps.Keys(m))
 }
 
 func FormatAggregated(agg *AggregatedReport) string {
@@ -254,11 +249,7 @@ func formatCompilerUpgrades(sb *strings.Builder, compiler model.Compiler, ver st
 }
 
 func formatFlagSection(sb *strings.Builder, flags map[string]map[string]bool, totalWithFindings int, prefix string) {
-	sortedFlags := make([]string, 0, len(flags))
-	for f := range flags {
-		sortedFlags = append(sortedFlags, f)
-	}
-	sort.Strings(sortedFlags)
+	sortedFlags := slices.Sorted(maps.Keys(flags))
 
 	var universalFlags []string
 	partialFlags := make(map[string][]string)

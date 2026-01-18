@@ -2,6 +2,7 @@ package rules
 
 import (
 	"log/slog"
+	"slices"
 
 	"github.com/mkacmar/crack/internal/model"
 	"github.com/mkacmar/crack/internal/profile"
@@ -21,22 +22,20 @@ func NewEngine(logger *slog.Logger) *Engine {
 }
 
 func (e *Engine) LoadProfile(p profile.Profile) {
-	ruleSet := make(map[string]bool)
-	for _, id := range p.Rules {
-		ruleSet[id] = true
-	}
-
 	e.rules = make([]model.Rule, 0)
+	loaded := make(map[string]bool)
 
 	for _, rule := range elf.AllRules {
-		if ruleSet[rule.ID()] {
+		if slices.Contains(p.Rules, rule.ID()) {
 			e.rules = append(e.rules, rule)
-			delete(ruleSet, rule.ID())
+			loaded[rule.ID()] = true
 		}
 	}
 
-	for id := range ruleSet {
-		e.logger.Warn("unknown rule ID in profile, skipping", slog.String("rule_id", id))
+	for _, id := range p.Rules {
+		if !loaded[id] {
+			e.logger.Warn("unknown rule ID in profile, skipping", slog.String("rule_id", id))
+		}
 	}
 }
 
