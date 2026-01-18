@@ -17,7 +17,6 @@ var AllRules = []model.Rule{
 	KernelCFIRule{},
 	ASANRule{},
 	UBSanRule{},
-	IntegerOverflowRule{},
 	NoInsecureRPATHRule{},
 	NoInsecureRUNPATHRule{},
 	NoDLOpenRule{},

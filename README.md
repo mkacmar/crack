@@ -37,7 +37,6 @@ crack analyze --profile=hardened --debuginfod --debuginfod-urls=https://debuginf
 | `full-relro` | [Full RELRO (immediate binding)](https://www.redhat.com/en/blog/hardening-elf-binaries-using-relocation-read-only-relro) | ✓ | ✓ | | ✓ | |
 | `gc-sections` | [Dead code elimination](https://gcc.gnu.org/onlinedocs/gcc/Optimize-Options.html#index-ffunction-sections) | ✓ | ✓ | ✓ | ✓ | |
 | `hidden-symbols` | [Hidden symbol visibility](https://gcc.gnu.org/onlinedocs/gcc/Code-Gen-Options.html#index-fvisibility) | ✓ | ✓ | ✓ | | |
-| `integer-overflow` | [Integer overflow protection](https://gcc.gnu.org/onlinedocs/gcc/Code-Gen-Options.html#index-ftrapv) | ✓ | ✓ | ✓ | | ✓ |
 | `kernel-cfi` | [Kernel CFI](https://clang.llvm.org/docs/ControlFlowIntegrity.html#fsanitize-kcfi) | | ✓ | ✓ | | ✓ |
 | `no-dlopen` | [Dynamic library loading disabled](https://sourceware.org/binutils/docs/ld/Options.html) | ✓ | ✓ | | ✓ | |
 | `no-dump` | [Core dump disabled](https://sourceware.org/binutils/docs/ld/Options.html) | ✓ | ✓ | | ✓ | |
