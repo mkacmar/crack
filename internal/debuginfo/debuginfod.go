@@ -69,7 +69,7 @@ func NewClient(opts Options) (*Client, error) {
 		serverURLs: opts.ServerURLs,
 		cacheDir:   opts.CacheDir,
 		httpClient: &http.Client{Timeout: timeout},
-		logger:     opts.Logger,
+		logger:     opts.Logger.With(slog.String("component", "debuginfod")),
 		maxRetries: maxRetries,
 	}
 

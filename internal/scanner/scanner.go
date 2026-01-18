@@ -57,7 +57,7 @@ func NewScanner(ruleEngine *rules.Engine, opts Options) *Scanner {
 			elfparser.NewParser(),
 		},
 		ruleEngine:       ruleEngine,
-		logger:           opts.Logger,
+		logger:           opts.Logger.With(slog.String("component", "scanner")),
 		workers:          opts.Workers,
 		debuginfodClient: debuginfodClient,
 	}

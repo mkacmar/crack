@@ -17,7 +17,7 @@ type Engine struct {
 func NewEngine(logger *slog.Logger) *Engine {
 	return &Engine{
 		rules:  make([]model.Rule, 0),
-		logger: logger,
+		logger: logger.With(slog.String("component", "rules")),
 	}
 }
 
