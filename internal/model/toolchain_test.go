@@ -88,61 +88,80 @@ func TestParseToolchain(t *testing.T) {
 
 func TestParseVersion(t *testing.T) {
 	tests := []struct {
-		name  string
-		input string
-		major int
-		minor int
-		patch int
+		name      string
+		input     string
+		major     int
+		minor     int
+		patch     int
+		wantError bool
 	}{
 		{
-			name:  "version keyword",
-			input: "clang version 14.0.6",
+			name:  "full version",
+			input: "14.0.6",
 			major: 14,
 			minor: 0,
 			patch: 6,
 		},
 		{
-			name:  "version without keyword",
-			input: "GCC: (GNU) 11.2.0",
+			name:  "major.minor only",
+			input: "11.2",
 			major: 11,
 			minor: 2,
 			patch: 0,
 		},
 		{
-			name:  "version with parentheses",
-			input: "Ubuntu clang version 15.0.7 (something)",
-			major: 15,
-			minor: 0,
-			patch: 7,
-		},
-		{
-			name:  "no version",
-			input: "unknown toolchain",
-			major: 0,
-			minor: 0,
-			patch: 0,
-		},
-		{
 			name:  "two digit minor",
-			input: "GCC 4.12.0",
+			input: "4.12.0",
 			major: 4,
 			minor: 12,
 			patch: 0,
+		},
+		{
+			name:      "no version",
+			input:     "unknown",
+			wantError: true,
+		},
+		{
+			name:      "empty string",
+			input:     "",
+			wantError: true,
+		},
+		{
+			name:      "invalid major",
+			input:     "abc.1.2",
+			wantError: true,
+		},
+		{
+			name:      "invalid minor",
+			input:     "1.abc.2",
+			wantError: true,
 		},
 	}
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			v := parseVersion(tt.input)
+			v, err := ParseVersion(tt.input)
+
+			if tt.wantError {
+				if err == nil {
+					t.Errorf("ParseVersion(%q) expected error, got nil", tt.input)
+				}
+				return
+			}
+
+			if err != nil {
+				t.Errorf("ParseVersion(%q) unexpected error: %v", tt.input, err)
+				return
+			}
 
 			if v.Major != tt.major {
-				t.Errorf("parseVersion(%q).Major = %d, want %d", tt.input, v.Major, tt.major)
+				t.Errorf("ParseVersion(%q).Major = %d, want %d", tt.input, v.Major, tt.major)
 			}
 			if v.Minor != tt.minor {
-				t.Errorf("parseVersion(%q).Minor = %d, want %d", tt.input, v.Minor, tt.minor)
+				t.Errorf("ParseVersion(%q).Minor = %d, want %d", tt.input, v.Minor, tt.minor)
 			}
 			if v.Patch != tt.patch {
-				t.Errorf("parseVersion(%q).Patch = %d, want %d", tt.input, v.Patch, tt.patch)
+				t.Errorf("ParseVersion(%q).Patch = %d, want %d", tt.input, v.Patch, tt.patch)
 			}
 		})
 	}
