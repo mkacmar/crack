@@ -27,7 +27,39 @@ func (r ASLRRule) Feature() model.FeatureAvailability {
 }
 
 func (r ASLRRule) Execute(f *elf.File, info *model.ParsedBinary) model.RuleResult {
-	isPIE := f.Type == elf.ET_DYN
+	isPIE := false
+	isSharedLib := false
+
+	if f.Type == elf.ET_EXEC {
+		isPIE = false
+	} else if f.Type == elf.ET_DYN {
+		// Could be PIE executable or shared library
+		if checkDF1PIE(f) {
+			isPIE = true
+		} else {
+			// Check for PT_INTERP as fallback
+			hasInterpreter := false
+			for _, prog := range f.Progs {
+				if prog.Type == elf.PT_INTERP {
+					hasInterpreter = true
+					break
+				}
+			}
+			if hasInterpreter {
+				isPIE = true
+			} else {
+				isSharedLib = true
+			}
+		}
+	}
+
+	// Shared libraries are always position-independent, skip ASLR check
+	if isSharedLib {
+		return model.RuleResult{
+			State:   model.CheckStateSkipped,
+			Message: "Shared library (ASLR check not applicable)",
+		}
+	}
 
 	hasNXStack := false
 	for _, prog := range f.Progs {
