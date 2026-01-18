@@ -19,7 +19,7 @@ type TextFormatter struct {
 func (f *TextFormatter) Format(report *model.ScanResults, w io.Writer) error {
 	for _, result := range report.Results {
 		if result.Error != nil {
-			fmt.Fprintf(w, "%s: ERROR: %v\n", result.Path, result.Error)
+			fmt.Fprintf(w, "ERROR = %s: %v\n", result.Path, result.Error)
 			continue
 		}
 
@@ -27,17 +27,17 @@ func (f *TextFormatter) Format(report *model.ScanResults, w io.Writer) error {
 			switch check.State {
 			case model.CheckStatePassed:
 				if f.ShowPassed {
-					fmt.Fprintf(w, "%s: %s [pass]: %s\n", result.Path, check.RuleID, check.Message)
+					fmt.Fprintf(w, "PASS = %s @ %s: %s\n", check.RuleID, result.Path, check.Message)
 				}
 			case model.CheckStateFailed:
 				if check.Suggestion != "" {
-					fmt.Fprintf(w, "%s: %s [fail]: %s %s\n", result.Path, check.RuleID, check.Message, check.Suggestion)
+					fmt.Fprintf(w, "FAIL = %s @ %s: %s %s\n", check.RuleID, result.Path, check.Message, check.Suggestion)
 				} else {
-					fmt.Fprintf(w, "%s: %s [fail]: %s\n", result.Path, check.RuleID, check.Message)
+					fmt.Fprintf(w, "FAIL = %s @ %s: %s\n", check.RuleID, result.Path, check.Message)
 				}
 			case model.CheckStateSkipped:
 				if f.ShowSkipped {
-					fmt.Fprintf(w, "%s: %s [skip]: %s\n", result.Path, check.RuleID, check.Message)
+					fmt.Fprintf(w, "SKIP = %s @ %s: %s\n", check.RuleID, result.Path, check.Message)
 				}
 			}
 		}
