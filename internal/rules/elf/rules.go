@@ -23,7 +23,6 @@ var AllRules = []model.Rule{
 	NoPLTRule{},
 	SeparateCodeRule{},
 	NoDumpRule{},
-	HiddenSymbolsRule{},
 	StrippedRule{},
 	IntelCETIBTRule{},
 	IntelCETShadowStackRule{},

@@ -50,7 +50,6 @@ var Hardened = Profile{
 		elf.WXorXRule{}.ID(),
 		elf.NoInsecureRPATHRule{}.ID(),
 		elf.NoInsecureRUNPATHRule{}.ID(),
-		elf.HiddenSymbolsRule{}.ID(),
 		elf.SeparateCodeRule{}.ID(),
 		elf.NoDLOpenRule{}.ID(),
 		elf.NoPLTRule{}.ID(),
