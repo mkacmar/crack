@@ -1,6 +1,11 @@
 package profile
 
-import "github.com/mkacmar/crack/internal/rules/elf"
+import (
+	"maps"
+	"slices"
+
+	"github.com/mkacmar/crack/internal/rules/elf"
+)
 
 type Profile struct {
 	Rules []string
@@ -101,5 +106,5 @@ func Get(name string) (Profile, bool) {
 }
 
 func Names() []string {
-	return []string{"minimal", "recommended", "hardened", "build-test"}
+	return slices.Sorted(maps.Keys(All))
 }
