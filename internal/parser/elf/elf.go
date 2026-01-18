@@ -1,6 +1,7 @@
 package elf
 
 import (
+	"bytes"
 	"debug/elf"
 	"fmt"
 	"os"
@@ -100,14 +101,15 @@ func (p *Parser) extractBuildID(f *elf.File) string {
 }
 
 func parseFirstComment(data []byte) string {
-	start := 0
-	for i := 0; i < len(data); i++ {
-		if data[i] == 0 {
-			if i > start {
-				return string(data[start:i])
-			}
-			start = i + 1
+	for len(data) > 0 {
+		idx := bytes.IndexByte(data, 0)
+		if idx == -1 {
+			return ""
 		}
+		if idx > 0 {
+			return string(data[:idx])
+		}
+		data = data[idx+1:]
 	}
 	return ""
 }
