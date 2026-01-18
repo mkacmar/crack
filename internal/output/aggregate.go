@@ -83,10 +83,10 @@ func processRequirement(agg *AggregatedReport, req model.CompilerRequirement, fl
 	}
 
 	ver := req.DefaultVersion
-	if ver.IsZero() {
+	if ver == (model.Version{}) {
 		ver = req.MinVersion
 	}
-	if !ver.IsZero() {
+	if ver != (model.Version{}) {
 		addToUpgrades(agg, req.Compiler, ver.String(), path)
 	}
 
@@ -212,12 +212,19 @@ func getHighestVersion(upgrades map[string]map[string]bool) string {
 	if len(upgrades) == 0 {
 		return ""
 	}
-	versions := make([]string, 0, len(upgrades))
+	var highest string
+	var highestVer model.Version
 	for v := range upgrades {
-		versions = append(versions, v)
+		parsed, err := model.ParseVersion(v)
+		if err != nil {
+			continue
+		}
+		if highest == "" || parsed.IsAtLeast(highestVer) && parsed != highestVer {
+			highest = v
+			highestVer = parsed
+		}
 	}
-	sort.Sort(sort.Reverse(sort.StringSlice(versions)))
-	return versions[0]
+	return highest
 }
 
 func collectAllBinaries(compileFlags, linkFlags map[string]map[string]bool) map[string]bool {

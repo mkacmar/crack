@@ -11,10 +11,6 @@ type Version struct {
 	Patch int
 }
 
-func (v Version) IsZero() bool {
-	return v.Major == 0 && v.Minor == 0 && v.Patch == 0
-}
-
 func (v Version) String() string {
 	if v.Patch > 0 {
 		return fmt.Sprintf("%d.%d.%d", v.Major, v.Minor, v.Patch)

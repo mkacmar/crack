@@ -197,21 +197,22 @@ func TestTryParseVersion(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			v, ok := tryParseVersion(tt.input)
+			v, err := ParseVersion(tt.input)
+			ok := err == nil
 
 			if ok != tt.ok {
-				t.Errorf("tryParseVersion(%q) ok = %v, want %v", tt.input, ok, tt.ok)
+				t.Errorf("ParseVersion(%q) ok = %v, want %v", tt.input, ok, tt.ok)
 			}
 
 			if tt.ok {
 				if v.Major != tt.major {
-					t.Errorf("tryParseVersion(%q).Major = %d, want %d", tt.input, v.Major, tt.major)
+					t.Errorf("ParseVersion(%q).Major = %d, want %d", tt.input, v.Major, tt.major)
 				}
 				if v.Minor != tt.minor {
-					t.Errorf("tryParseVersion(%q).Minor = %d, want %d", tt.input, v.Minor, tt.minor)
+					t.Errorf("ParseVersion(%q).Minor = %d, want %d", tt.input, v.Minor, tt.minor)
 				}
 				if v.Patch != tt.patch {
-					t.Errorf("tryParseVersion(%q).Patch = %d, want %d", tt.input, v.Patch, tt.patch)
+					t.Errorf("ParseVersion(%q).Patch = %d, want %d", tt.input, v.Patch, tt.patch)
 				}
 			}
 		})

@@ -60,12 +60,12 @@ func buildCompilerSuggestion(tc model.Toolchain, feature model.FeatureAvailabili
 			compilerName, req.MinVersion.String(), compilerName, tc.Version.String(), flag)
 	}
 
-	if !req.DefaultVersion.IsZero() && !tc.Version.IsAtLeast(req.DefaultVersion) {
+	if req.DefaultVersion != (model.Version{}) && !tc.Version.IsAtLeast(req.DefaultVersion) {
 		return fmt.Sprintf("Use \"%s\" (default in %s %s+).",
 			flag, compilerName, req.DefaultVersion.String())
 	}
 
-	if req.DefaultVersion.IsZero() {
+	if req.DefaultVersion == (model.Version{}) {
 		return fmt.Sprintf("Use \"%s\".", flag)
 	}
 

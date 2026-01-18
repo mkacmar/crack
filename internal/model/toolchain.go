@@ -1,6 +1,8 @@
 package model
 
 import (
+	"errors"
+	"fmt"
 	"strconv"
 	"strings"
 )
@@ -14,32 +16,23 @@ func ParseToolchain(info string) Toolchain {
 
 	lower := strings.ToLower(info)
 
+	var compiler Compiler
 	if strings.Contains(lower, "gcc") || strings.Contains(lower, "gnu c") || strings.Contains(lower, "gnu gimple") {
-		return Toolchain{
-			Compiler: CompilerGCC,
-			Version:  parseVersion(info),
-		}
+		compiler = CompilerGCC
+	} else if strings.Contains(lower, "clang") {
+		compiler = CompilerClang
+	} else {
+		return Toolchain{Compiler: CompilerUnknown}
 	}
 
-	if strings.Contains(lower, "clang") {
-		return Toolchain{
-			Compiler: CompilerClang,
-			Version:  parseVersion(info),
-		}
-	}
-
-	return Toolchain{Compiler: CompilerUnknown}
-}
-
-func parseVersion(info string) Version {
 	parts := strings.Fields(info)
 
 	// First try: look for "version X.Y.Z" pattern (more reliable)
 	for i, part := range parts {
 		if strings.ToLower(part) == "version" && i+1 < len(parts) {
 			version := strings.TrimRight(parts[i+1], "(),;")
-			if v, ok := tryParseVersion(version); ok {
-				return v
+			if v, err := ParseVersion(version); err == nil {
+				return Toolchain{Compiler: compiler, Version: v}
 			}
 		}
 	}
@@ -48,29 +41,35 @@ func parseVersion(info string) Version {
 	for _, part := range parts {
 		if strings.Count(part, ".") >= 1 {
 			version := strings.TrimRight(part, "(),;")
-			if v, ok := tryParseVersion(version); ok {
-				return v
+			if v, err := ParseVersion(version); err == nil {
+				return Toolchain{Compiler: compiler, Version: v}
 			}
 		}
 	}
 
-	return Version{}
+	return Toolchain{Compiler: compiler}
 }
 
-func tryParseVersion(s string) (Version, bool) {
+var (
+	ErrInvalidVersionFormat = errors.New("invalid version format")
+	ErrInvalidVersionMajor  = errors.New("invalid major version component")
+	ErrInvalidVersionMinor  = errors.New("invalid minor version component")
+)
+
+func ParseVersion(s string) (Version, error) {
 	parts := strings.Split(s, ".")
 	if len(parts) < 2 {
-		return Version{}, false
+		return Version{}, ErrInvalidVersionFormat
 	}
 
 	major, err := strconv.Atoi(parts[0])
 	if err != nil {
-		return Version{}, false
+		return Version{}, fmt.Errorf("%w: %w", ErrInvalidVersionMajor, err)
 	}
 
 	minor, err := strconv.Atoi(parts[1])
 	if err != nil {
-		return Version{}, false
+		return Version{}, fmt.Errorf("%w: %w", ErrInvalidVersionMinor, err)
 	}
 
 	var patch int
@@ -78,5 +77,5 @@ func tryParseVersion(s string) (Version, bool) {
 		patch, _ = strconv.Atoi(parts[2])
 	}
 
-	return Version{Major: major, Minor: minor, Patch: patch}, true
+	return Version{Major: major, Minor: minor, Patch: patch}, nil
 }
