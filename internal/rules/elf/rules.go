@@ -13,8 +13,6 @@ var AllRules = []model.Rule{
 	SafeStackRule{},
 	StackLimitRule{},
 	FortifySourceRule{},
-	FortifyLevel2Rule{},
-	FormatStringRule{},
 	CFIRule{},
 	CFIICallRule{},
 	CFIVCallRule{},
