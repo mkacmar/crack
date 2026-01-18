@@ -69,7 +69,6 @@ var Hardened = Profile{
 		elf.ARMPACRule{}.ID(),
 		elf.ARMBTIRule{}.ID(),
 		elf.ARMMTERule{}.ID(),
-		elf.ARMShadowCallStackRule{}.ID(),
 	},
 }
 

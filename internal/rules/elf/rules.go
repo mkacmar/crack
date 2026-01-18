@@ -32,7 +32,6 @@ var AllRules = []model.Rule{
 	ARMPACRule{},
 	ARMBTIRule{},
 	ARMMTERule{},
-	ARMShadowCallStackRule{},
 }
 
 func GetRuleByID(id string) model.Rule {

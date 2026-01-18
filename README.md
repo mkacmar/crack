@@ -61,7 +61,7 @@ crack analyze --profile=hardened --debuginfod --debuginfod-urls=https://debuginf
 | `intel-cet-shstk` | [Intel CET Shadow Stack](https://gcc.gnu.org/onlinedocs/gcc/Instrumentation-Options.html#index-fcf-protection) | ✓ | ✓ | ✓ | | |
 | `x86-retpoline` | [Retpoline Spectre v2 mitigation](https://gcc.gnu.org/onlinedocs/gcc/x86-Options.html#index-mindirect-branch) | ✓ | ✓ | ✓ | | ✓ |
 
-### ARM64/RISC-V Specific Rules
+### ARM64 Specific Rules
 
 | Rule ID | Description | GCC | Clang (LLVM) | Compile time | Link time | Performance Impact |
 |---------|-------------|-----|--------------|--------------|-----------|--------------------|
@@ -69,7 +69,6 @@ crack analyze --profile=hardened --debuginfod --debuginfod-urls=https://debuginf
 | `arm-bti` | [ARM Branch Target Identification](https://gcc.gnu.org/onlinedocs/gcc/AArch64-Options.html#index-mbranch-protection) | ✓ | ✓ | ✓ | | |
 | `arm-mte` | [ARM Memory Tagging Extension](https://clang.llvm.org/docs/MemtagSanitizer.html) | | ✓ | ✓ | | ✓ |
 | `arm-pac` | [ARM Pointer Authentication](https://gcc.gnu.org/onlinedocs/gcc/AArch64-Options.html#index-mbranch-protection) | ✓ | ✓ | ✓ | | |
-| `arm-shadow-call-stack` | [ARM Shadow Call Stack](https://clang.llvm.org/docs/ShadowCallStack.html) (also RISC-V) | | ✓ | ✓ | | |
 
 ## License
 
