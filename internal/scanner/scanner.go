@@ -94,8 +94,7 @@ func (s *Scanner) scanFilesParallel(ctx context.Context, files []string) <-chan 
 		g, ctx := errgroup.WithContext(ctx)
 		g.SetLimit(s.workers)
 
-		for _, file := range files {
-			path := file
+		for _, path := range files {
 			g.Go(func() error {
 				if ctx.Err() != nil {
 					return ctx.Err()
