@@ -34,9 +34,7 @@ var Recommended = Profile{
 		elf.WXorXRule{}.ID(),
 		elf.NoInsecureRPATHRule{}.ID(),
 		elf.NoInsecureRUNPATHRule{}.ID(),
-		elf.HiddenSymbolsRule{}.ID(),
 		elf.SeparateCodeRule{}.ID(),
-		elf.NoDLOpenRule{}.ID(),
 	},
 }
 
