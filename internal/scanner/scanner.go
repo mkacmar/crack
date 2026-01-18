@@ -7,8 +7,9 @@ import (
 	"log/slog"
 	"os"
 	"path/filepath"
-	"sync"
 	"time"
+
+	"golang.org/x/sync/errgroup"
 
 	"github.com/mkacmar/crack/internal/debuginfo"
 	"github.com/mkacmar/crack/internal/model"
@@ -87,58 +88,33 @@ func (s *Scanner) scanFilesParallel(ctx context.Context, files []string) <-chan 
 		return results
 	}
 
-	numWorkers := s.workers
-	if numWorkers > len(files) {
-		numWorkers = len(files)
-	}
-	if numWorkers < 1 {
-		numWorkers = 1
-	}
-
-	s.logger.Debug("starting parallel scan", slog.Int("workers", numWorkers), slog.Int("files", len(files)))
-
-	jobs := make(chan string)
-
-	var wg sync.WaitGroup
-	for i := 0; i < numWorkers; i++ {
-		wg.Add(1)
-		go func() {
-			defer wg.Done()
-			s.worker(ctx, jobs, results)
-		}()
-	}
+	s.logger.Debug("starting parallel scan", slog.Int("workers", s.workers), slog.Int("files", len(files)))
 
 	go func() {
+		g, ctx := errgroup.WithContext(ctx)
+		g.SetLimit(s.workers)
+
 		for _, file := range files {
-			select {
-			case jobs <- file:
-			case <-ctx.Done():
-				close(jobs)
-				return
-			}
+			path := file
+			g.Go(func() error {
+				if ctx.Err() != nil {
+					return ctx.Err()
+				}
+				result := s.ScanFile(ctx, path)
+				select {
+				case results <- result:
+				case <-ctx.Done():
+					return ctx.Err()
+				}
+				return nil
+			})
 		}
-		close(jobs)
-	}()
 
-	go func() {
-		wg.Wait()
+		_ = g.Wait()
 		close(results)
 	}()
 
 	return results
-}
-
-func (s *Scanner) worker(ctx context.Context, jobs <-chan string, results chan<- model.FileScanResult) {
-	for file := range jobs {
-		select {
-		case <-ctx.Done():
-			return
-		default:
-		}
-
-		result := s.ScanFile(ctx, file)
-		results <- result
-	}
 }
 
 func (s *Scanner) ScanFile(ctx context.Context, path string) model.FileScanResult {
