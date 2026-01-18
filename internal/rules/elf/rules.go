@@ -14,8 +14,6 @@ var AllRules = []model.Rule{
 	StackLimitRule{},
 	FortifySourceRule{},
 	CFIRule{},
-	CFIICallRule{},
-	CFIVCallRule{},
 	KernelCFIRule{},
 	ASANRule{},
 	UBSanRule{},

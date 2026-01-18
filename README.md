@@ -33,8 +33,6 @@ crack analyze --profile=hardened --debuginfod --debuginfod-urls=https://debuginf
 | `asan` | [AddressSanitizer](https://clang.llvm.org/docs/AddressSanitizer.html) | ✓ | ✓ | ✓ | | ✓ |
 | `aslr` | [Address Space Layout Randomization compatibility](https://en.wikipedia.org/wiki/Address_space_layout_randomization) | ✓ | ✓ | ✓ | ✓ | |
 | `cfi` | [Control Flow Integrity](https://clang.llvm.org/docs/ControlFlowIntegrity.html) | | ✓ | ✓ | | ✓ |
-| `cfi-icall` | [CFI for indirect calls](https://clang.llvm.org/docs/ControlFlowIntegrity.html#indirect-function-call-checking) | | ✓ | ✓ | | ✓ |
-| `cfi-vcall` | [CFI for virtual calls](https://clang.llvm.org/docs/ControlFlowIntegrity.html#virtual-call-checking) | | ✓ | ✓ | | ✓ |
 | `fortify-source` | [FORTIFY_SOURCE buffer overflow protection](https://gcc.gnu.org/onlinedocs/gcc/Instrumentation-Options.html#index-D_FORTIFY_SOURCE) | ✓ | ✓ | ✓ | | |
 | `full-relro` | [Full RELRO (immediate binding)](https://www.redhat.com/en/blog/hardening-elf-binaries-using-relocation-read-only-relro) | ✓ | ✓ | | ✓ | |
 | `gc-sections` | [Dead code elimination](https://gcc.gnu.org/onlinedocs/gcc/Optimize-Options.html#index-ffunction-sections) | ✓ | ✓ | ✓ | ✓ | |

@@ -2,10 +2,20 @@ package elf
 
 import (
 	"debug/elf"
+	"fmt"
 	"strings"
 
 	"github.com/mkacmar/crack/internal/model"
 )
+
+var cfiSymbols = []string{
+	"__cfi_check",
+	"__cfi_slowpath",
+	"__cfi_slowpath_diag",
+	"__cfi_check_fail",
+	"__ubsan_handle_cfi_check_fail",
+	"__ubsan_handle_cfi_check_fail_abort",
+}
 
 // CFIRule checks for Clang Control Flow Integrity
 // Clang: https://clang.llvm.org/docs/ControlFlowIntegrity.html
@@ -27,46 +37,35 @@ func (r CFIRule) Feature() model.FeatureAvailability {
 }
 
 func (r CFIRule) Execute(f *elf.File, info *model.ParsedBinary) model.RuleResult {
-	hasCFI := false
+	symbols, _ := f.Symbols()
+	dynsyms, _ := f.DynamicSymbols()
 
-	symbols, err := f.Symbols()
-	if err != nil {
-		symbols = nil
-	}
-
-	dynsyms, err := f.DynamicSymbols()
-	if err != nil {
-		dynsyms = nil
-	}
-
+	allSymbols := make(map[string]struct{})
 	for _, sym := range symbols {
-		if strings.Contains(sym.Name, "__cfi_check") ||
-			strings.Contains(sym.Name, "__cfi_slowpath") ||
-			strings.Contains(sym.Name, "__ubsan_handle_cfi_check_fail") {
-			hasCFI = true
-			break
-		}
+		allSymbols[sym.Name] = struct{}{}
+	}
+	for _, sym := range dynsyms {
+		allSymbols[sym.Name] = struct{}{}
 	}
 
-	if !hasCFI {
-		for _, sym := range dynsyms {
-			if strings.Contains(sym.Name, "__cfi_check") ||
-				strings.Contains(sym.Name, "__cfi_slowpath") ||
-				strings.Contains(sym.Name, "__ubsan_handle_cfi_check_fail") {
-				hasCFI = true
+	var foundSymbols []string
+	for _, cfiSym := range cfiSymbols {
+		for symName := range allSymbols {
+			if strings.Contains(symName, cfiSym) {
+				foundSymbols = append(foundSymbols, cfiSym)
 				break
 			}
 		}
 	}
 
-	if hasCFI {
+	if len(foundSymbols) > 0 {
 		return model.RuleResult{
 			State:   model.CheckStatePassed,
-			Message: "Clang CFI features are enabled",
+			Message: fmt.Sprintf("Clang CFI is enabled, found: %v", foundSymbols),
 		}
 	}
 	return model.RuleResult{
 		State:   model.CheckStateFailed,
-		Message: "Clang CFI features are NOT enabled",
+		Message: "Clang CFI is NOT enabled",
 	}
 }

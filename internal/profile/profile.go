@@ -62,8 +62,6 @@ var Hardened = Profile{
 		elf.StrippedRule{}.ID(),
 		elf.StackLimitRule{}.ID(),
 		elf.CFIRule{}.ID(),
-		elf.CFIICallRule{}.ID(),
-		elf.CFIVCallRule{}.ID(),
 		elf.SafeStackRule{}.ID(),
 		elf.IntegerOverflowRule{}.ID(),
 		elf.IntelCETIBTRule{}.ID(),
