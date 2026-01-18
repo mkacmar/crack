@@ -10,9 +10,9 @@ import (
 
 var cfiSymbols = []string{
 	"__cfi_check",
+	"__cfi_check_fail",
 	"__cfi_slowpath",
 	"__cfi_slowpath_diag",
-	"__cfi_check_fail",
 	"__ubsan_handle_cfi_check_fail",
 	"__ubsan_handle_cfi_check_fail_abort",
 }
