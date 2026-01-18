@@ -12,7 +12,8 @@ type Formatter interface {
 }
 
 type TextFormatter struct {
-	Verbose bool
+	ShowPassed  bool
+	ShowSkipped bool
 }
 
 func (f *TextFormatter) Format(report *model.ScanResults, w io.Writer) error {
@@ -25,7 +26,7 @@ func (f *TextFormatter) Format(report *model.ScanResults, w io.Writer) error {
 		for _, check := range result.Results {
 			switch check.State {
 			case model.CheckStatePassed:
-				if f.Verbose {
+				if f.ShowPassed {
 					fmt.Fprintf(w, "%s: %s [pass]: %s\n", result.Path, check.RuleID, check.Message)
 				}
 			case model.CheckStateFailed:
@@ -34,6 +35,10 @@ func (f *TextFormatter) Format(report *model.ScanResults, w io.Writer) error {
 				} else {
 					fmt.Fprintf(w, "%s: %s [fail]: %s\n", result.Path, check.RuleID, check.Message)
 				}
+			case model.CheckStateSkipped:
+				if f.ShowSkipped {
+					fmt.Fprintf(w, "%s: %s [skip]: %s\n", result.Path, check.RuleID, check.Message)
+				}
 			}
 		}
 	}
@@ -41,15 +46,24 @@ func (f *TextFormatter) Format(report *model.ScanResults, w io.Writer) error {
 	return nil
 }
 
-var formatters = map[string]func(bool) Formatter{
-	"text":  func(verbose bool) Formatter { return &TextFormatter{Verbose: verbose} },
-	"":      func(verbose bool) Formatter { return &TextFormatter{Verbose: verbose} },
-	"sarif": func(verbose bool) Formatter { return &SARIFFormatter{IncludePassed: verbose} },
+type FormatterOptions struct {
+	ShowPassed  bool
+	ShowSkipped bool
 }
 
-func GetFormatter(format string, verbose bool) (Formatter, error) {
+var formatters = map[string]func(FormatterOptions) Formatter{
+	"text": func(opts FormatterOptions) Formatter {
+		return &TextFormatter{ShowPassed: opts.ShowPassed, ShowSkipped: opts.ShowSkipped}
+	},
+	"": func(opts FormatterOptions) Formatter {
+		return &TextFormatter{ShowPassed: opts.ShowPassed, ShowSkipped: opts.ShowSkipped}
+	},
+	"sarif": func(opts FormatterOptions) Formatter { return &SARIFFormatter{IncludePassed: opts.ShowPassed} },
+}
+
+func GetFormatter(format string, opts FormatterOptions) (Formatter, error) {
 	if constructor, ok := formatters[format]; ok {
-		return constructor(verbose), nil
+		return constructor(opts), nil
 	}
 	return nil, fmt.Errorf("unsupported format: %s (supported: text, sarif)", format)
 }

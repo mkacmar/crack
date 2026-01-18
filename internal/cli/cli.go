@@ -82,7 +82,8 @@ func (a *App) printAnalyzeUsage(prog string) {
 	fmt.Fprintf(os.Stderr, "  -a, --aggregate             Aggregate findings into actionable recommendations\n")
 	fmt.Fprintf(os.Stderr, "  -r, --recursive             Recursively scan directories\n")
 	fmt.Fprintf(os.Stderr, "      --log-level string      Log level: none, debug, info, warn, error (default \"error\")\n")
-	fmt.Fprintf(os.Stderr, "  -s, --show-passed           Show passing checks in output\n")
+	fmt.Fprintf(os.Stderr, "      --show-passed           Show passing checks in output\n")
+	fmt.Fprintf(os.Stderr, "      --show-skipped          Show skipped checks in output\n")
 	fmt.Fprintf(os.Stderr, "  -p, --parallel int          Number of files to analyze in parallel (default %d)\n", runtime.NumCPU())
 	fmt.Fprintf(os.Stderr, "\nDebuginfod options:\n")
 	fmt.Fprintf(os.Stderr, "  -d, --debuginfod            Fetch debug symbols from debuginfod servers\n")
@@ -112,6 +113,7 @@ func (a *App) runAnalyze(prog string, args []string) int {
 		recursive         bool
 		logLevel          string
 		showPassed        bool
+		showSkipped       bool
 		parallel          int
 		useDebuginfod     bool
 		debuginfodURLs    string
@@ -131,7 +133,7 @@ func (a *App) runAnalyze(prog string, args []string) int {
 	fs.BoolVar(&recursive, "r", false, "")
 	fs.StringVar(&logLevel, "log-level", "error", "")
 	fs.BoolVar(&showPassed, "show-passed", false, "")
-	fs.BoolVar(&showPassed, "s", false, "")
+	fs.BoolVar(&showSkipped, "show-skipped", false, "")
 	fs.IntVar(&parallel, "parallel", runtime.NumCPU(), "")
 	fs.IntVar(&parallel, "p", runtime.NumCPU(), "")
 	fs.BoolVar(&useDebuginfod, "debuginfod", false, "")
@@ -261,12 +263,12 @@ func (a *App) runAnalyze(prog string, args []string) int {
 	needsFullReport := aggregate || sarifOutput != ""
 
 	if needsFullReport {
-		return a.processFullReport(resultsChan, aggregate, showPassed, sarifOutput)
+		return a.processFullReport(resultsChan, aggregate, showPassed, showSkipped, sarifOutput)
 	}
-	return a.processStreaming(resultsChan, showPassed)
+	return a.processStreaming(resultsChan, showPassed, showSkipped)
 }
 
-func (a *App) processFullReport(resultsChan <-chan model.FileScanResult, aggregate, showPassed bool, sarifOutput string) int {
+func (a *App) processFullReport(resultsChan <-chan model.FileScanResult, aggregate, showPassed, showSkipped bool, sarifOutput string) int {
 	var results []model.FileScanResult
 	var totalFailed int
 
@@ -284,7 +286,7 @@ func (a *App) processFullReport(resultsChan <-chan model.FileScanResult, aggrega
 		agg := output.AggregateFindings(report)
 		fmt.Print(output.FormatAggregated(agg))
 	} else {
-		textFormatter, _ := output.GetFormatter("text", showPassed)
+		textFormatter, _ := output.GetFormatter("text", output.FormatterOptions{ShowPassed: showPassed, ShowSkipped: showSkipped})
 		if err := textFormatter.Format(report, os.Stdout); err != nil {
 			a.logger.Error("failed to format output", slog.Any("error", err))
 			return 1
@@ -292,7 +294,7 @@ func (a *App) processFullReport(resultsChan <-chan model.FileScanResult, aggrega
 	}
 
 	if sarifOutput != "" {
-		sarifFormatter, _ := output.GetFormatter("sarif", true)
+		sarifFormatter, _ := output.GetFormatter("sarif", output.FormatterOptions{ShowPassed: true})
 		f, err := os.Create(sarifOutput)
 		if err != nil {
 			a.logger.Error("failed to create SARIF file", slog.String("path", sarifOutput), slog.Any("error", err))
@@ -312,9 +314,9 @@ func (a *App) processFullReport(resultsChan <-chan model.FileScanResult, aggrega
 	return 0
 }
 
-func (a *App) processStreaming(resultsChan <-chan model.FileScanResult, showPassed bool) int {
+func (a *App) processStreaming(resultsChan <-chan model.FileScanResult, showPassed, showSkipped bool) int {
 	var totalFailed int
-	textFormatter, _ := output.GetFormatter("text", showPassed)
+	textFormatter, _ := output.GetFormatter("text", output.FormatterOptions{ShowPassed: showPassed, ShowSkipped: showSkipped})
 
 	for result := range resultsChan {
 		if result.Skipped {
