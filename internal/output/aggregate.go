@@ -18,81 +18,95 @@ type AggregatedReport struct {
 	PassedAll       []string
 }
 
-func AggregateFindings(report *model.ScanResults) *AggregatedReport {
-	agg := &AggregatedReport{
+func NewAggregatedReport() *AggregatedReport {
+	return &AggregatedReport{
 		Upgrades:        make(map[model.Compiler]map[string]map[string]bool),
 		CompileFlags:    make(map[string]map[string]bool),
 		LinkFlags:       make(map[string]map[string]bool),
 		PerfImpactFlags: make(map[string]bool),
 	}
+}
+
+func AggregateFindings(report *model.ScanResults) *AggregatedReport {
+	agg := NewAggregatedReport()
 
 	for _, result := range report.Results {
-		if result.Error != nil {
-			continue
-		}
-
-		var failedChecks []model.RuleResult
-		allPassed := true
-
-		for _, check := range result.Results {
-			if check.State == model.CheckStateFailed {
-				failedChecks = append(failedChecks, check)
-				allPassed = false
-			}
-		}
-
-		if allPassed {
-			agg.PassedAll = append(agg.PassedAll, result.Path)
-			continue
-		}
-
-		detectedCompiler := result.Toolchain.Compiler
-
-		for _, check := range failedChecks {
-			rule := elf.GetRuleByID(check.RuleID)
-			if rule == nil {
-				continue
-			}
-
-			feature := rule.Feature()
-			hasPerfImpact := rule.HasPerfImpact()
-
-			for _, req := range feature.Requirements {
-				if detectedCompiler != model.CompilerUnknown && req.Compiler != detectedCompiler {
-					continue
-				}
-
-				ver := req.DefaultVersion
-				if ver.IsZero() {
-					ver = req.MinVersion
-				}
-				if !ver.IsZero() {
-					addToUpgrades(agg, req.Compiler, ver.String(), result.Path)
-				}
-
-				if req.Flag == "" {
-					continue
-				}
-
-				if rule.FlagType() == model.FlagTypeCompile || rule.FlagType() == model.FlagTypeBoth {
-					addToFlags(agg.CompileFlags, req.Flag, result.Path)
-					if hasPerfImpact {
-						agg.PerfImpactFlags[req.Flag] = true
-					}
-				}
-
-				if rule.FlagType() == model.FlagTypeLink || rule.FlagType() == model.FlagTypeBoth {
-					addToFlags(agg.LinkFlags, req.Flag, result.Path)
-					if hasPerfImpact {
-						agg.PerfImpactFlags[req.Flag] = true
-					}
-				}
-			}
-		}
+		processFileScanResult(agg, result)
 	}
 
 	sort.Strings(agg.PassedAll)
 	return agg
+}
+
+func processFileScanResult(agg *AggregatedReport, result model.FileScanResult) {
+	if result.Error != nil {
+		return
+	}
+
+	var failedChecks []model.RuleResult
+	allPassed := true
+
+	for _, check := range result.Results {
+		if check.State == model.CheckStateFailed {
+			failedChecks = append(failedChecks, check)
+			allPassed = false
+		}
+	}
+
+	if allPassed {
+		agg.PassedAll = append(agg.PassedAll, result.Path)
+		return
+	}
+
+	for _, check := range failedChecks {
+		processFailedCheck(agg, check, result.Path, result.Toolchain.Compiler)
+	}
+}
+
+func processFailedCheck(agg *AggregatedReport, check model.RuleResult, path string, detectedCompiler model.Compiler) {
+	rule := elf.GetRuleByID(check.RuleID)
+	if rule == nil {
+		return
+	}
+
+	feature := rule.Feature()
+	hasPerfImpact := rule.HasPerfImpact()
+
+	for _, req := range feature.Requirements {
+		processRequirement(agg, req, rule.FlagType(), path, detectedCompiler, hasPerfImpact)
+	}
+}
+
+func processRequirement(agg *AggregatedReport, req model.CompilerRequirement, flagType model.FlagType, path string, detectedCompiler model.Compiler, hasPerfImpact bool) {
+	if detectedCompiler != model.CompilerUnknown && req.Compiler != detectedCompiler {
+		return
+	}
+
+	ver := req.DefaultVersion
+	if ver.IsZero() {
+		ver = req.MinVersion
+	}
+	if !ver.IsZero() {
+		addToUpgrades(agg, req.Compiler, ver.String(), path)
+	}
+
+	if req.Flag == "" {
+		return
+	}
+
+	if flagType == model.FlagTypeCompile || flagType == model.FlagTypeBoth {
+		addToFlags(agg.CompileFlags, req.Flag, path)
+		if hasPerfImpact {
+			agg.PerfImpactFlags[req.Flag] = true
+		}
+	}
+
+	if flagType == model.FlagTypeLink || flagType == model.FlagTypeBoth {
+		addToFlags(agg.LinkFlags, req.Flag, path)
+		if hasPerfImpact {
+			agg.PerfImpactFlags[req.Flag] = true
+		}
+	}
 }
 
 func addToUpgrades(agg *AggregatedReport, compiler model.Compiler, version, path string) {
