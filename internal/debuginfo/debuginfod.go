@@ -4,7 +4,7 @@ import (
 	"context"
 	"fmt"
 	"io"
-	"math/rand"
+	"math/rand/v2"
 	"net/http"
 	"os"
 	"path/filepath"
@@ -135,8 +135,8 @@ func (c *Client) calculateBackoff(attempt int) time.Duration {
 	baseDelay := time.Duration(1<<uint(attempt-1)) * time.Second
 
 	// Add jitter: +-25% of base delay
-	jitter := time.Duration(rand.Int63n(int64(baseDelay / 2)))
-	if rand.Intn(2) == 0 {
+	jitter := time.Duration(rand.Int64N(int64(baseDelay / 2)))
+	if rand.IntN(2) == 0 {
 		return baseDelay + jitter
 	}
 	return baseDelay - jitter/2
