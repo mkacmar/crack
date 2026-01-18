@@ -25,7 +25,6 @@ var AllRules = []model.Rule{
 	NoDumpRule{},
 	HiddenSymbolsRule{},
 	StrippedRule{},
-	GCSectionsRule{},
 	IntelCETIBTRule{},
 	IntelCETShadowStackRule{},
 	RetpolineRule{},

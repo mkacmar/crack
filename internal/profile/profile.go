@@ -37,7 +37,6 @@ var Recommended = Profile{
 		elf.HiddenSymbolsRule{}.ID(),
 		elf.SeparateCodeRule{}.ID(),
 		elf.NoDLOpenRule{}.ID(),
-		elf.GCSectionsRule{}.ID(),
 	},
 }
 
@@ -58,7 +57,6 @@ var Hardened = Profile{
 		elf.NoDLOpenRule{}.ID(),
 		elf.NoPLTRule{}.ID(),
 		elf.NoDumpRule{}.ID(),
-		elf.GCSectionsRule{}.ID(),
 		elf.StrippedRule{}.ID(),
 		elf.StackLimitRule{}.ID(),
 		elf.CFIRule{}.ID(),
