@@ -76,7 +76,17 @@ var BuildTest = Profile{
 		elf.UBSanRule{}.ID(),
 		elf.SafeStackRule{}.ID(),
 		elf.CFIRule{}.ID(),
+	},
+}
+
+var Kernel = Profile{
+	Rules: []string{
 		elf.KernelCFIRule{}.ID(),
+		elf.StackCanaryRule{}.ID(),
+		elf.RetpolineRule{}.ID(),
+		elf.ARMBranchProtectionRule{}.ID(),
+		elf.ARMPACRule{}.ID(),
+		elf.ARMBTIRule{}.ID(),
 	},
 }
 
@@ -85,6 +95,7 @@ var All = map[string]Profile{
 	"recommended": Recommended,
 	"hardened":    Hardened,
 	"build-test":  BuildTest,
+	"kernel":      Kernel,
 }
 
 func Get(name string) (Profile, bool) {
