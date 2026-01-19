@@ -1,0 +1,63 @@
+name: "Golden: NX-Bit"
+
+on:
+  workflow_dispatch:
+
+jobs:
+  build:
+    strategy:
+      matrix:
+        include:
+          - arch: x86_64
+            runner: ubuntu-24.04
+          - arch: aarch64
+            runner: ubuntu-24.04-arm
+          - arch: armv7
+            runner: ubuntu-24.04
+            qemu: true
+
+    runs-on: ${{ matrix.runner }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up QEMU
+        if: matrix.qemu
+        uses: docker/setup-qemu-action@v3
+        with:
+          platforms: arm
+
+      - name: Build binaries (native)
+        if: ${{ !matrix.qemu }}
+        run: sh test/e2e/nx-bit/build.sh ${{ matrix.arch }}
+
+      - name: Build binaries (QEMU)
+        if: matrix.qemu
+        run: |
+          docker run --rm --platform linux/arm/v7 \
+            -v ${{ github.workspace }}:/workspace \
+            -w /workspace \
+            alpine:latest sh -c 'apk add --no-cache gcc clang musl-dev && sh test/e2e/nx-bit/build.sh ${{ matrix.arch }}'
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: binaries-${{ matrix.arch }}
+          path: binaries/
+
+  merge:
+    runs-on: ubuntu-latest
+    needs: build
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          path: all-binaries
+          pattern: binaries-*
+          merge-multiple: true
+
+      - name: List all binaries
+        run: ls -la all-binaries/
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: nx-bit-binaries
+          path: all-binaries/
+
