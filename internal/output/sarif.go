@@ -73,6 +73,7 @@ type SARIFArtifactLocation struct {
 
 type SARIFArtifact struct {
 	Location SARIFArtifactLocation `json:"location"`
+	Hashes   map[string]string     `json:"hashes,omitempty"`
 }
 
 type SARIFFix struct {
@@ -121,11 +122,11 @@ func (f *SARIFFormatter) convertToSARIF(report *model.ScanResults) SARIFReport {
 	}
 
 	sarifResults := make([]SARIFResult, 0)
-	artifactSet := make(map[string]bool)
+	artifactHashes := make(map[string]string)
 
 	for _, result := range report.Results {
 		fileURI := toFileURI(result.Path)
-		artifactSet[fileURI] = true
+		artifactHashes[fileURI] = result.SHA256
 
 		if result.Error != nil {
 			sarifResults = append(sarifResults, SARIFResult{
@@ -181,11 +182,15 @@ func (f *SARIFFormatter) convertToSARIF(report *model.ScanResults) SARIFReport {
 		}
 	}
 
-	artifactList := make([]SARIFArtifact, 0, len(artifactSet))
-	for uri := range artifactSet {
-		artifactList = append(artifactList, SARIFArtifact{
+	artifactList := make([]SARIFArtifact, 0, len(artifactHashes))
+	for uri, hash := range artifactHashes {
+		artifact := SARIFArtifact{
 			Location: SARIFArtifactLocation{URI: uri},
-		})
+		}
+		if hash != "" {
+			artifact.Hashes = map[string]string{"sha-256": hash}
+		}
+		artifactList = append(artifactList, artifact)
 	}
 
 	return SARIFReport{

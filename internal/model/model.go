@@ -238,6 +238,7 @@ type FileScanResult struct {
 	Path      string
 	Format    BinaryFormat
 	Toolchain Toolchain
+	SHA256    string
 	Results   []RuleResult
 	Error     error
 	Skipped   bool

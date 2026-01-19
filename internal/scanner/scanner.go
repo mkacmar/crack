@@ -2,7 +2,10 @@ package scanner
 
 import (
 	"context"
+	"crypto/sha256"
+	"encoding/hex"
 	"fmt"
+	"io"
 	"io/fs"
 	"log/slog"
 	"os"
@@ -155,6 +158,7 @@ func (s *Scanner) ScanFile(ctx context.Context, path string) model.FileScanResul
 	}
 
 	result.Format = info.Format
+	result.SHA256 = computeSHA256(path)
 	s.logger.Debug("parsed binary", slog.String("path", path), slog.String("format", info.Format.String()), slog.String("arch", info.Architecture.String()))
 
 	if s.debuginfodClient != nil && info.Build.BuildID != "" {
@@ -222,4 +226,19 @@ func (s *Scanner) collectFiles(path string, recursive bool) ([]string, error) {
 	}
 
 	return files, nil
+}
+
+func computeSHA256(path string) string {
+	f, err := os.Open(path)
+	if err != nil {
+		return ""
+	}
+	defer f.Close()
+
+	h := sha256.New()
+	if _, err := io.Copy(h, f); err != nil {
+		return ""
+	}
+
+	return hex.EncodeToString(h.Sum(nil))
 }
