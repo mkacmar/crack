@@ -30,6 +30,14 @@ func (r NoPLTRule) Feature() model.FeatureAvailability {
 }
 
 func (r NoPLTRule) Execute(f *elf.File, info *model.ParsedBinary) model.RuleResult {
+	// Skip for static binaries - PLT only applies to dynamically linked binaries
+	if f.Section(".dynamic") == nil {
+		return model.RuleResult{
+			State:   model.CheckStateSkipped,
+			Message: "Static binary (PLT not applicable)",
+		}
+	}
+
 	pltSection := f.Section(".plt")
 	pltSecSection := f.Section(".plt.sec")
 
@@ -52,6 +60,6 @@ func (r NoPLTRule) Execute(f *elf.File, info *model.ParsedBinary) model.RuleResu
 
 	return model.RuleResult{
 		State:   model.CheckStateFailed,
-		Message: "PLT is used (consider -fno-plt to reduce ROP gadgets)",
+		Message: "PLT is used",
 	}
 }
