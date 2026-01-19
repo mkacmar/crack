@@ -28,40 +28,27 @@ func (r SafeStackRule) Feature() model.FeatureAvailability {
 }
 
 func (r SafeStackRule) Execute(f *elf.File, info *model.ParsedBinary) model.RuleResult {
-	hasSafeStack := false
-
-	symbols, err := f.Symbols()
-	if err != nil {
-		symbols = nil
-	}
-
-	dynsyms, err := f.DynamicSymbols()
-	if err != nil {
-		dynsyms = nil
-	}
+	symbols, _ := f.Symbols()
+	dynsyms, _ := f.DynamicSymbols()
 
 	for _, sym := range symbols {
-		if strings.Contains(sym.Name, "__safestack") {
-			hasSafeStack = true
-			break
-		}
-	}
-
-	if !hasSafeStack {
-		for _, sym := range dynsyms {
-			if strings.Contains(sym.Name, "__safestack") {
-				hasSafeStack = true
-				break
+		if strings.HasPrefix(sym.Name, "__safestack_") {
+			return model.RuleResult{
+				State:   model.CheckStatePassed,
+				Message: "SafeStack is enabled",
 			}
 		}
 	}
 
-	if hasSafeStack {
-		return model.RuleResult{
-			State:   model.CheckStatePassed,
-			Message: "SafeStack is enabled",
+	for _, sym := range dynsyms {
+		if strings.HasPrefix(sym.Name, "__safestack_") {
+			return model.RuleResult{
+				State:   model.CheckStatePassed,
+				Message: "SafeStack is enabled",
+			}
 		}
 	}
+
 	return model.RuleResult{
 		State:   model.CheckStateFailed,
 		Message: "SafeStack is NOT enabled",
