@@ -1,4 +1,4 @@
-package profile
+package preset
 
 import (
 	"maps"
@@ -7,11 +7,11 @@ import (
 	"github.com/mkacmar/crack/internal/rules/elf"
 )
 
-type Profile struct {
+type Preset struct {
 	Rules []string
 }
 
-var Minimal = Profile{
+var Minimal = Preset{
 	Rules: []string{
 		elf.PIERule{}.ID(),
 		elf.NXBitRule{}.ID(),
@@ -22,7 +22,7 @@ var Minimal = Profile{
 	},
 }
 
-var Recommended = Profile{
+var Recommended = Preset{
 	Rules: []string{
 		elf.PIERule{}.ID(),
 		elf.NXBitRule{}.ID(),
@@ -38,7 +38,7 @@ var Recommended = Profile{
 	},
 }
 
-var Hardened = Profile{
+var Hardened = Preset{
 	Rules: []string{
 		elf.PIERule{}.ID(),
 		elf.NXBitRule{}.ID(),
@@ -69,7 +69,7 @@ var Hardened = Profile{
 	},
 }
 
-var BuildTest = Profile{
+var BuildTest = Preset{
 	Rules: []string{
 		elf.ASANRule{}.ID(),
 		elf.UBSanRule{}.ID(),
@@ -78,7 +78,7 @@ var BuildTest = Profile{
 	},
 }
 
-var Kernel = Profile{
+var Kernel = Preset{
 	Rules: []string{
 		elf.KernelCFIRule{}.ID(),
 		elf.StackCanaryRule{}.ID(),
@@ -89,7 +89,7 @@ var Kernel = Profile{
 	},
 }
 
-var All = map[string]Profile{
+var All = map[string]Preset{
 	"minimal":     Minimal,
 	"recommended": Recommended,
 	"hardened":    Hardened,
@@ -97,7 +97,7 @@ var All = map[string]Profile{
 	"kernel":      Kernel,
 }
 
-func Get(name string) (Profile, bool) {
+func Get(name string) (Preset, bool) {
 	p, ok := All[name]
 	return p, ok
 }

@@ -15,7 +15,7 @@ import (
 	"github.com/mkacmar/crack/internal/debuginfo"
 	"github.com/mkacmar/crack/internal/model"
 	"github.com/mkacmar/crack/internal/output"
-	"github.com/mkacmar/crack/internal/profile"
+	"github.com/mkacmar/crack/internal/preset"
 	"github.com/mkacmar/crack/internal/rules"
 	"github.com/mkacmar/crack/internal/rules/elf"
 	"github.com/mkacmar/crack/internal/scanner"
@@ -77,7 +77,8 @@ func (a *App) printAnalyzeUsage(prog string) {
 	fmt.Fprintf(os.Stderr, "Usage: %s analyze [options] <binary|directory>...\n\n", prog)
 	fmt.Fprintf(os.Stderr, "Analyze binaries for security hardening features.\n\n")
 	fmt.Fprintf(os.Stderr, "Options:\n")
-	fmt.Fprintf(os.Stderr, "  -P, --profile string        Security profile to use (default \"recommended\")\n")
+	fmt.Fprintf(os.Stderr, "  -P, --preset string         Security preset to use (default \"recommended\")\n")
+	fmt.Fprintf(os.Stderr, "  -R, --rules string          Comma-separated list of rule IDs to run (mutually exclusive with --preset)\n")
 	fmt.Fprintf(os.Stderr, "  -o, --sarif string          Save detailed SARIF report to file\n")
 	fmt.Fprintf(os.Stderr, "  -a, --aggregate             Aggregate findings into actionable recommendations\n")
 	fmt.Fprintf(os.Stderr, "  -r, --recursive             Recursively scan directories\n")
@@ -91,22 +92,24 @@ func (a *App) printAnalyzeUsage(prog string) {
 	fmt.Fprintf(os.Stderr, "      --debuginfod-cache      Debuginfod cache directory (default \"%s\")\n", getDefaultCacheDir())
 	fmt.Fprintf(os.Stderr, "      --debuginfod-timeout    Debuginfod HTTP timeout (default %v)\n", debuginfo.DefaultTimeout)
 	fmt.Fprintf(os.Stderr, "      --debuginfod-retries    Debuginfod max retries per server (default %d)\n", debuginfo.DefaultRetries)
-	fmt.Fprintf(os.Stderr, "\nProfiles:\n")
-	for _, name := range profile.Names() {
+	fmt.Fprintf(os.Stderr, "\nPresets:\n")
+	for _, name := range preset.Names() {
 		if name == "recommended" {
 			fmt.Fprintf(os.Stderr, "  %s (default)\n", name)
 		} else {
 			fmt.Fprintf(os.Stderr, "  %s\n", name)
 		}
 	}
-	fmt.Fprintf(os.Stderr, "\nUse 'crack analyze --profile=<name> --list-rules' to see rules in a profile.\n")
+	fmt.Fprintf(os.Stderr, "\nUse 'crack analyze --preset=<name> --list-rules' to see rules in a preset.\n")
 }
 
 func (a *App) runAnalyze(prog string, args []string) int {
 	fs := flag.NewFlagSet("analyze", flag.ExitOnError)
 
 	var (
-		profileName       string
+		presetName        string
+		presetSet         bool
+		rulesFlag         string
 		listRules         bool
 		sarifOutput       string
 		aggregate         bool
@@ -122,8 +125,10 @@ func (a *App) runAnalyze(prog string, args []string) int {
 		debuginfodRetries int
 	)
 
-	fs.StringVar(&profileName, "profile", "recommended", "")
-	fs.StringVar(&profileName, "P", "recommended", "")
+	fs.StringVar(&presetName, "preset", "recommended", "")
+	fs.StringVar(&presetName, "P", "recommended", "")
+	fs.StringVar(&rulesFlag, "rules", "", "")
+	fs.StringVar(&rulesFlag, "R", "", "")
 	fs.BoolVar(&listRules, "list-rules", false, "")
 	fs.StringVar(&sarifOutput, "sarif", "", "")
 	fs.StringVar(&sarifOutput, "o", "", "")
@@ -151,11 +156,40 @@ func (a *App) runAnalyze(prog string, args []string) int {
 		return 1
 	}
 
-	p, ok := profile.Get(profileName)
-	if !ok {
-		fmt.Fprintf(os.Stderr, "Error: unknown profile %q\n", profileName)
-		fmt.Fprintf(os.Stderr, "Available profiles: %s\n", strings.Join(profile.Names(), ", "))
+	// Check if --preset was explicitly set
+	fs.Visit(func(f *flag.Flag) {
+		if f.Name == "preset" || f.Name == "P" {
+			presetSet = true
+		}
+	})
+
+	if rulesFlag != "" && presetSet {
+		fmt.Fprintf(os.Stderr, "Error: --rules and --preset are mutually exclusive\n")
 		return 1
+	}
+
+	var p preset.Preset
+	if rulesFlag != "" {
+		ruleIDs := strings.Split(rulesFlag, ",")
+		for i, id := range ruleIDs {
+			ruleIDs[i] = strings.TrimSpace(id)
+		}
+		for _, id := range ruleIDs {
+			if elf.GetRuleByID(id) == nil {
+				fmt.Fprintf(os.Stderr, "Error: unknown rule %q\n", id)
+				fmt.Fprintf(os.Stderr, "Use 'crack analyze --preset=hardened --list-rules' to see available rules.\n")
+				return 1
+			}
+		}
+		p = preset.Preset{Rules: ruleIDs}
+	} else {
+		var ok bool
+		p, ok = preset.Get(presetName)
+		if !ok {
+			fmt.Fprintf(os.Stderr, "Error: unknown preset %q\n", presetName)
+			fmt.Fprintf(os.Stderr, "Available presets: %s\n", strings.Join(preset.Names(), ", "))
+			return 1
+		}
 	}
 
 	if listRules {
@@ -234,8 +268,8 @@ func (a *App) runAnalyze(prog string, args []string) int {
 	}
 
 	ruleEngine := rules.NewEngine(a.logger)
-	a.logger.Debug("loading profile", slog.String("profile", profileName))
-	ruleEngine.LoadProfile(p)
+	a.logger.Debug("loading preset", slog.String("preset", presetName))
+	ruleEngine.LoadPreset(p)
 
 	cache := debuginfodCache
 	if cache == "" {

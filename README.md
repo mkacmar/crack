@@ -14,14 +14,14 @@ Based on recommendations from:
 # Show help
 crack analyze --help
 
-# Analyze a binary with the default (recommended) profile
+# Analyze a binary with the default (recommended) preset
 crack analyze /usr/bin/ls
 
-# List rules in a specific profile
-crack analyze --profile=hardened --list-rules
+# List rules in a specific preset
+crack analyze --preset=hardened --list-rules
 
 # Analyze with debuginfod to fetch debug symbols for stripped binaries
-crack analyze --profile=hardened --debuginfod --debuginfod-urls=https://debuginfod.elfutils.org /usr/bin/ls
+crack analyze --preset=hardened --debuginfod --debuginfod-urls=https://debuginfod.elfutils.org /usr/bin/ls
 ```
 
 ## Available Rules

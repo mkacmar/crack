@@ -5,7 +5,7 @@ import (
 	"slices"
 
 	"github.com/mkacmar/crack/internal/model"
-	"github.com/mkacmar/crack/internal/profile"
+	"github.com/mkacmar/crack/internal/preset"
 	"github.com/mkacmar/crack/internal/rules/elf"
 )
 
@@ -21,7 +21,7 @@ func NewEngine(logger *slog.Logger) *Engine {
 	}
 }
 
-func (e *Engine) LoadProfile(p profile.Profile) {
+func (e *Engine) LoadPreset(p preset.Preset) {
 	e.rules = make([]model.Rule, 0)
 	loaded := make(map[string]bool)
 
@@ -34,14 +34,14 @@ func (e *Engine) LoadProfile(p profile.Profile) {
 
 	for _, id := range p.Rules {
 		if !loaded[id] {
-			e.logger.Warn("unknown rule ID in profile, skipping", slog.String("rule_id", id))
+			e.logger.Warn("unknown rule ID in preset, skipping", slog.String("rule_id", id))
 		}
 	}
 }
 
 func (e *Engine) ExecuteRules(info *model.ParsedBinary) []model.RuleResult {
 	if len(e.rules) == 0 {
-		e.logger.Warn("no rules loaded, call LoadProfile() first")
+		e.logger.Warn("no rules loaded, call LoadPreset() first")
 		return nil
 	}
 
