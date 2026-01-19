@@ -46,8 +46,6 @@ gcc -fstack-protector -o binaries/${ARCH}-gcc-stack-protector $SRC
 # no stack protector
 gcc -fno-stack-protector -o binaries/${ARCH}-gcc-no-stack-protector $SRC
 
-# default (depends on distro, usually enabled)
-gcc -o binaries/${ARCH}-gcc-default $SRC
 
 # simple program with stack-protector (may not have canary - no vulnerable buffer)
 gcc -fstack-protector -o binaries/${ARCH}-gcc-stack-protector-simple $SIMPLE
@@ -77,8 +75,6 @@ clang -fstack-protector-all -o binaries/${ARCH}-clang-stack-protector-all $SRC
 # no stack protector
 clang -fno-stack-protector -o binaries/${ARCH}-clang-no-stack-protector $SRC
 
-# default
-clang -o binaries/${ARCH}-clang-default $SRC
 
 # stripped binary with stack protection
 clang -fstack-protector-strong -o binaries/${ARCH}-clang-stack-protector-stripped $SRC
