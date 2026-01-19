@@ -64,6 +64,9 @@ gcc -fstack-protector-strong -static -o binaries/${ARCH}-gcc-stack-protector-sta
 gcc -fstack-protector-strong -static -o binaries/${ARCH}-gcc-stack-protector-static-stripped $SRC && \
   strip binaries/${ARCH}-gcc-stack-protector-static-stripped || echo "static linking not supported"
 
+# LTO with stack protection (tests if canary survives link-time optimization)
+gcc -flto -fstack-protector-strong -o binaries/${ARCH}-gcc-stack-protector-lto $SRC
+
 # --- Clang variants ---
 
 # stack-protector-strong
@@ -86,6 +89,9 @@ clang -fstack-protector-strong -static -o binaries/${ARCH}-clang-stack-protector
 # static + stripped (edge case: both symbol tables may be empty - expected false negative)
 clang -fstack-protector-strong -static -o binaries/${ARCH}-clang-stack-protector-static-stripped $SRC && \
   strip binaries/${ARCH}-clang-stack-protector-static-stripped || echo "static linking not supported"
+
+# LTO with stack protection (tests if canary survives link-time optimization)
+clang -flto -fstack-protector-strong -o binaries/${ARCH}-clang-stack-protector-lto $SRC
 
 ls -la binaries/
 

@@ -18,6 +18,7 @@ func TestStackCanaryRule(t *testing.T) {
 		{"x86_64-gcc-stack-protector-stripped", "pass"},
 		{"x86_64-gcc-stack-protector-static", "pass"},
 		{"x86_64-gcc-stack-protector-static-stripped", "fail"},
+		{"x86_64-gcc-stack-protector-lto", "pass"},
 
 		// x86_64 Clang
 		{"x86_64-clang-stack-protector-strong", "pass"},
@@ -26,6 +27,7 @@ func TestStackCanaryRule(t *testing.T) {
 		{"x86_64-clang-stack-protector-stripped", "pass"},
 		{"x86_64-clang-stack-protector-static", "pass"},
 		{"x86_64-clang-stack-protector-static-stripped", "fail"},
+		{"x86_64-clang-stack-protector-lto", "pass"},
 
 		// aarch64 GCC
 		{"aarch64-gcc-stack-protector-strong", "pass"},
@@ -37,6 +39,7 @@ func TestStackCanaryRule(t *testing.T) {
 		{"aarch64-gcc-stack-protector-stripped", "pass"},
 		{"aarch64-gcc-stack-protector-static", "pass"},
 		{"aarch64-gcc-stack-protector-static-stripped", "fail"},
+		{"aarch64-gcc-stack-protector-lto", "pass"},
 
 		// aarch64 Clang
 		{"aarch64-clang-stack-protector-strong", "pass"},
@@ -45,6 +48,7 @@ func TestStackCanaryRule(t *testing.T) {
 		{"aarch64-clang-stack-protector-stripped", "pass"},
 		{"aarch64-clang-stack-protector-static", "pass"},
 		{"aarch64-clang-stack-protector-static-stripped", "fail"},
+		{"aarch64-clang-stack-protector-lto", "pass"},
 
 		// armv7 GCC
 		{"armv7-gcc-stack-protector-strong", "pass"},
@@ -56,6 +60,7 @@ func TestStackCanaryRule(t *testing.T) {
 		{"armv7-gcc-stack-protector-stripped", "pass"},
 		{"armv7-gcc-stack-protector-static", "pass"},
 		{"armv7-gcc-stack-protector-static-stripped", "fail"},
+		{"armv7-gcc-stack-protector-lto", "pass"},
 
 		// armv7 Clang
 		{"armv7-clang-stack-protector-strong", "pass"},
@@ -64,5 +69,6 @@ func TestStackCanaryRule(t *testing.T) {
 		{"armv7-clang-stack-protector-stripped", "pass"},
 		{"armv7-clang-stack-protector-static", "pass"},
 		{"armv7-clang-stack-protector-static-stripped", "fail"},
+		{"armv7-clang-stack-protector-lto", "pass"},
 	})
 }
