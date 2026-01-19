@@ -13,11 +13,11 @@ func TestStackCanaryRule(t *testing.T) {
 		{"x86_64-gcc-stack-protector-all", "pass"},
 		{"x86_64-gcc-stack-protector", "pass"},
 		{"x86_64-gcc-no-stack-protector", "fail"},
-		{"x86_64-gcc-stack-protector-simple", "fail"},          // no vulnerable buffer, compiler skips canary
-		{"x86_64-gcc-stack-protector-all-simple", "pass"},      // -all forces canary
-		{"x86_64-gcc-stack-protector-stripped", "pass"},        // stripped but dynamically linked
-		{"x86_64-gcc-stack-protector-static", "pass"},          // static, uses static symbols
-		{"x86_64-gcc-stack-protector-static-stripped", "fail"}, // static + stripped = no symbols
+		{"x86_64-gcc-stack-protector-simple", "fail"},
+		{"x86_64-gcc-stack-protector-all-simple", "pass"},
+		{"x86_64-gcc-stack-protector-stripped", "pass"},
+		{"x86_64-gcc-stack-protector-static", "pass"},
+		{"x86_64-gcc-stack-protector-static-stripped", "fail"},
 
 		// x86_64 Clang
 		{"x86_64-clang-stack-protector-strong", "pass"},
