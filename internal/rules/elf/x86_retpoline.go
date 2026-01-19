@@ -29,6 +29,21 @@ func (r RetpolineRule) Feature() model.FeatureAvailability {
 }
 
 func (r RetpolineRule) Execute(f *elf.File, info *model.ParsedBinary) model.RuleResult {
+	// Retpoline thunks are local symbols in .symtab, not exported to .dynsym
+	// Stripped binaries lose these symbols, making detection impossible
+	hasSymtab := false
+	for _, sec := range f.Sections {
+		if sec.Type == elf.SHT_SYMTAB {
+			hasSymtab = true
+			break
+		}
+	}
+	if !hasSymtab {
+		return model.RuleResult{
+			State:   model.CheckStateSkipped,
+			Message: "Stripped binary (retpoline symbols not available)",
+		}
+	}
 
 	symbols, _ := f.Symbols()
 	dynsyms, _ := f.DynamicSymbols()
