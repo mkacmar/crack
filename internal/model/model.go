@@ -149,6 +149,28 @@ type CompilerInfo struct {
 	Toolchain Toolchain
 }
 
+type Language int
+
+const (
+	LangUnknown Language = iota
+	LangCCpp
+	LangGo
+	LangRust
+)
+
+func (l Language) String() string {
+	switch l {
+	case LangCCpp:
+		return "C/C++"
+	case LangGo:
+		return "Go"
+	case LangRust:
+		return "Rust"
+	default:
+		return "unknown"
+	}
+}
+
 type ParsedBinary struct {
 	Path         string
 	Format       BinaryFormat
@@ -156,6 +178,7 @@ type ParsedBinary struct {
 	Bits         int
 	ELFFile      *elf.File
 	Build        CompilerInfo
+	Language     Language
 }
 
 type BinaryParser interface {

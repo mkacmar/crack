@@ -37,6 +37,22 @@ func (r CFIRule) Feature() model.FeatureAvailability {
 }
 
 func (r CFIRule) Execute(f *elf.File, info *model.ParsedBinary) model.RuleResult {
+	// Clang CFI is a C/C++ feature - Go/Rust have their own dispatch mechanisms
+	if info != nil {
+		switch info.Language {
+		case model.LangGo:
+			return model.RuleResult{
+				State:   model.CheckStateSkipped,
+				Message: "Standard Go toolchain (Clang CFI not applicable)",
+			}
+		case model.LangRust:
+			return model.RuleResult{
+				State:   model.CheckStateSkipped,
+				Message: "Standard Rust toolchain (Clang CFI not applicable)",
+			}
+		}
+	}
+
 	symbols, _ := f.Symbols()
 	dynsyms, _ := f.DynamicSymbols()
 

@@ -56,6 +56,22 @@ func (r UBSanRule) Feature() model.FeatureAvailability {
 }
 
 func (r UBSanRule) Execute(f *elf.File, info *model.ParsedBinary) model.RuleResult {
+	// UBSan catches C/C++ undefined behavior - Go/Rust don't have UB in the same way
+	if info != nil {
+		switch info.Language {
+		case model.LangGo:
+			return model.RuleResult{
+				State:   model.CheckStateSkipped,
+				Message: "Standard Go toolchain (UBSan not applicable)",
+			}
+		case model.LangRust:
+			return model.RuleResult{
+				State:   model.CheckStateSkipped,
+				Message: "Standard Rust toolchain (no undefined behavior by design)",
+			}
+		}
+	}
+
 	symbols, _ := f.Symbols()
 	dynsyms, _ := f.DynamicSymbols()
 

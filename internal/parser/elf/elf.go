@@ -54,6 +54,8 @@ func (p *Parser) Parse(path string) (*model.ParsedBinary, error) {
 		Toolchain: p.detectToolchain(f),
 	}
 
+	info.Language = p.detectLanguage(f)
+
 	return info, nil
 }
 
@@ -135,4 +137,25 @@ func parseArchitecture(machine elf.Machine) model.Architecture {
 	default:
 		return model.ArchUnknown
 	}
+}
+
+func (p *Parser) detectLanguage(f *elf.File) model.Language {
+	// Go detection: look for Go-specific sections
+	for _, sec := range f.Sections {
+		switch sec.Name {
+		case ".go.buildinfo", ".gopclntab", ".gosymtab", ".note.go.buildid":
+			return model.LangGo
+		}
+	}
+
+	// Rust detection: check for Rust-specific strings in rodata
+	if rodata := f.Section(".rodata"); rodata != nil {
+		if data, err := rodata.Data(); err == nil {
+			if bytes.Contains(data, []byte("panicked at ")) {
+				return model.LangRust
+			}
+		}
+	}
+
+	return model.LangUnknown
 }

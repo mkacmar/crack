@@ -56,6 +56,23 @@ func (r FortifySourceRule) Feature() model.FeatureAvailability {
 }
 
 func (r FortifySourceRule) Execute(f *elf.File, info *model.ParsedBinary) model.RuleResult {
+	// FORTIFY_SOURCE is a glibc feature for C/C++ - not applicable to standard Go/Rust toolchains
+	// Note: gccgo/gccrs binaries are not detected as Go/Rust and will be checked normally
+	if info != nil {
+		switch info.Language {
+		case model.LangGo:
+			return model.RuleResult{
+				State:   model.CheckStateSkipped,
+				Message: "Standard Go toolchain (FORTIFY_SOURCE not applicable)",
+			}
+		case model.LangRust:
+			return model.RuleResult{
+				State:   model.CheckStateSkipped,
+				Message: "Standard Rust toolchain (FORTIFY_SOURCE not applicable)",
+			}
+		}
+	}
+
 	symbols, _ := f.Symbols()
 	dynsyms, _ := f.DynamicSymbols()
 

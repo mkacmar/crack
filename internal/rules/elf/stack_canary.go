@@ -29,6 +29,23 @@ func (r StackCanaryRule) Feature() model.FeatureAvailability {
 }
 
 func (r StackCanaryRule) Execute(f *elf.File, info *model.ParsedBinary) model.RuleResult {
+	// Standard Go and Rust toolchains have their own memory safety mechanisms
+	// Note: gccgo/gccrs binaries are not detected as Go/Rust and will be checked normally
+	if info != nil {
+		switch info.Language {
+		case model.LangGo:
+			return model.RuleResult{
+				State:   model.CheckStateSkipped,
+				Message: "Standard Go toolchain (uses own stack management)",
+			}
+		case model.LangRust:
+			return model.RuleResult{
+				State:   model.CheckStateSkipped,
+				Message: "Standard Rust toolchain (has compile-time memory safety)",
+			}
+		}
+	}
+
 	symbols, _ := f.Symbols()
 	dynsyms, _ := f.DynamicSymbols()
 
