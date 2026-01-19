@@ -1,4 +1,4 @@
-.PHONY: build build-release test clean lint fmt install-tools
+.PHONY: build build-release test test-e2e clean lint fmt install-tools
 
 BINARY = crack
 ENTRYPOINT = ./cmd/crack
@@ -28,6 +28,9 @@ build-release:
 
 test:
 	go test -v ./...
+
+test-e2e: build
+	go test -v ./test/e2e/...
 
 clean:
 	rm -f $(BINARY)
