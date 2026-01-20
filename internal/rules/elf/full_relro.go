@@ -48,8 +48,7 @@ func (r FullRELRORule) Execute(f *elf.File, info *model.ParsedBinary) model.Rule
 	}
 
 	// Check for BIND_NOW flag which makes RELRO "full" by disabling lazy binding.
-	// This can be indicated by DT_BIND_NOW, DT_FLAGS with DF_BIND_NOW, or
-	// DT_FLAGS_1 with DF_1_NOW.
+	// This can be indicated by DT_BIND_NOW, DT_FLAGS with DF_BIND_NOW, or DT_FLAGS_1 with DF_1_NOW.
 	if HasDynTag(f, elf.DT_BIND_NOW) ||
 		HasDynFlag(f, elf.DT_FLAGS, DF_BIND_NOW) ||
 		HasDynFlag(f, elf.DT_FLAGS_1, DF_1_NOW) {
