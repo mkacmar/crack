@@ -9,20 +9,22 @@ uname -m
 gcc --version | head -1
 clang --version | head -1
 
-# Source that uses fortifiable functions
+# Source that uses fortifiable functions with runtime-determined sizes
+# Using strlen() forces runtime evaluation, preventing compile-time optimization
 cat > /tmp/fortify.c << 'EOF'
 #include <string.h>
 #include <stdio.h>
 
-void copy_data(char *dst, const char *src, size_t n) {
-    memcpy(dst, src, n);
-    strcpy(dst, src);
-}
-
-int main(void) {
+int main(int argc, char **argv) {
     char buf[64];
-    copy_data(buf, "hello", 6);
-    printf("%s\n", buf);
+    char *src = argv[0];
+    size_t len = strlen(src);
+
+    if (len > 32) len = 32;
+    memcpy(buf, src, len);
+    strcpy(buf, src);
+
+    puts(buf);
     return 0;
 }
 EOF
