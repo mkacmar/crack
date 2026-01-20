@@ -1,0 +1,11 @@
+name: "Golden: ASLR"
+
+on:
+  workflow_dispatch:
+
+jobs:
+  build:
+    uses: ./.github/workflows/golden-build.yml
+    with:
+      rule: aslr
+
