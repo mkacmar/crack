@@ -5,12 +5,9 @@ ARCH=$1
 SRC=test/e2e/testdata/main.c
 mkdir -p binaries
 
-echo "=== Build environment ==="
-uname -m
-gcc --version | head -1
-clang --version | head -1
+. test/e2e/testdata/log-env.sh
 
-# NX explicitly enabled
+# NX enabled
 gcc -Wl,-z,noexecstack -o binaries/${ARCH}-gcc-nx-explicit $SRC
 
 # NX disabled (executable stack)

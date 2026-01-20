@@ -4,10 +4,7 @@ set -ex
 ARCH=$1
 mkdir -p binaries
 
-echo "=== Build environment ==="
-uname -m
-gcc --version | head -1
-clang --version | head -1
+. test/e2e/testdata/log-env.sh
 
 # Source with a buffer that triggers stack protection
 cat > /tmp/vulnerable.c << 'EOF'
@@ -22,17 +19,8 @@ int main(void) {
 }
 EOF
 
-# Simple source without vulnerable buffers (may not get canary with -fstack-protector)
-cat > /tmp/simple.c << 'EOF'
-int main(void) {
-    return 0;
-}
-EOF
-
 SRC=/tmp/vulnerable.c
-SIMPLE=/tmp/simple.c
-
-# --- GCC variants ---
+SIMPLE=test/e2e/testdata/main.c
 
 # stack-protector-strong (recommended)
 gcc -fstack-protector-strong -o binaries/${ARCH}-gcc-stack-protector-strong $SRC
@@ -45,7 +33,6 @@ gcc -fstack-protector -o binaries/${ARCH}-gcc-stack-protector $SRC
 
 # no stack protector
 gcc -fno-stack-protector -o binaries/${ARCH}-gcc-no-stack-protector $SRC
-
 
 # simple program with stack-protector (may not have canary - no vulnerable buffer)
 gcc -fstack-protector -o binaries/${ARCH}-gcc-stack-protector-simple $SIMPLE
@@ -67,8 +54,6 @@ gcc -fstack-protector-strong -static -o binaries/${ARCH}-gcc-stack-protector-sta
 # LTO with stack protection (tests if canary survives link-time optimization)
 gcc -flto -fstack-protector-strong -o binaries/${ARCH}-gcc-stack-protector-lto $SRC
 
-# --- Clang variants ---
-
 # stack-protector-strong
 clang -fstack-protector-strong -o binaries/${ARCH}-clang-stack-protector-strong $SRC
 
@@ -77,7 +62,6 @@ clang -fstack-protector-all -o binaries/${ARCH}-clang-stack-protector-all $SRC
 
 # no stack protector
 clang -fno-stack-protector -o binaries/${ARCH}-clang-no-stack-protector $SRC
-
 
 # stripped binary with stack protection
 clang -fstack-protector-strong -o binaries/${ARCH}-clang-stack-protector-stripped $SRC
@@ -94,7 +78,5 @@ clang -fstack-protector-strong -static -o binaries/${ARCH}-clang-stack-protector
 clang -flto -fstack-protector-strong -o binaries/${ARCH}-clang-stack-protector-lto $SRC
 
 ls -la binaries/
-
-# Cleanup
 rm -f /tmp/vulnerable.c /tmp/simple.c
 

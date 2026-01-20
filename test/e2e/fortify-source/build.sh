@@ -4,10 +4,7 @@ set -ex
 ARCH=$1
 mkdir -p binaries
 
-echo "=== Build environment ==="
-uname -m
-gcc --version | head -1
-clang --version | head -1
+. test/e2e/testdata/log-env.sh
 
 # Source that uses fortifiable functions with runtime-determined sizes
 # Using strlen() forces runtime evaluation, preventing compile-time optimization
@@ -31,8 +28,6 @@ EOF
 
 SRC=/tmp/fortify.c
 SIMPLE=test/e2e/testdata/main.c
-
-# --- GCC variants ---
 
 # FORTIFY_SOURCE=2 with -O2 (common production setting)
 gcc -D_FORTIFY_SOURCE=2 -O2 -o binaries/${ARCH}-gcc-fortify2-O2 $SRC
@@ -66,8 +61,6 @@ gcc -D_FORTIFY_SOURCE=2 -O2 -flto -o binaries/${ARCH}-gcc-fortify2-lto $SRC
 # simple program without fortifiable functions (should skip)
 gcc -D_FORTIFY_SOURCE=2 -O2 -o binaries/${ARCH}-gcc-fortify2-simple $SIMPLE
 
-# --- Clang variants ---
-
 # FORTIFY_SOURCE=2 with -O2
 clang -D_FORTIFY_SOURCE=2 -O2 -o binaries/${ARCH}-clang-fortify2-O2 $SRC
 
@@ -88,7 +81,5 @@ strip binaries/${ARCH}-clang-fortify2-stripped
 clang -D_FORTIFY_SOURCE=2 -O2 -flto -o binaries/${ARCH}-clang-fortify2-lto $SRC
 
 ls -la binaries/
-
-# Cleanup
 rm -f /tmp/fortify.c
 
