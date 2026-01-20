@@ -1,0 +1,101 @@
+name: "Golden: Separate Code"
+
+on:
+  workflow_dispatch:
+
+jobs:
+  build:
+    strategy:
+      matrix:
+        include:
+          - arch: x86_64
+            runner: ubuntu-24.04
+          - arch: aarch64
+            runner: ubuntu-24.04-arm
+          - arch: armv7
+            runner: ubuntu-24.04
+            qemu: true
+
+    runs-on: ${{ matrix.runner }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up QEMU
+        if: matrix.qemu
+        uses: docker/setup-qemu-action@v3
+        with:
+          platforms: arm
+
+      - name: Build binaries (native)
+        if: ${{ !matrix.qemu }}
+        run: sh test/e2e/separate-code/build.sh ${{ matrix.arch }}
+
+      - name: Build binaries (QEMU)
+        if: matrix.qemu
+        run: |
+          docker run --rm --platform linux/arm/v7 \
+            -v ${{ github.workspace }}:/workspace \
+            -w /workspace \
+            alpine:latest sh -c 'apk add --no-cache gcc clang musl-dev binutils && sh test/e2e/separate-code/build.sh ${{ matrix.arch }}'
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: binaries-${{ matrix.arch }}
+          path: binaries/
+
+  build-noseparate:
+    strategy:
+      matrix:
+        include:
+          - arch: x86_64
+            image: ubuntu:18.04
+          - arch: aarch64
+            image: arm64v8/ubuntu:18.04
+            platform: linux/arm64
+
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up QEMU
+        if: matrix.platform
+        uses: docker/setup-qemu-action@v3
+        with:
+          platforms: arm64
+
+      - name: Build with older toolchain (GCC 7 / binutils 2.30)
+        run: |
+          docker run --rm ${{ matrix.platform && format('--platform {0}', matrix.platform) || '' }} \
+            -v ${{ github.workspace }}:/workspace \
+            -w /workspace \
+            ${{ matrix.image }} sh -c '
+              apt-get update && apt-get install -y gcc
+              . test/e2e/testdata/log-env.sh
+              mkdir -p binaries
+              gcc -o binaries/${{ matrix.arch }}-gcc7-no-separate-code test/e2e/testdata/main.c
+            '
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: binaries-noseparate-${{ matrix.arch }}
+          path: binaries/
+
+  merge:
+    runs-on: ubuntu-latest
+    needs: [build, build-noseparate]
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          path: all-binaries
+          pattern: binaries-*
+          merge-multiple: true
+
+      - name: List all binaries
+        run: ls -la all-binaries/
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: separate-code-binaries
+          path: all-binaries/
+
+
