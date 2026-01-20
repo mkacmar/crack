@@ -6,8 +6,7 @@ mkdir -p binaries
 
 . test/e2e/testdata/log-env.sh
 
-# Source that uses fortifiable functions with runtime-determined sizes
-# Using strlen() forces runtime evaluation, preventing compile-time optimization
+# source with fortifiable functions using runtime-determined sizes
 cat > /tmp/fortify.c << 'EOF'
 #include <string.h>
 #include <stdio.h>
@@ -29,57 +28,29 @@ EOF
 SRC=/tmp/fortify.c
 SIMPLE=test/e2e/testdata/main.c
 
-# FORTIFY_SOURCE=2 with -O2 (common production setting)
 gcc -D_FORTIFY_SOURCE=2 -O2 -o binaries/${ARCH}-gcc-fortify2-O2 $SRC
-
-# FORTIFY_SOURCE=1 with -O1
 gcc -D_FORTIFY_SOURCE=1 -O1 -o binaries/${ARCH}-gcc-fortify1-O1 $SRC
-
-# FORTIFY_SOURCE=3 with -O2 (strongest, GCC 12+)
 gcc -D_FORTIFY_SOURCE=3 -O2 -o binaries/${ARCH}-gcc-fortify3-O2 $SRC || echo "FORTIFY_SOURCE=3 not supported"
-
-# no FORTIFY_SOURCE with -O2 (explicitly disabled to override distro defaults)
 gcc -U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=0 -O2 -o binaries/${ARCH}-gcc-no-fortify $SRC
-
-# FORTIFY_SOURCE=2 but -O0 (fortify ignored without optimization)
+# -O0 disables fortify optimization
 gcc -D_FORTIFY_SOURCE=2 -O0 -o binaries/${ARCH}-gcc-fortify2-O0 $SRC
-
-# stripped with FORTIFY_SOURCE
 gcc -D_FORTIFY_SOURCE=2 -O2 -o binaries/${ARCH}-gcc-fortify2-stripped $SRC
 strip binaries/${ARCH}-gcc-fortify2-stripped
-
-# static with FORTIFY_SOURCE
 gcc -D_FORTIFY_SOURCE=2 -O2 -static -o binaries/${ARCH}-gcc-fortify2-static $SRC || echo "static linking not supported"
-
-# static + stripped (edge case: false negative expected)
 gcc -D_FORTIFY_SOURCE=2 -O2 -static -o binaries/${ARCH}-gcc-fortify2-static-stripped $SRC && \
   strip binaries/${ARCH}-gcc-fortify2-static-stripped || echo "static linking not supported"
-
-# LTO with FORTIFY_SOURCE
 gcc -D_FORTIFY_SOURCE=2 -O2 -flto -o binaries/${ARCH}-gcc-fortify2-lto $SRC
-
-# simple program without fortifiable functions (should skip)
+# simple program without fortifiable functions
 gcc -D_FORTIFY_SOURCE=2 -O2 -o binaries/${ARCH}-gcc-fortify2-simple $SIMPLE
 
-# FORTIFY_SOURCE=2 with -O2
 clang -D_FORTIFY_SOURCE=2 -O2 -o binaries/${ARCH}-clang-fortify2-O2 $SRC
-
-# FORTIFY_SOURCE=1 with -O1
 clang -D_FORTIFY_SOURCE=1 -O1 -o binaries/${ARCH}-clang-fortify1-O1 $SRC
-
-# no FORTIFY_SOURCE with -O2 (explicitly disabled to override distro defaults)
 clang -U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=0 -O2 -o binaries/${ARCH}-clang-no-fortify $SRC
-
-# FORTIFY_SOURCE=2 but -O0 (fortify ignored without optimization)
+# -O0 disables fortify optimization
 clang -D_FORTIFY_SOURCE=2 -O0 -o binaries/${ARCH}-clang-fortify2-O0 $SRC
-
-# stripped with FORTIFY_SOURCE
 clang -D_FORTIFY_SOURCE=2 -O2 -o binaries/${ARCH}-clang-fortify2-stripped $SRC
 strip binaries/${ARCH}-clang-fortify2-stripped
-
-# LTO with FORTIFY_SOURCE
 clang -D_FORTIFY_SOURCE=2 -O2 -flto -o binaries/${ARCH}-clang-fortify2-lto $SRC
 
 ls -la binaries/
 rm -f /tmp/fortify.c
-
