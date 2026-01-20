@@ -55,6 +55,7 @@ func (p *Parser) Parse(path string) (*model.ParsedBinary, error) {
 	}
 
 	info.Language = p.detectLanguage(f)
+	info.LibC = p.detectLibC(f)
 
 	return info, nil
 }
@@ -158,4 +159,26 @@ func (p *Parser) detectLanguage(f *elf.File) model.Language {
 	}
 
 	return model.LangUnknown
+}
+
+func (p *Parser) detectLibC(f *elf.File) model.LibC {
+	// Check interpreter path for dynamically linked binaries
+	for _, prog := range f.Progs {
+		if prog.Type == elf.PT_INTERP {
+			data := make([]byte, prog.Filesz)
+			if _, err := prog.ReadAt(data, 0); err != nil {
+				continue
+			}
+			interp := string(bytes.TrimRight(data, "\x00"))
+
+			if bytes.Contains([]byte(interp), []byte("ld-musl")) {
+				return model.LibCMusl
+			}
+			if bytes.Contains([]byte(interp), []byte("ld-linux")) {
+				return model.LibCGlibc
+			}
+		}
+	}
+
+	return model.LibCUnknown
 }

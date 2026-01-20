@@ -56,9 +56,17 @@ func (r FortifySourceRule) Feature() model.FeatureAvailability {
 }
 
 func (r FortifySourceRule) Execute(f *elf.File, info *model.ParsedBinary) model.RuleResult {
-	// FORTIFY_SOURCE is a glibc feature for C/C++ - not applicable to standard Go/Rust toolchains
-	// Note: gccgo/gccrs binaries are not detected as Go/Rust and will be checked normally
 	if info != nil {
+		// FORTIFY_SOURCE is a glibc feature - musl libc does not implement it.
+		// https://wiki.musl-libc.org/future-ideas#fortify-source
+		if info.LibC == model.LibCMusl {
+			return model.RuleResult{
+				State:   model.CheckStateSkipped,
+				Message: "musl libc does not support FORTIFY_SOURCE",
+			}
+		}
+
+		// Not applicable to standard Go/Rust toolchains
 		switch info.Language {
 		case model.LangGo:
 			return model.RuleResult{
@@ -110,6 +118,12 @@ func (r FortifySourceRule) Execute(f *elf.File, info *model.ParsedBinary) model.
 		}
 	}
 
+	// If we see unfortified functions but no _chk variants, we report a failure.
+	// While the compiler could theoretically optimize away all _chk calls when it can
+	// prove safety, this is rare in real-world binaries. Production code typically has
+	// at least some calls where the compiler cannot prove buffer sizes at compile time.
+	// Therefore, seeing only unfortified functions is strong evidence that FORTIFY_SOURCE
+	// is not enabled.
 	if len(unfortifiedFuncs) > 0 {
 		return model.RuleResult{
 			State:   model.CheckStateFailed,

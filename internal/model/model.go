@@ -171,6 +171,25 @@ func (l Language) String() string {
 	}
 }
 
+type LibC int
+
+const (
+	LibCUnknown LibC = iota
+	LibCGlibc
+	LibCMusl
+)
+
+func (l LibC) String() string {
+	switch l {
+	case LibCGlibc:
+		return "glibc"
+	case LibCMusl:
+		return "musl"
+	default:
+		return "unknown"
+	}
+}
+
 type ParsedBinary struct {
 	Path         string
 	Format       BinaryFormat
@@ -179,6 +198,7 @@ type ParsedBinary struct {
 	ELFFile      *elf.File
 	Build        CompilerInfo
 	Language     Language
+	LibC         LibC
 }
 
 type BinaryParser interface {
