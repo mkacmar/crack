@@ -43,8 +43,8 @@ gcc -D_FORTIFY_SOURCE=1 -O1 -o binaries/${ARCH}-gcc-fortify1-O1 $SRC
 # FORTIFY_SOURCE=3 with -O2 (strongest, GCC 12+)
 gcc -D_FORTIFY_SOURCE=3 -O2 -o binaries/${ARCH}-gcc-fortify3-O2 $SRC || echo "FORTIFY_SOURCE=3 not supported"
 
-# no FORTIFY_SOURCE with -O2
-gcc -O2 -o binaries/${ARCH}-gcc-no-fortify $SRC
+# no FORTIFY_SOURCE with -O2 (explicitly disabled to override distro defaults)
+gcc -U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=0 -O2 -o binaries/${ARCH}-gcc-no-fortify $SRC
 
 # FORTIFY_SOURCE=2 but -O0 (fortify ignored without optimization)
 gcc -D_FORTIFY_SOURCE=2 -O0 -o binaries/${ARCH}-gcc-fortify2-O0 $SRC
@@ -74,8 +74,8 @@ clang -D_FORTIFY_SOURCE=2 -O2 -o binaries/${ARCH}-clang-fortify2-O2 $SRC
 # FORTIFY_SOURCE=1 with -O1
 clang -D_FORTIFY_SOURCE=1 -O1 -o binaries/${ARCH}-clang-fortify1-O1 $SRC
 
-# no FORTIFY_SOURCE with -O2
-clang -O2 -o binaries/${ARCH}-clang-no-fortify $SRC
+# no FORTIFY_SOURCE with -O2 (explicitly disabled to override distro defaults)
+clang -U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=0 -O2 -o binaries/${ARCH}-clang-no-fortify $SRC
 
 # FORTIFY_SOURCE=2 but -O0 (fortify ignored without optimization)
 clang -D_FORTIFY_SOURCE=2 -O0 -o binaries/${ARCH}-clang-fortify2-O0 $SRC

@@ -16,7 +16,7 @@ func TestFortifySourceRule(t *testing.T) {
 		{"x86_64-gcc-fortify2-O0", "fail"},
 		{"x86_64-gcc-fortify2-stripped", "pass"},
 		{"x86_64-gcc-fortify2-static", "pass"},
-		{"x86_64-gcc-fortify2-static-stripped", "fail"},
+		{"x86_64-gcc-fortify2-static-stripped", "skip"}, // no symbols = no fortifiable functions detected
 		{"x86_64-gcc-fortify2-lto", "pass"},
 		{"x86_64-gcc-fortify2-simple", "skip"},
 
@@ -36,7 +36,7 @@ func TestFortifySourceRule(t *testing.T) {
 		{"aarch64-gcc-fortify2-O0", "fail"},
 		{"aarch64-gcc-fortify2-stripped", "pass"},
 		{"aarch64-gcc-fortify2-static", "pass"},
-		{"aarch64-gcc-fortify2-static-stripped", "fail"},
+		{"aarch64-gcc-fortify2-static-stripped", "skip"},
 		{"aarch64-gcc-fortify2-lto", "pass"},
 		{"aarch64-gcc-fortify2-simple", "skip"},
 
@@ -56,7 +56,7 @@ func TestFortifySourceRule(t *testing.T) {
 		{"armv7-gcc-fortify2-O0", "fail"},
 		{"armv7-gcc-fortify2-stripped", "pass"},
 		{"armv7-gcc-fortify2-static", "pass"},
-		{"armv7-gcc-fortify2-static-stripped", "fail"},
+		{"armv7-gcc-fortify2-static-stripped", "skip"},
 		{"armv7-gcc-fortify2-lto", "pass"},
 		{"armv7-gcc-fortify2-simple", "skip"},
 
