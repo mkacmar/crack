@@ -44,9 +44,11 @@ func (r PIERule) Execute(f *elf.File, info *model.ParsedBinary) model.RuleResult
 		}
 	}
 
-	// ET_DYN can be either a PIE executable or a shared library
-	// Check DF_1_PIE flag first, fall back to PT_INTERP for older binaries
-	if checkDF1PIE(f) {
+	// ET_DYN can be either a PIE executable or a shared library.
+	// 1. DF_1_PIE flag in .dynamic section - set by modern linkers for PIE executables (including static-pie).
+	// 2. PT_INTERP program header - present in dynamically linked executables but not in shared libraries.
+	// static-pie binaries (-static-pie) have DF_1_PIE but no PT_INTERP, so the DF_1_PIE check must come first.
+	if HasDynFlag(f, elf.DT_FLAGS_1, DF_1_PIE) {
 		return model.RuleResult{
 			State:   model.CheckStatePassed,
 			Message: "Binary is compiled as PIE (enables ASLR when system supports it)",
@@ -66,48 +68,4 @@ func (r PIERule) Execute(f *elf.File, info *model.ParsedBinary) model.RuleResult
 		State:   model.CheckStateSkipped,
 		Message: "Shared library (PIE check not applicable)",
 	}
-}
-
-func checkDF1PIE(f *elf.File) bool {
-	dynSec := f.Section(".dynamic")
-	if dynSec == nil {
-		return false
-	}
-
-	data, err := dynSec.Data()
-	if err != nil {
-		return false
-	}
-
-	if f.Class == elf.ELFCLASS64 {
-		for i := 0; i < len(data); i += 16 {
-			if i+16 > len(data) {
-				break
-			}
-			tag := f.ByteOrder.Uint64(data[i : i+8])
-			val := f.ByteOrder.Uint64(data[i+8 : i+16])
-			if tag == uint64(elf.DT_NULL) {
-				break
-			}
-			if tag == uint64(elf.DT_FLAGS_1) && (val&DF_1_PIE) != 0 {
-				return true
-			}
-		}
-	} else {
-		for i := 0; i < len(data); i += 8 {
-			if i+8 > len(data) {
-				break
-			}
-			tag := f.ByteOrder.Uint32(data[i : i+4])
-			val := f.ByteOrder.Uint32(data[i+4 : i+8])
-			if tag == uint32(elf.DT_NULL) {
-				break
-			}
-			if tag == uint32(elf.DT_FLAGS_1) && (val&DF_1_PIE) != 0 {
-				return true
-			}
-		}
-	}
-
-	return false
 }

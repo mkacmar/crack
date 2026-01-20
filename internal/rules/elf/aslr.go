@@ -27,34 +27,33 @@ func (r ASLRRule) Feature() model.FeatureAvailability {
 }
 
 func (r ASLRRule) Execute(f *elf.File, info *model.ParsedBinary) model.RuleResult {
-	isPIE := false
-	isSharedLib := false
-
 	if f.Type == elf.ET_EXEC {
-		isPIE = false
-	} else if f.Type == elf.ET_DYN {
-		// Could be PIE executable or shared library
-		if checkDF1PIE(f) {
-			isPIE = true
-		} else {
-			// Check for PT_INTERP as fallback
-			hasInterpreter := false
-			for _, prog := range f.Progs {
-				if prog.Type == elf.PT_INTERP {
-					hasInterpreter = true
-					break
-				}
-			}
-			if hasInterpreter {
+		return model.RuleResult{
+			State:   model.CheckStateFailed,
+			Message: "Binary is NOT ASLR compatible (not compiled as PIE)",
+		}
+	}
+
+	if f.Type != elf.ET_DYN {
+		return model.RuleResult{
+			State:   model.CheckStateSkipped,
+			Message: "Unknown binary type",
+		}
+	}
+
+	// ET_DYN can be PIE executable or shared library
+	isPIE := HasDynFlag(f, elf.DT_FLAGS_1, DF_1_PIE)
+	if !isPIE {
+		// Check for PT_INTERP as fallback for older binaries
+		for _, prog := range f.Progs {
+			if prog.Type == elf.PT_INTERP {
 				isPIE = true
-			} else {
-				isSharedLib = true
+				break
 			}
 		}
 	}
 
-	// Shared libraries are always position-independent, skip ASLR check
-	if isSharedLib {
+	if !isPIE {
 		return model.RuleResult{
 			State:   model.CheckStateSkipped,
 			Message: "Shared library (ASLR check not applicable)",
@@ -69,56 +68,23 @@ func (r ASLRRule) Execute(f *elf.File, info *model.ParsedBinary) model.RuleResul
 		}
 	}
 
-	hasTextRel := false
-	dynSec := f.Section(".dynamic")
-	if dynSec != nil {
-		data, err := dynSec.Data()
-		if err == nil {
-			tagSize := 8
-			if f.Class == elf.ELFCLASS64 {
-				tagSize = 16
-			}
-			for i := 0; i < len(data); i += tagSize {
-				if i+tagSize > len(data) {
-					break
-				}
-				var tag uint64
-				if f.Class == elf.ELFCLASS64 {
-					tag = f.ByteOrder.Uint64(data[i : i+8])
-				} else {
-					tag = uint64(f.ByteOrder.Uint32(data[i : i+4]))
-				}
-				if tag == uint64(elf.DT_TEXTREL) {
-					hasTextRel = true
-					break
-				}
-				if tag == uint64(elf.DT_NULL) {
-					break
-				}
-			}
-		}
-	}
-
-	isASLRCompatible := isPIE && hasNXStack && !hasTextRel
-
-	if isASLRCompatible {
+	if !hasNXStack {
 		return model.RuleResult{
-			State:   model.CheckStatePassed,
-			Message: "Binary is fully ASLR compatible (PIE + NX stack + no text relocations)",
+			State:   model.CheckStateFailed,
+			Message: "Binary is NOT fully ASLR compatible (executable stack)",
 		}
 	}
 
-	message := "Binary is NOT ASLR compatible"
-	if !isPIE {
-		message = "Binary is NOT ASLR compatible (not compiled as PIE)"
-	} else if !hasNXStack {
-		message = "Binary is NOT fully ASLR compatible (executable stack)"
-	} else if hasTextRel {
-		message = "Binary is NOT ASLR compatible (has text relocations)"
+	// Check for text relocations (breaks ASLR)
+	if HasDynTag(f, elf.DT_TEXTREL) {
+		return model.RuleResult{
+			State:   model.CheckStateFailed,
+			Message: "Binary is NOT ASLR compatible (has text relocations)",
+		}
 	}
 
 	return model.RuleResult{
-		State:   model.CheckStateFailed,
-		Message: message,
+		State:   model.CheckStatePassed,
+		Message: "Binary is fully ASLR compatible (PIE + NX stack + no text relocations)",
 	}
 }

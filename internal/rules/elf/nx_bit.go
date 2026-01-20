@@ -27,22 +27,24 @@ func (r NXBitRule) Feature() model.FeatureAvailability {
 }
 
 func (r NXBitRule) Execute(f *elf.File, info *model.ParsedBinary) model.RuleResult {
-	hasNXBit := false
 	for _, prog := range f.Progs {
 		if prog.Type == elf.PT_GNU_STACK {
-			hasNXBit = (prog.Flags & elf.PF_X) == 0
-			break
+			if (prog.Flags & elf.PF_X) == 0 {
+				return model.RuleResult{
+					State:   model.CheckStatePassed,
+					Message: "Stack is marked as non-executable (NX bit enabled)",
+				}
+			}
+			return model.RuleResult{
+				State:   model.CheckStateFailed,
+				Message: "Stack is EXECUTABLE (NX bit NOT enabled)",
+			}
 		}
 	}
 
-	if hasNXBit {
-		return model.RuleResult{
-			State:   model.CheckStatePassed,
-			Message: "Stack is marked as non-executable (NX bit enabled)",
-		}
-	}
+	// PT_GNU_STACK missing - this typically means executable stack on older systems.
 	return model.RuleResult{
 		State:   model.CheckStateFailed,
-		Message: "Stack is EXECUTABLE (NX bit NOT enabled)",
+		Message: "PT_GNU_STACK segment missing (stack executability depends on system defaults)",
 	}
 }

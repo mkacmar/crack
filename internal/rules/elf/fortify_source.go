@@ -103,11 +103,7 @@ func (r FortifySourceRule) Execute(f *elf.File, info *model.ParsedBinary) model.
 	}
 
 	// If we see unfortified functions but no _chk variants, we report a failure.
-	// While the compiler could theoretically optimize away all _chk calls when it can
-	// prove safety, this is rare in real-world binaries. Production code typically has
-	// at least some calls where the compiler cannot prove buffer sizes at compile time.
-	// Therefore, seeing only unfortified functions is strong evidence that FORTIFY_SOURCE
-	// is not enabled.
+	// While the compiler might optimize them away if it can prove safety, real-world binaries typically have some unprovable buffer sizes.
 	if len(unfortifiedFuncs) > 0 {
 		return model.RuleResult{
 			State:   model.CheckStateFailed,

@@ -39,28 +39,34 @@ func (r StrippedRule) Execute(f *elf.File, info *model.ParsedBinary) model.RuleR
 			strings.HasPrefix(section.Name, ".zdebug_") {
 			hasDebugSections = true
 		}
+		if hasSymbolTable && hasDebugSections {
+			break
+		}
 	}
 
-	isFullyStripped := !hasSymbolTable && !hasDebugSections
-
-	if isFullyStripped {
+	if !hasSymbolTable && !hasDebugSections {
 		return model.RuleResult{
 			State:   model.CheckStatePassed,
 			Message: "Binary is fully stripped (no symbol table or debug sections)",
 		}
 	}
 
-	message := "Binary is NOT stripped"
 	if hasSymbolTable && hasDebugSections {
-		message = "Binary is NOT stripped (contains symbol table and debug sections)"
-	} else if hasSymbolTable {
-		message = "Binary is NOT stripped (contains symbol table)"
-	} else if hasDebugSections {
-		message = "Binary is partially stripped (no symbol table, but has debug sections)"
+		return model.RuleResult{
+			State:   model.CheckStateFailed,
+			Message: "Binary is NOT stripped (contains symbol table and debug sections)",
+		}
+	}
+
+	if hasSymbolTable {
+		return model.RuleResult{
+			State:   model.CheckStateFailed,
+			Message: "Binary is NOT stripped (contains symbol table)",
+		}
 	}
 
 	return model.RuleResult{
 		State:   model.CheckStateFailed,
-		Message: message,
+		Message: "Binary is partially stripped (no symbol table, but has debug sections)",
 	}
 }
