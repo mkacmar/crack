@@ -12,7 +12,7 @@ func TestFortifySourceRule(t *testing.T) {
 		{"x86_64-gcc-fortify2-O2", "pass"},
 		{"x86_64-gcc-fortify1-O1", "pass"},
 		{"x86_64-gcc-fortify3-O2", "pass"},
-		{"x86_64-gcc-no-fortify", "pass"},  // distro enables fortify by default - needs rebuild
+		{"x86_64-gcc-no-fortify", "fail"},
 		{"x86_64-gcc-fortify2-O0", "fail"}, // -O0 disables fortify optimization
 		{"x86_64-gcc-fortify2-stripped", "pass"},
 		{"x86_64-gcc-fortify2-static", "pass"},
@@ -32,7 +32,7 @@ func TestFortifySourceRule(t *testing.T) {
 		{"aarch64-gcc-fortify2-O2", "pass"},
 		{"aarch64-gcc-fortify1-O1", "pass"},
 		{"aarch64-gcc-fortify3-O2", "pass"},
-		{"aarch64-gcc-no-fortify", "pass"},  // distro enables fortify by default - needs rebuild
+		{"aarch64-gcc-no-fortify", "fail"},
 		{"aarch64-gcc-fortify2-O0", "fail"}, // -O0 disables fortify optimization
 		{"aarch64-gcc-fortify2-stripped", "pass"},
 		{"aarch64-gcc-fortify2-static", "pass"},
