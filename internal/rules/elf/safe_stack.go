@@ -28,21 +28,6 @@ func (r SafeStackRule) Feature() model.FeatureAvailability {
 }
 
 func (r SafeStackRule) Execute(f *elf.File, info *model.ParsedBinary) model.RuleResult {
-	// SafeStack is an LLVM feature for C/C++ - not applicable to standard Go/Rust toolchains
-	if info != nil {
-		switch info.Language {
-		case model.LangGo:
-			return model.RuleResult{
-				State:   model.CheckStateSkipped,
-				Message: "Standard Go toolchain (SafeStack not applicable)",
-			}
-		case model.LangRust:
-			return model.RuleResult{
-				State:   model.CheckStateSkipped,
-				Message: "Standard Rust toolchain (has compile-time memory safety)",
-			}
-		}
-	}
 
 	symbols, _ := f.Symbols()
 	dynsyms, _ := f.DynamicSymbols()

@@ -29,21 +29,6 @@ func (r ASANRule) Feature() model.FeatureAvailability {
 }
 
 func (r ASANRule) Execute(f *elf.File, info *model.ParsedBinary) model.RuleResult {
-	// AddressSanitizer is a C/C++ feature - not applicable to standard Go/Rust toolchains
-	if info != nil {
-		switch info.Language {
-		case model.LangGo:
-			return model.RuleResult{
-				State:   model.CheckStateSkipped,
-				Message: "Standard Go toolchain (ASAN not applicable)",
-			}
-		case model.LangRust:
-			return model.RuleResult{
-				State:   model.CheckStateSkipped,
-				Message: "Standard Rust toolchain (has compile-time memory safety)",
-			}
-		}
-	}
 
 	hasASan := false
 

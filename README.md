@@ -1,5 +1,9 @@
 # CRACK - Compiler Hardening Checker
 
+> **Work in Progress**: This project is currently unstable and under active development. APIs, rules, and output formats may change without notice. Do not use in production workloads.
+>
+> **Language Support**: This tool currently focuses on C/C++ binaries. Analysis of binaries compiled from other languages (Go, Rust, etc.) may produce false positives as many hardening checks are not applicable to those runtimes.
+
 A tool to analyze ELF binaries for security hardening features.
 
 Based on recommendations from:

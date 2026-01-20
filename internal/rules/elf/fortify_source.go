@@ -56,28 +56,12 @@ func (r FortifySourceRule) Feature() model.FeatureAvailability {
 }
 
 func (r FortifySourceRule) Execute(f *elf.File, info *model.ParsedBinary) model.RuleResult {
-	if info != nil {
-		// FORTIFY_SOURCE is a glibc feature - musl libc does not implement it.
-		// https://wiki.musl-libc.org/future-ideas#fortify-source
-		if info.LibC == model.LibCMusl {
-			return model.RuleResult{
-				State:   model.CheckStateSkipped,
-				Message: "musl libc does not support FORTIFY_SOURCE",
-			}
-		}
-
-		// Not applicable to standard Go/Rust toolchains
-		switch info.Language {
-		case model.LangGo:
-			return model.RuleResult{
-				State:   model.CheckStateSkipped,
-				Message: "Standard Go toolchain (FORTIFY_SOURCE not applicable)",
-			}
-		case model.LangRust:
-			return model.RuleResult{
-				State:   model.CheckStateSkipped,
-				Message: "Standard Rust toolchain (FORTIFY_SOURCE not applicable)",
-			}
+	// FORTIFY_SOURCE is a glibc feature - musl libc does not implement it.
+	// https://wiki.musl-libc.org/future-ideas#fortify-source
+	if info != nil && info.LibC == model.LibCMusl {
+		return model.RuleResult{
+			State:   model.CheckStateSkipped,
+			Message: "musl libc does not support FORTIFY_SOURCE",
 		}
 	}
 
