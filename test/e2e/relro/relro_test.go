@@ -9,91 +9,91 @@ import (
 func TestRELRORule(t *testing.T) {
 	e2e.RunRuleTests(t, "relro", []e2e.TestCase{
 		// x86_64 GCC
-		{"x86_64-gcc-partial-relro", "pass"},
-		{"x86_64-gcc-full-relro", "pass"},
-		{"x86_64-gcc-no-relro", "fail"},
-		{"x86_64-gcc-full-relro-stripped", "pass"},
-		{"x86_64-gcc-full-relro-static", "pass"},
-		{"x86_64-gcc-full-relro-shared", "pass"},
+		{Binary: "x86_64-gcc-partial-relro", Expect: "pass"},
+		{Binary: "x86_64-gcc-full-relro", Expect: "pass"},
+		{Binary: "x86_64-gcc-no-relro", Expect: "fail"},
+		{Binary: "x86_64-gcc-full-relro-stripped", Expect: "pass"},
+		{Binary: "x86_64-gcc-full-relro-static", Expect: "pass"},
+		{Binary: "x86_64-gcc-full-relro-shared", Expect: "pass"},
 
 		// x86_64 Clang
-		{"x86_64-clang-partial-relro", "pass"},
-		{"x86_64-clang-full-relro", "pass"},
-		{"x86_64-clang-no-relro", "fail"},
-		{"x86_64-clang-full-relro-stripped", "pass"},
+		{Binary: "x86_64-clang-partial-relro", Expect: "pass"},
+		{Binary: "x86_64-clang-full-relro", Expect: "pass"},
+		{Binary: "x86_64-clang-no-relro", Expect: "fail"},
+		{Binary: "x86_64-clang-full-relro-stripped", Expect: "pass"},
 
 		// aarch64 GCC
-		{"aarch64-gcc-partial-relro", "pass"},
-		{"aarch64-gcc-full-relro", "pass"},
-		{"aarch64-gcc-no-relro", "fail"},
-		{"aarch64-gcc-full-relro-stripped", "pass"},
-		{"aarch64-gcc-full-relro-static", "pass"},
-		{"aarch64-gcc-full-relro-shared", "pass"},
+		{Binary: "aarch64-gcc-partial-relro", Expect: "pass"},
+		{Binary: "aarch64-gcc-full-relro", Expect: "pass"},
+		{Binary: "aarch64-gcc-no-relro", Expect: "fail"},
+		{Binary: "aarch64-gcc-full-relro-stripped", Expect: "pass"},
+		{Binary: "aarch64-gcc-full-relro-static", Expect: "pass"},
+		{Binary: "aarch64-gcc-full-relro-shared", Expect: "pass"},
 
 		// aarch64 Clang
-		{"aarch64-clang-partial-relro", "pass"},
-		{"aarch64-clang-full-relro", "pass"},
-		{"aarch64-clang-no-relro", "fail"},
-		{"aarch64-clang-full-relro-stripped", "pass"},
+		{Binary: "aarch64-clang-partial-relro", Expect: "pass"},
+		{Binary: "aarch64-clang-full-relro", Expect: "pass"},
+		{Binary: "aarch64-clang-no-relro", Expect: "fail"},
+		{Binary: "aarch64-clang-full-relro-stripped", Expect: "pass"},
 
 		// armv7 GCC
-		{"armv7-gcc-partial-relro", "pass"},
-		{"armv7-gcc-full-relro", "pass"},
-		{"armv7-gcc-no-relro", "fail"},
-		{"armv7-gcc-full-relro-stripped", "pass"},
-		{"armv7-gcc-full-relro-static", "pass"},
-		{"armv7-gcc-full-relro-shared", "pass"},
+		{Binary: "armv7-gcc-partial-relro", Expect: "pass"},
+		{Binary: "armv7-gcc-full-relro", Expect: "pass"},
+		{Binary: "armv7-gcc-no-relro", Expect: "fail"},
+		{Binary: "armv7-gcc-full-relro-stripped", Expect: "pass"},
+		{Binary: "armv7-gcc-full-relro-static", Expect: "pass"},
+		{Binary: "armv7-gcc-full-relro-shared", Expect: "pass"},
 
 		// armv7 Clang
-		{"armv7-clang-partial-relro", "pass"},
-		{"armv7-clang-full-relro", "pass"},
-		{"armv7-clang-no-relro", "fail"},
-		{"armv7-clang-full-relro-stripped", "pass"},
+		{Binary: "armv7-clang-partial-relro", Expect: "pass"},
+		{Binary: "armv7-clang-full-relro", Expect: "pass"},
+		{Binary: "armv7-clang-no-relro", Expect: "fail"},
+		{Binary: "armv7-clang-full-relro-stripped", Expect: "pass"},
 	})
 }
 
 func TestFullRELRORule(t *testing.T) {
 	e2e.RunRuleTests(t, "full-relro", []e2e.TestCase{
 		// x86_64 GCC
-		{"x86_64-gcc-partial-relro", "fail"},
-		{"x86_64-gcc-full-relro", "pass"},
-		{"x86_64-gcc-no-relro", "fail"},
-		{"x86_64-gcc-full-relro-stripped", "pass"},
-		{"x86_64-gcc-full-relro-static", "pass"},
-		{"x86_64-gcc-full-relro-shared", "pass"},
+		{Binary: "x86_64-gcc-partial-relro", Expect: "fail"},
+		{Binary: "x86_64-gcc-full-relro", Expect: "pass"},
+		{Binary: "x86_64-gcc-no-relro", Expect: "fail"},
+		{Binary: "x86_64-gcc-full-relro-stripped", Expect: "pass"},
+		{Binary: "x86_64-gcc-full-relro-static", Expect: "pass"},
+		{Binary: "x86_64-gcc-full-relro-shared", Expect: "pass"},
 
 		// x86_64 Clang
-		{"x86_64-clang-partial-relro", "fail"},
-		{"x86_64-clang-full-relro", "pass"},
-		{"x86_64-clang-no-relro", "fail"},
-		{"x86_64-clang-full-relro-stripped", "pass"},
+		{Binary: "x86_64-clang-partial-relro", Expect: "fail"},
+		{Binary: "x86_64-clang-full-relro", Expect: "pass"},
+		{Binary: "x86_64-clang-no-relro", Expect: "fail"},
+		{Binary: "x86_64-clang-full-relro-stripped", Expect: "pass"},
 
 		// aarch64 GCC
-		{"aarch64-gcc-partial-relro", "fail"},
-		{"aarch64-gcc-full-relro", "pass"},
-		{"aarch64-gcc-no-relro", "fail"},
-		{"aarch64-gcc-full-relro-stripped", "pass"},
-		{"aarch64-gcc-full-relro-static", "pass"},
-		{"aarch64-gcc-full-relro-shared", "pass"},
+		{Binary: "aarch64-gcc-partial-relro", Expect: "fail"},
+		{Binary: "aarch64-gcc-full-relro", Expect: "pass"},
+		{Binary: "aarch64-gcc-no-relro", Expect: "fail"},
+		{Binary: "aarch64-gcc-full-relro-stripped", Expect: "pass"},
+		{Binary: "aarch64-gcc-full-relro-static", Expect: "pass"},
+		{Binary: "aarch64-gcc-full-relro-shared", Expect: "pass"},
 
 		// aarch64 Clang
-		{"aarch64-clang-partial-relro", "fail"},
-		{"aarch64-clang-full-relro", "pass"},
-		{"aarch64-clang-no-relro", "fail"},
-		{"aarch64-clang-full-relro-stripped", "pass"},
+		{Binary: "aarch64-clang-partial-relro", Expect: "fail"},
+		{Binary: "aarch64-clang-full-relro", Expect: "pass"},
+		{Binary: "aarch64-clang-no-relro", Expect: "fail"},
+		{Binary: "aarch64-clang-full-relro-stripped", Expect: "pass"},
 
 		// armv7 GCC
-		{"armv7-gcc-partial-relro", "fail"},
-		{"armv7-gcc-full-relro", "pass"},
-		{"armv7-gcc-no-relro", "fail"},
-		{"armv7-gcc-full-relro-stripped", "pass"},
-		{"armv7-gcc-full-relro-static", "pass"},
-		{"armv7-gcc-full-relro-shared", "pass"},
+		{Binary: "armv7-gcc-partial-relro", Expect: "fail"},
+		{Binary: "armv7-gcc-full-relro", Expect: "pass"},
+		{Binary: "armv7-gcc-no-relro", Expect: "fail"},
+		{Binary: "armv7-gcc-full-relro-stripped", Expect: "pass"},
+		{Binary: "armv7-gcc-full-relro-static", Expect: "pass"},
+		{Binary: "armv7-gcc-full-relro-shared", Expect: "pass"},
 
 		// armv7 Clang
-		{"armv7-clang-partial-relro", "fail"},
-		{"armv7-clang-full-relro", "pass"},
-		{"armv7-clang-no-relro", "fail"},
-		{"armv7-clang-full-relro-stripped", "pass"},
+		{Binary: "armv7-clang-partial-relro", Expect: "fail"},
+		{Binary: "armv7-clang-full-relro", Expect: "pass"},
+		{Binary: "armv7-clang-no-relro", Expect: "fail"},
+		{Binary: "armv7-clang-full-relro-stripped", Expect: "pass"},
 	})
 }

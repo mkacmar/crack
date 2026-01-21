@@ -9,42 +9,42 @@ import (
 func TestPIERule(t *testing.T) {
 	e2e.RunRuleTests(t, "pie", []e2e.TestCase{
 		// x86_64 GCC
-		{"x86_64-gcc-pie-explicit", "pass"},
-		{"x86_64-gcc-no-pie", "fail"},
-		{"x86_64-gcc-static-pie", "pass"},
-		{"x86_64-gcc-shared", "skip"},
-		{"x86_64-gcc-pie-stripped", "pass"},
-		{"x86_64-gcc-pie-strip-debug", "pass"},
+		{Binary: "x86_64-gcc-pie-explicit", Expect: "pass"},
+		{Binary: "x86_64-gcc-no-pie", Expect: "fail"},
+		{Binary: "x86_64-gcc-static-pie", Expect: "pass"},
+		{Binary: "x86_64-gcc-shared", Expect: "skip"},
+		{Binary: "x86_64-gcc-pie-stripped", Expect: "pass"},
+		{Binary: "x86_64-gcc-pie-strip-debug", Expect: "pass"},
 
 		// x86_64 Clang
-		{"x86_64-clang-pie-explicit", "pass"},
-		{"x86_64-clang-no-pie", "fail"},
-		{"x86_64-clang-pie-stripped", "pass"},
+		{Binary: "x86_64-clang-pie-explicit", Expect: "pass"},
+		{Binary: "x86_64-clang-no-pie", Expect: "fail"},
+		{Binary: "x86_64-clang-pie-stripped", Expect: "pass"},
 
 		// aarch64 GCC
-		{"aarch64-gcc-pie-explicit", "pass"},
-		{"aarch64-gcc-no-pie", "fail"},
-		{"aarch64-gcc-static-pie", "pass"},
-		{"aarch64-gcc-shared", "skip"},
-		{"aarch64-gcc-pie-stripped", "pass"},
-		{"aarch64-gcc-pie-strip-debug", "pass"},
+		{Binary: "aarch64-gcc-pie-explicit", Expect: "pass"},
+		{Binary: "aarch64-gcc-no-pie", Expect: "fail"},
+		{Binary: "aarch64-gcc-static-pie", Expect: "pass"},
+		{Binary: "aarch64-gcc-shared", Expect: "skip"},
+		{Binary: "aarch64-gcc-pie-stripped", Expect: "pass"},
+		{Binary: "aarch64-gcc-pie-strip-debug", Expect: "pass"},
 
 		// aarch64 Clang
-		{"aarch64-clang-pie-explicit", "pass"},
-		{"aarch64-clang-no-pie", "fail"},
-		{"aarch64-clang-pie-stripped", "pass"},
+		{Binary: "aarch64-clang-pie-explicit", Expect: "pass"},
+		{Binary: "aarch64-clang-no-pie", Expect: "fail"},
+		{Binary: "aarch64-clang-pie-stripped", Expect: "pass"},
 
 		// armv7 GCC
-		{"armv7-gcc-pie-explicit", "pass"},
-		{"armv7-gcc-no-pie", "fail"},
-		{"armv7-gcc-static-pie", "pass"},
-		{"armv7-gcc-shared", "skip"},
-		{"armv7-gcc-pie-stripped", "pass"},
-		{"armv7-gcc-pie-strip-debug", "pass"},
+		{Binary: "armv7-gcc-pie-explicit", Expect: "pass"},
+		{Binary: "armv7-gcc-no-pie", Expect: "fail"},
+		{Binary: "armv7-gcc-static-pie", Expect: "pass"},
+		{Binary: "armv7-gcc-shared", Expect: "skip"},
+		{Binary: "armv7-gcc-pie-stripped", Expect: "pass"},
+		{Binary: "armv7-gcc-pie-strip-debug", Expect: "pass"},
 
 		// armv7 Clang
-		{"armv7-clang-pie-explicit", "pass"},
-		{"armv7-clang-no-pie", "fail"},
-		{"armv7-clang-pie-stripped", "pass"},
+		{Binary: "armv7-clang-pie-explicit", Expect: "pass"},
+		{Binary: "armv7-clang-no-pie", Expect: "fail"},
+		{Binary: "armv7-clang-pie-stripped", Expect: "pass"},
 	})
 }

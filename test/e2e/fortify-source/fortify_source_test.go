@@ -9,63 +9,63 @@ import (
 func TestFortifySourceRule(t *testing.T) {
 	e2e.RunRuleTests(t, "fortify-source", []e2e.TestCase{
 		// x86_64 GCC
-		{"x86_64-gcc-fortify2-O2", "pass"},
-		{"x86_64-gcc-fortify1-O1", "pass"},
-		{"x86_64-gcc-fortify3-O2", "pass"},
-		{"x86_64-gcc-no-fortify", "fail"},
-		{"x86_64-gcc-fortify2-O0", "fail"}, // -O0 disables fortify optimization
-		{"x86_64-gcc-fortify2-stripped", "pass"},
-		{"x86_64-gcc-fortify2-static", "pass"},
-		{"x86_64-gcc-fortify2-static-stripped", "skip"}, // no symbols to analyze
-		{"x86_64-gcc-fortify2-lto", "pass"},
-		{"x86_64-gcc-fortify2-simple", "skip"}, // no fortifiable functions
+		{Binary: "x86_64-gcc-fortify2-O2", Expect: "pass"},
+		{Binary: "x86_64-gcc-fortify1-O1", Expect: "pass"},
+		{Binary: "x86_64-gcc-fortify3-O2", Expect: "pass"},
+		{Binary: "x86_64-gcc-no-fortify", Expect: "fail"},
+		{Binary: "x86_64-gcc-fortify2-O0", Expect: "fail"}, // -O0 disables fortify optimization
+		{Binary: "x86_64-gcc-fortify2-stripped", Expect: "pass"},
+		{Binary: "x86_64-gcc-fortify2-static", Expect: "pass"},
+		{Binary: "x86_64-gcc-fortify2-static-stripped", Expect: "skip"}, // no symbols to analyze
+		{Binary: "x86_64-gcc-fortify2-lto", Expect: "pass"},
+		{Binary: "x86_64-gcc-fortify2-simple", Expect: "skip"}, // no fortifiable functions
 
 		// x86_64 Clang
-		{"x86_64-clang-fortify2-O2", "pass"},
-		{"x86_64-clang-fortify1-O1", "pass"},
-		{"x86_64-clang-no-fortify", "fail"},  // no fortify enabled
-		{"x86_64-clang-fortify2-O0", "fail"}, // -O0 disables fortify optimization
-		{"x86_64-clang-fortify2-stripped", "pass"},
-		{"x86_64-clang-fortify2-lto", "pass"},
+		{Binary: "x86_64-clang-fortify2-O2", Expect: "pass"},
+		{Binary: "x86_64-clang-fortify1-O1", Expect: "pass"},
+		{Binary: "x86_64-clang-no-fortify", Expect: "fail"},  // no fortify enabled
+		{Binary: "x86_64-clang-fortify2-O0", Expect: "fail"}, // -O0 disables fortify optimization
+		{Binary: "x86_64-clang-fortify2-stripped", Expect: "pass"},
+		{Binary: "x86_64-clang-fortify2-lto", Expect: "pass"},
 
 		// aarch64 GCC
-		{"aarch64-gcc-fortify2-O2", "pass"},
-		{"aarch64-gcc-fortify1-O1", "pass"},
-		{"aarch64-gcc-fortify3-O2", "pass"},
-		{"aarch64-gcc-no-fortify", "fail"},
-		{"aarch64-gcc-fortify2-O0", "fail"}, // -O0 disables fortify optimization
-		{"aarch64-gcc-fortify2-stripped", "pass"},
-		{"aarch64-gcc-fortify2-static", "pass"},
-		{"aarch64-gcc-fortify2-static-stripped", "skip"}, // no symbols to analyze
-		{"aarch64-gcc-fortify2-lto", "pass"},
-		{"aarch64-gcc-fortify2-simple", "skip"}, // no fortifiable functions
+		{Binary: "aarch64-gcc-fortify2-O2", Expect: "pass"},
+		{Binary: "aarch64-gcc-fortify1-O1", Expect: "pass"},
+		{Binary: "aarch64-gcc-fortify3-O2", Expect: "pass"},
+		{Binary: "aarch64-gcc-no-fortify", Expect: "fail"},
+		{Binary: "aarch64-gcc-fortify2-O0", Expect: "fail"}, // -O0 disables fortify optimization
+		{Binary: "aarch64-gcc-fortify2-stripped", Expect: "pass"},
+		{Binary: "aarch64-gcc-fortify2-static", Expect: "pass"},
+		{Binary: "aarch64-gcc-fortify2-static-stripped", Expect: "skip"}, // no symbols to analyze
+		{Binary: "aarch64-gcc-fortify2-lto", Expect: "pass"},
+		{Binary: "aarch64-gcc-fortify2-simple", Expect: "skip"}, // no fortifiable functions
 
 		// aarch64 Clang
-		{"aarch64-clang-fortify2-O2", "pass"},
-		{"aarch64-clang-fortify1-O1", "pass"},
-		{"aarch64-clang-no-fortify", "fail"},  // no fortify enabled
-		{"aarch64-clang-fortify2-O0", "fail"}, // -O0 disables fortify optimization
-		{"aarch64-clang-fortify2-stripped", "pass"},
-		{"aarch64-clang-fortify2-lto", "pass"},
+		{Binary: "aarch64-clang-fortify2-O2", Expect: "pass"},
+		{Binary: "aarch64-clang-fortify1-O1", Expect: "pass"},
+		{Binary: "aarch64-clang-no-fortify", Expect: "fail"},  // no fortify enabled
+		{Binary: "aarch64-clang-fortify2-O0", Expect: "fail"}, // -O0 disables fortify optimization
+		{Binary: "aarch64-clang-fortify2-stripped", Expect: "pass"},
+		{Binary: "aarch64-clang-fortify2-lto", Expect: "pass"},
 
 		// armv7 GCC - musl libc, fortify-source rule skips
-		{"armv7-gcc-fortify2-O2", "skip"},
-		{"armv7-gcc-fortify1-O1", "skip"},
-		{"armv7-gcc-fortify3-O2", "skip"},
-		{"armv7-gcc-no-fortify", "skip"},
-		{"armv7-gcc-fortify2-O0", "skip"},
-		{"armv7-gcc-fortify2-stripped", "skip"},
-		{"armv7-gcc-fortify2-static", "fail"},          // static - can't detect musl, has unfortified funcs
-		{"armv7-gcc-fortify2-static-stripped", "skip"}, // no symbols to analyze
-		{"armv7-gcc-fortify2-lto", "skip"},
-		{"armv7-gcc-fortify2-simple", "skip"}, // no fortifiable functions
+		{Binary: "armv7-gcc-fortify2-O2", Expect: "skip"},
+		{Binary: "armv7-gcc-fortify1-O1", Expect: "skip"},
+		{Binary: "armv7-gcc-fortify3-O2", Expect: "skip"},
+		{Binary: "armv7-gcc-no-fortify", Expect: "skip"},
+		{Binary: "armv7-gcc-fortify2-O0", Expect: "skip"},
+		{Binary: "armv7-gcc-fortify2-stripped", Expect: "skip"},
+		{Binary: "armv7-gcc-fortify2-static", Expect: "fail"},          // static - can't detect musl, has unfortified funcs
+		{Binary: "armv7-gcc-fortify2-static-stripped", Expect: "skip"}, // no symbols to analyze
+		{Binary: "armv7-gcc-fortify2-lto", Expect: "skip"},
+		{Binary: "armv7-gcc-fortify2-simple", Expect: "skip"}, // no fortifiable functions
 
 		// armv7 Clang - musl libc, fortify-source rule skips
-		{"armv7-clang-fortify2-O2", "skip"},
-		{"armv7-clang-fortify1-O1", "skip"},
-		{"armv7-clang-no-fortify", "skip"},
-		{"armv7-clang-fortify2-O0", "skip"},
-		{"armv7-clang-fortify2-stripped", "skip"},
-		{"armv7-clang-fortify2-lto", "skip"},
+		{Binary: "armv7-clang-fortify2-O2", Expect: "skip"},
+		{Binary: "armv7-clang-fortify1-O1", Expect: "skip"},
+		{Binary: "armv7-clang-no-fortify", Expect: "skip"},
+		{Binary: "armv7-clang-fortify2-O0", Expect: "skip"},
+		{Binary: "armv7-clang-fortify2-stripped", Expect: "skip"},
+		{Binary: "armv7-clang-fortify2-lto", Expect: "skip"},
 	})
 }

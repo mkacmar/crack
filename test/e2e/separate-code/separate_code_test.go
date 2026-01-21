@@ -9,37 +9,37 @@ import (
 func TestSeparateCodeRule(t *testing.T) {
 	e2e.RunRuleTests(t, "separate-code", []e2e.TestCase{
 		// x86_64 GCC
-		{"x86_64-gcc-separate-code", "pass"},
-		{"x86_64-gcc-separate-code-stripped", "pass"},
-		{"x86_64-gcc-separate-code-static", "pass"},
-		{"x86_64-gcc-separate-code-shared", "pass"},
+		{Binary: "x86_64-gcc-separate-code", Expect: "pass"},
+		{Binary: "x86_64-gcc-separate-code-stripped", Expect: "pass"},
+		{Binary: "x86_64-gcc-separate-code-static", Expect: "pass"},
+		{Binary: "x86_64-gcc-separate-code-shared", Expect: "pass"},
 
 		// x86_64 Clang
-		{"x86_64-clang-separate-code", "pass"},
-		{"x86_64-clang-separate-code-stripped", "pass"},
+		{Binary: "x86_64-clang-separate-code", Expect: "pass"},
+		{Binary: "x86_64-clang-separate-code-stripped", Expect: "pass"},
 
 		// aarch64 GCC
-		{"aarch64-gcc-separate-code", "pass"},
-		{"aarch64-gcc-separate-code-stripped", "pass"},
-		{"aarch64-gcc-separate-code-static", "pass"},
-		{"aarch64-gcc-separate-code-shared", "pass"},
+		{Binary: "aarch64-gcc-separate-code", Expect: "pass"},
+		{Binary: "aarch64-gcc-separate-code-stripped", Expect: "pass"},
+		{Binary: "aarch64-gcc-separate-code-static", Expect: "pass"},
+		{Binary: "aarch64-gcc-separate-code-shared", Expect: "pass"},
 
 		// aarch64 Clang
-		{"aarch64-clang-separate-code", "pass"},
-		{"aarch64-clang-separate-code-stripped", "pass"},
+		{Binary: "aarch64-clang-separate-code", Expect: "pass"},
+		{Binary: "aarch64-clang-separate-code-stripped", Expect: "pass"},
 
 		// armv7 GCC
-		{"armv7-gcc-separate-code", "pass"},
-		{"armv7-gcc-separate-code-stripped", "pass"},
-		{"armv7-gcc-separate-code-static", "pass"},
-		{"armv7-gcc-separate-code-shared", "pass"},
+		{Binary: "armv7-gcc-separate-code", Expect: "pass"},
+		{Binary: "armv7-gcc-separate-code-stripped", Expect: "pass"},
+		{Binary: "armv7-gcc-separate-code-static", Expect: "pass"},
+		{Binary: "armv7-gcc-separate-code-shared", Expect: "pass"},
 
 		// armv7 Clang
-		{"armv7-clang-separate-code", "pass"},
-		{"armv7-clang-separate-code-stripped", "pass"},
+		{Binary: "armv7-clang-separate-code", Expect: "pass"},
+		{Binary: "armv7-clang-separate-code-stripped", Expect: "pass"},
 
 		// older toolchain - no separate-code by default
-		{"x86_64-gcc7-no-separate-code", "fail"},
-		{"aarch64-gcc7-no-separate-code", "fail"},
+		{Binary: "x86_64-gcc7-no-separate-code", Expect: "fail"},
+		{Binary: "aarch64-gcc7-no-separate-code", Expect: "fail"},
 	})
 }
