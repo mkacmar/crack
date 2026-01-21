@@ -29,8 +29,8 @@ func (r ARMBranchProtectionRule) Feature() model.FeatureAvailability {
 }
 
 func (r ARMBranchProtectionRule) Execute(f *elf.File, info *model.ParsedBinary) model.RuleResult {
-	hasPAC := parseGNUPropertyForARM64Feature(f, GNU_PROPERTY_AARCH64_FEATURE_1_PAC)
-	hasBTI := parseGNUPropertyForARM64Feature(f, GNU_PROPERTY_AARCH64_FEATURE_1_BTI)
+	hasPAC := parseGNUProperty(f, GNU_PROPERTY_AARCH64_FEATURE_1_AND, GNU_PROPERTY_AARCH64_FEATURE_1_PAC)
+	hasBTI := parseGNUProperty(f, GNU_PROPERTY_AARCH64_FEATURE_1_AND, GNU_PROPERTY_AARCH64_FEATURE_1_BTI)
 	hasBranchProt := hasPAC && hasBTI
 
 	if hasBranchProt {

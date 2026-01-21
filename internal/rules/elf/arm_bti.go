@@ -26,7 +26,7 @@ func (r ARMBTIRule) Feature() model.FeatureAvailability {
 }
 
 func (r ARMBTIRule) Execute(f *elf.File, info *model.ParsedBinary) model.RuleResult {
-	hasBTI := parseGNUPropertyForARM64Feature(f, GNU_PROPERTY_AARCH64_FEATURE_1_BTI)
+	hasBTI := parseGNUProperty(f, GNU_PROPERTY_AARCH64_FEATURE_1_AND, GNU_PROPERTY_AARCH64_FEATURE_1_BTI)
 
 	if hasBTI {
 		return model.RuleResult{
