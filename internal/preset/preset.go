@@ -56,7 +56,6 @@ var Hardened = Preset{
 		elf.NXBitRule{}.ID(),
 		elf.PIERule{}.ID(),
 		elf.RELRORule{}.ID(),
-		elf.RetpolineRule{}.ID(),
 		elf.SafeStackRule{}.ID(),
 		elf.SeparateCodeRule{}.ID(),
 		elf.StackCanaryRule{}.ID(),
@@ -66,6 +65,7 @@ var Hardened = Preset{
 		elf.WXorXRule{}.ID(),
 		elf.X86CETIBTRule{}.ID(),
 		elf.X86CETShadowStackRule{}.ID(),
+		elf.X86RetpolineRule{}.ID(),
 	},
 }
 
@@ -84,8 +84,8 @@ var Kernel = Preset{
 		elf.ARMBTIRule{}.ID(),
 		elf.ARMPACRule{}.ID(),
 		elf.KernelCFIRule{}.ID(),
-		elf.RetpolineRule{}.ID(),
 		elf.StackCanaryRule{}.ID(),
+		elf.X86RetpolineRule{}.ID(),
 	},
 }
 

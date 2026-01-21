@@ -26,7 +26,7 @@ var AllRules = []model.Rule{
 	StrippedRule{},
 	X86CETIBTRule{},
 	X86CETShadowStackRule{},
-	RetpolineRule{},
+	X86RetpolineRule{},
 	ARMBranchProtectionRule{},
 	ARMPACRule{},
 	ARMBTIRule{},
