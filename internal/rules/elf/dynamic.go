@@ -62,3 +62,28 @@ func HasDynTag(f *elf.File, tag elf.DynTag) bool {
 	}
 	return false
 }
+
+func GetDynString(f *elf.File, tag elf.DynTag) string {
+	dynstr := f.Section(".dynstr")
+	if dynstr == nil {
+		return ""
+	}
+	strtab, err := dynstr.Data()
+	if err != nil {
+		return ""
+	}
+
+	for _, entry := range ParseDynamic(f) {
+		if entry.Tag == uint64(tag) {
+			if int(entry.Val) >= len(strtab) {
+				return ""
+			}
+			end := int(entry.Val)
+			for end < len(strtab) && strtab[end] != 0 {
+				end++
+			}
+			return string(strtab[entry.Val:end])
+		}
+	}
+	return ""
+}
