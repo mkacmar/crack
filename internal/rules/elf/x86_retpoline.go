@@ -29,6 +29,17 @@ func (r X86RetpolineRule) Feature() model.FeatureAvailability {
 }
 
 func (r X86RetpolineRule) Execute(f *elf.File, info *model.ParsedBinary) model.RuleResult {
+	// CET-IBT and retpoline both mitigate Spectre v2 indirect branch attacks.
+	// Hardware mitigations take precedence over software (retpoline).
+	// See: https://www.kernel.org/doc/html/latest/admin-guide/hw-vuln/spectre.html
+	hasCETIBT := parseGNUProperty(f, GNU_PROPERTY_X86_FEATURE_1_AND, GNU_PROPERTY_X86_FEATURE_1_IBT)
+	if hasCETIBT {
+		return model.RuleResult{
+			State:   model.CheckStateSkipped,
+			Message: "CET-IBT enabled (hardware mitigation supersedes retpoline)",
+		}
+	}
+
 	// Retpoline thunks are typically local symbols in .symtab.
 	// Stripped binaries lose .symtab, making detection impossible.
 	hasSymtab := false
