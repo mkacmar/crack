@@ -12,22 +12,14 @@ if [ "$ARCH" != "x86_64" ]; then
     exit 1
 fi
 
-# CET enabled explicitly
 gcc -fcf-protection=full -o binaries/gcc-cet-full $SRC
 gcc -fcf-protection=return -o binaries/gcc-cet-return $SRC
-
-# CET disabled explicitly
 gcc -fcf-protection=none -o binaries/gcc-cet-none $SRC
-
-
 gcc -fcf-protection=full -o binaries/gcc-cet-full-stripped $SRC
 strip binaries/gcc-cet-full-stripped
 
-# CET enabled explicitly
 clang -fcf-protection=full -o binaries/clang-cet-full $SRC
 clang -fcf-protection=return -o binaries/clang-cet-return $SRC
-
-# CET disabled explicitly
 clang -fcf-protection=none -o binaries/clang-cet-none $SRC
 
 ls -la binaries/
