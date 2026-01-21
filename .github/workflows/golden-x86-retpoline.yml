@@ -1,4 +1,4 @@
-name: "Golden: x86 CET Shadow Stack"
+name: "Golden: x86 Retpoline"
 
 on:
   workflow_dispatch:
@@ -10,9 +10,9 @@ jobs:
       - uses: actions/checkout@v4
 
       - name: Build binaries
-        run: sh test/e2e/x86-cet-shstk/build.sh
+        run: sh test/e2e/x86-retpoline/build.sh
 
       - uses: actions/upload-artifact@v4
         with:
-          name: x86-cet-shstk-binaries
+          name: x86-retpoline-binaries
           path: binaries/
