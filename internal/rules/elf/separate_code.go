@@ -27,68 +27,38 @@ func (r SeparateCodeRule) Feature() model.FeatureAvailability {
 }
 
 func (r SeparateCodeRule) Execute(f *elf.File, info *model.ParsedBinary) model.RuleResult {
-	type segment struct {
-		startPage, endPage uint64
-		isCode             bool
-		isData             bool
-	}
+	// Check file offsets at 4KB page granularity
+	const pageSize uint64 = 4096
 
-	// Determine page size from PT_LOAD alignment (typically matches system page size)
-	var pageSize uint64 = 4096
-	for _, prog := range f.Progs {
-		if prog.Type == elf.PT_LOAD && prog.Align > pageSize {
-			pageSize = prog.Align
-		}
-	}
+	var codePages, dataPages [][2]uint64 // [start, end) page ranges
 
-	var segments []segment
-
-	// Collect all PT_LOAD segments and convert addresses to page numbers
 	for _, prog := range f.Progs {
 		if prog.Type != elf.PT_LOAD {
 			continue
 		}
 
-		isExecutable := (prog.Flags & elf.PF_X) != 0
-		isWritable := (prog.Flags & elf.PF_W) != 0
+		startPage := prog.Off / pageSize
+		endPage := (prog.Off + prog.Filesz + pageSize - 1) / pageSize
 
-		seg := segment{
-			startPage: prog.Vaddr / pageSize,
-			endPage:   (prog.Vaddr + prog.Memsz + pageSize - 1) / pageSize,
-			isCode:    isExecutable,
-			isData:    isWritable,
+		if (prog.Flags & elf.PF_X) != 0 {
+			codePages = append(codePages, [2]uint64{startPage, endPage})
 		}
-
-		segments = append(segments, seg)
-	}
-
-	hasCode := false
-	for _, seg := range segments {
-		if seg.isCode {
-			hasCode = true
-			break
+		if (prog.Flags & elf.PF_W) != 0 {
+			dataPages = append(dataPages, [2]uint64{startPage, endPage})
 		}
 	}
 
-	if !hasCode {
+	if len(codePages) == 0 {
 		return model.RuleResult{
 			State:   model.CheckStateSkipped,
 			Message: "No code segments found",
 		}
 	}
 
-	// Check if any code segment shares a page with any data segment
-	// Without -z separate-code, code and data may end up on the same page,
-	// requiring the page to be both writable and executable at runtime
-	for _, code := range segments {
-		if !code.isCode {
-			continue
-		}
-		for _, data := range segments {
-			if !data.isData {
-				continue
-			}
-			if code.endPage >= data.startPage && code.startPage < data.endPage {
+	// Check if any code page range overlaps with any data page range
+	for _, code := range codePages {
+		for _, data := range dataPages {
+			if code[0] < data[1] && code[1] > data[0] {
 				return model.RuleResult{
 					State:   model.CheckStateFailed,
 					Message: "Code and data segments share page boundary",
