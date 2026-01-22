@@ -1,4 +1,4 @@
-.PHONY: build build-release test test-e2e clean lint fmt install-tools
+.PHONY: build build-release test test-unit test-e2e clean lint fmt install-tools
 
 BINARY = crack
 ENTRYPOINT = ./cmd/crack
@@ -15,7 +15,7 @@ RELEASE_LDFLAGS = -s -w $(LDFLAGS)
 build:
 	go build -ldflags "$(LDFLAGS)" -o $(BINARY) $(ENTRYPOINT)
 
-build-release:
+build-release: lint test
 	@mkdir -p $(DIST_DIR)
 	GOOS=linux GOARCH=amd64 go build -ldflags "$(RELEASE_LDFLAGS)" -o $(DIST_DIR)/$(BINARY)-linux-amd64 $(ENTRYPOINT)
 	GOOS=linux GOARCH=arm64 go build -ldflags "$(RELEASE_LDFLAGS)" -o $(DIST_DIR)/$(BINARY)-linux-arm64 $(ENTRYPOINT)
@@ -28,6 +28,9 @@ build-release:
 
 test:
 	go test -v ./...
+
+test-unit:
+	go test -v ./internal/...
 
 test-e2e: build
 	go test -v ./test/e2e/...
