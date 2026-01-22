@@ -3,7 +3,9 @@ package elf
 import (
 	"debug/elf"
 
-	"github.com/mkacmar/crack/internal/model"
+	"github.com/mkacmar/crack/internal/binary"
+	"github.com/mkacmar/crack/internal/rule"
+	"github.com/mkacmar/crack/internal/toolchain"
 )
 
 const DF_1_NODUMP = 0x00001000
@@ -12,20 +14,20 @@ const DF_1_NODUMP = 0x00001000
 // ld: https://sourceware.org/binutils/docs/ld/Options.html#index-z-keyword
 type NoDumpRule struct{}
 
-func (r NoDumpRule) ID() string                 { return "no-dump" }
-func (r NoDumpRule) Name() string               { return "Core Dump Protection" }
+func (r NoDumpRule) ID() string   { return "no-dump" }
+func (r NoDumpRule) Name() string { return "Core Dump Protection" }
 
-func (r NoDumpRule) Applicability() model.Applicability {
-	return model.Applicability{
-		Arch: model.ArchAll,
-		Compilers: map[model.Compiler]model.CompilerRequirement{
-			model.CompilerGCC:   {MinVersion: model.Version{Major: 3, Minor: 0}, Flag: "-Wl,-z,nodump"},
-			model.CompilerClang: {MinVersion: model.Version{Major: 3, Minor: 0}, Flag: "-Wl,-z,nodump"},
+func (r NoDumpRule) Applicability() rule.Applicability {
+	return rule.Applicability{
+		Arch: binary.ArchAll,
+		Compilers: map[toolchain.Compiler]rule.CompilerRequirement{
+			toolchain.CompilerGCC:   {MinVersion: toolchain.Version{Major: 3, Minor: 0}, Flag: "-Wl,-z,nodump"},
+			toolchain.CompilerClang: {MinVersion: toolchain.Version{Major: 3, Minor: 0}, Flag: "-Wl,-z,nodump"},
 		},
 	}
 }
 
-func (r NoDumpRule) Execute(f *elf.File, info *model.ParsedBinary) model.RuleResult {
+func (r NoDumpRule) Execute(f *elf.File, info *binary.Parsed) rule.Result {
 	hasNoDump := false
 
 	dynSec := f.Section(".dynamic")
@@ -71,13 +73,13 @@ func (r NoDumpRule) Execute(f *elf.File, info *model.ParsedBinary) model.RuleRes
 	}
 
 	if hasNoDump {
-		return model.RuleResult{
-			State:   model.CheckStatePassed,
+		return rule.Result{
+			State:   rule.CheckStatePassed,
 			Message: "Core dumps are disabled (DF_1_NODUMP set)",
 		}
 	}
-	return model.RuleResult{
-		State:   model.CheckStateFailed,
+	return rule.Result{
+		State:   rule.CheckStateFailed,
 		Message: "Core dumps are NOT explicitly disabled",
 	}
 }

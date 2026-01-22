@@ -3,7 +3,9 @@ package elf
 import (
 	"debug/elf"
 
-	"github.com/mkacmar/crack/internal/model"
+	"github.com/mkacmar/crack/internal/binary"
+	"github.com/mkacmar/crack/internal/rule"
+	"github.com/mkacmar/crack/internal/toolchain"
 )
 
 // ARMPACRule checks for ARM Pointer Authentication Code
@@ -12,30 +14,30 @@ import (
 // Clang: https://clang.llvm.org/docs/ClangCommandLineReference.html#cmdoption-clang-mbranch-protection
 type ARMPACRule struct{}
 
-func (r ARMPACRule) ID() string                 { return "arm-pac" }
-func (r ARMPACRule) Name() string               { return "ARM Pointer Authentication" }
+func (r ARMPACRule) ID() string   { return "arm-pac" }
+func (r ARMPACRule) Name() string { return "ARM Pointer Authentication" }
 
-func (r ARMPACRule) Applicability() model.Applicability {
-	return model.Applicability{
-		Arch: model.ArchARM64,
-		Compilers: map[model.Compiler]model.CompilerRequirement{
-			model.CompilerGCC:   {MinVersion: model.Version{Major: 9, Minor: 1}, Flag: "-mbranch-protection=pac-ret"},
-			model.CompilerClang: {MinVersion: model.Version{Major: 8, Minor: 0}, Flag: "-mbranch-protection=pac-ret"},
+func (r ARMPACRule) Applicability() rule.Applicability {
+	return rule.Applicability{
+		Arch: binary.ArchARM64,
+		Compilers: map[toolchain.Compiler]rule.CompilerRequirement{
+			toolchain.CompilerGCC:   {MinVersion: toolchain.Version{Major: 9, Minor: 1}, Flag: "-mbranch-protection=pac-ret"},
+			toolchain.CompilerClang: {MinVersion: toolchain.Version{Major: 8, Minor: 0}, Flag: "-mbranch-protection=pac-ret"},
 		},
 	}
 }
 
-func (r ARMPACRule) Execute(f *elf.File, info *model.ParsedBinary) model.RuleResult {
+func (r ARMPACRule) Execute(f *elf.File, info *binary.Parsed) rule.Result {
 	hasPAC := parseGNUProperty(f, GNU_PROPERTY_AARCH64_FEATURE_1_AND, GNU_PROPERTY_AARCH64_FEATURE_1_PAC)
 
 	if hasPAC {
-		return model.RuleResult{
-			State:   model.CheckStatePassed,
+		return rule.Result{
+			State:   rule.CheckStatePassed,
 			Message: "ARM PAC (Pointer Authentication Code) is enabled",
 		}
 	}
-	return model.RuleResult{
-		State:   model.CheckStateFailed,
+	return rule.Result{
+		State:   rule.CheckStateFailed,
 		Message: "ARM PAC is NOT enabled (requires ARMv8.3+ hardware)",
 	}
 }

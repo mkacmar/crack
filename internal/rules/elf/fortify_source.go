@@ -4,7 +4,9 @@ import (
 	"debug/elf"
 	"fmt"
 
-	"github.com/mkacmar/crack/internal/model"
+	"github.com/mkacmar/crack/internal/binary"
+	"github.com/mkacmar/crack/internal/rule"
+	"github.com/mkacmar/crack/internal/toolchain"
 )
 
 var fortifiableFunctions = map[string]string{
@@ -39,25 +41,25 @@ var fortifiableFunctions = map[string]string{
 // GCC: https://gcc.gnu.org/onlinedocs/gcc/Instrumentation-Options.html#index-D_FORTIFY_SOURCE
 type FortifySourceRule struct{}
 
-func (r FortifySourceRule) ID() string                 { return "fortify-source" }
-func (r FortifySourceRule) Name() string               { return "FORTIFY_SOURCE" }
+func (r FortifySourceRule) ID() string   { return "fortify-source" }
+func (r FortifySourceRule) Name() string { return "FORTIFY_SOURCE" }
 
-func (r FortifySourceRule) Applicability() model.Applicability {
-	return model.Applicability{
-		Arch: model.ArchAll,
-		Compilers: map[model.Compiler]model.CompilerRequirement{
-			model.CompilerGCC:   {MinVersion: model.Version{Major: 12, Minor: 0}, Flag: "-D_FORTIFY_SOURCE=3 -O1"},
-			model.CompilerClang: {MinVersion: model.Version{Major: 12, Minor: 0}, Flag: "-D_FORTIFY_SOURCE=3 -O1"},
+func (r FortifySourceRule) Applicability() rule.Applicability {
+	return rule.Applicability{
+		Arch: binary.ArchAll,
+		Compilers: map[toolchain.Compiler]rule.CompilerRequirement{
+			toolchain.CompilerGCC:   {MinVersion: toolchain.Version{Major: 12, Minor: 0}, Flag: "-D_FORTIFY_SOURCE=3 -O1"},
+			toolchain.CompilerClang: {MinVersion: toolchain.Version{Major: 12, Minor: 0}, Flag: "-D_FORTIFY_SOURCE=3 -O1"},
 		},
 	}
 }
 
-func (r FortifySourceRule) Execute(f *elf.File, info *model.ParsedBinary) model.RuleResult {
+func (r FortifySourceRule) Execute(f *elf.File, info *binary.Parsed) rule.Result {
 	// FORTIFY_SOURCE is a glibc feature - musl libc does not implement it.
 	// https://wiki.musl-libc.org/future-ideas#fortify-source
-	if info != nil && info.LibC == model.LibCMusl {
-		return model.RuleResult{
-			State:   model.CheckStateSkipped,
+	if info != nil && info.LibC == toolchain.LibCMusl {
+		return rule.Result{
+			State:   rule.CheckStateSkipped,
 			Message: "musl libc does not support FORTIFY_SOURCE",
 		}
 	}
@@ -93,8 +95,8 @@ func (r FortifySourceRule) Execute(f *elf.File, info *model.ParsedBinary) model.
 		if len(unfortifiedFuncs) > 0 {
 			msg += fmt.Sprintf(", %d left unfortified %v", len(unfortifiedFuncs), unfortifiedFuncs)
 		}
-		return model.RuleResult{
-			State:   model.CheckStatePassed,
+		return rule.Result{
+			State:   rule.CheckStatePassed,
 			Message: msg,
 		}
 	}
@@ -102,14 +104,14 @@ func (r FortifySourceRule) Execute(f *elf.File, info *model.ParsedBinary) model.
 	// If we see unfortified functions but no _chk variants, we report a failure.
 	// While the compiler might optimize them away if it can prove safety, real-world binaries typically have some unprovable buffer sizes.
 	if len(unfortifiedFuncs) > 0 {
-		return model.RuleResult{
-			State:   model.CheckStateFailed,
+		return rule.Result{
+			State:   rule.CheckStateFailed,
 			Message: fmt.Sprintf("FORTIFY_SOURCE is NOT enabled, unfortified: %v", unfortifiedFuncs),
 		}
 	}
 
-	return model.RuleResult{
-		State:   model.CheckStateSkipped,
+	return rule.Result{
+		State:   rule.CheckStateSkipped,
 		Message: "No fortifiable functions detected",
 	}
 }

@@ -5,7 +5,9 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/mkacmar/crack/internal/model"
+	"github.com/mkacmar/crack/internal/binary"
+	"github.com/mkacmar/crack/internal/rule"
+	"github.com/mkacmar/crack/internal/toolchain"
 )
 
 var cfiSymbols = []string{
@@ -21,19 +23,19 @@ var cfiSymbols = []string{
 // Clang: https://clang.llvm.org/docs/ControlFlowIntegrity.html
 type CFIRule struct{}
 
-func (r CFIRule) ID() string                 { return "cfi" }
-func (r CFIRule) Name() string               { return "Control Flow Integrity" }
+func (r CFIRule) ID() string   { return "cfi" }
+func (r CFIRule) Name() string { return "Control Flow Integrity" }
 
-func (r CFIRule) Applicability() model.Applicability {
-	return model.Applicability{
-		Arch: model.ArchAll,
-		Compilers: map[model.Compiler]model.CompilerRequirement{
-			model.CompilerClang: {MinVersion: model.Version{Major: 3, Minor: 7}, Flag: "-fsanitize=cfi -flto -fvisibility=hidden"},
+func (r CFIRule) Applicability() rule.Applicability {
+	return rule.Applicability{
+		Arch: binary.ArchAll,
+		Compilers: map[toolchain.Compiler]rule.CompilerRequirement{
+			toolchain.CompilerClang: {MinVersion: toolchain.Version{Major: 3, Minor: 7}, Flag: "-fsanitize=cfi -flto -fvisibility=hidden"},
 		},
 	}
 }
 
-func (r CFIRule) Execute(f *elf.File, info *model.ParsedBinary) model.RuleResult {
+func (r CFIRule) Execute(f *elf.File, info *binary.Parsed) rule.Result {
 
 	symbols, _ := f.Symbols()
 	dynsyms, _ := f.DynamicSymbols()
@@ -57,13 +59,13 @@ func (r CFIRule) Execute(f *elf.File, info *model.ParsedBinary) model.RuleResult
 	}
 
 	if len(foundSymbols) > 0 {
-		return model.RuleResult{
-			State:   model.CheckStatePassed,
+		return rule.Result{
+			State:   rule.CheckStatePassed,
 			Message: fmt.Sprintf("Clang CFI is enabled, found: %v", foundSymbols),
 		}
 	}
-	return model.RuleResult{
-		State:   model.CheckStateFailed,
+	return rule.Result{
+		State:   rule.CheckStateFailed,
 		Message: "Clang CFI is NOT enabled",
 	}
 }

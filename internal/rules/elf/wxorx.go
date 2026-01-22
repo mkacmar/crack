@@ -4,48 +4,50 @@ import (
 	"debug/elf"
 	"fmt"
 
-	"github.com/mkacmar/crack/internal/model"
+	"github.com/mkacmar/crack/internal/binary"
+	"github.com/mkacmar/crack/internal/rule"
+	"github.com/mkacmar/crack/internal/toolchain"
 )
 
 // WXorXRule checks for W^X (Write XOR Execute) policy
 // GNU ld: https://sourceware.org/binutils/docs/ld/Options.html (-z noexecstack)
 type WXorXRule struct{}
 
-func (r WXorXRule) ID() string                 { return "wxorx" }
-func (r WXorXRule) Name() string               { return "W^X (Write XOR Execute)" }
+func (r WXorXRule) ID() string   { return "wxorx" }
+func (r WXorXRule) Name() string { return "W^X (Write XOR Execute)" }
 
-func (r WXorXRule) Applicability() model.Applicability {
-	return model.Applicability{
-		Arch: model.ArchAll,
-		Compilers: map[model.Compiler]model.CompilerRequirement{
-			model.CompilerGCC:   {MinVersion: model.Version{Major: 3, Minor: 0}, DefaultVersion: model.Version{Major: 3, Minor: 0}, Flag: "-z noexecstack"},
-			model.CompilerClang: {MinVersion: model.Version{Major: 3, Minor: 0}, DefaultVersion: model.Version{Major: 3, Minor: 0}, Flag: "-z noexecstack"},
+func (r WXorXRule) Applicability() rule.Applicability {
+	return rule.Applicability{
+		Arch: binary.ArchAll,
+		Compilers: map[toolchain.Compiler]rule.CompilerRequirement{
+			toolchain.CompilerGCC:   {MinVersion: toolchain.Version{Major: 3, Minor: 0}, DefaultVersion: toolchain.Version{Major: 3, Minor: 0}, Flag: "-z noexecstack"},
+			toolchain.CompilerClang: {MinVersion: toolchain.Version{Major: 3, Minor: 0}, DefaultVersion: toolchain.Version{Major: 3, Minor: 0}, Flag: "-z noexecstack"},
 		},
 	}
 }
 
-func (r WXorXRule) Execute(f *elf.File, info *model.ParsedBinary) model.RuleResult {
+func (r WXorXRule) Execute(f *elf.File, info *binary.Parsed) rule.Result {
 	for _, prog := range f.Progs {
 		// Check PT_LOAD segments for W+X
 		if prog.Type == elf.PT_LOAD {
 			if (prog.Flags&elf.PF_W) != 0 && (prog.Flags&elf.PF_X) != 0 {
-				return model.RuleResult{
-					State:   model.CheckStateFailed,
+				return rule.Result{
+					State:   rule.CheckStateFailed,
 					Message: fmt.Sprintf("W^X violation: segment at offset 0x%x is both writable and executable", prog.Off),
 				}
 			}
 		}
 		// Check PT_GNU_STACK for executable stack
 		if prog.Type == elf.PT_GNU_STACK && (prog.Flags&elf.PF_X) != 0 {
-			return model.RuleResult{
-				State:   model.CheckStateFailed,
+			return rule.Result{
+				State:   rule.CheckStateFailed,
 				Message: "W^X violation: executable stack",
 			}
 		}
 	}
 
-	return model.RuleResult{
-		State:   model.CheckStatePassed,
+	return rule.Result{
+		State:   rule.CheckStatePassed,
 		Message: "All memory segments follow W^X policy (no segment is both writable and executable)",
 	}
 }

@@ -3,27 +3,29 @@ package elf
 import (
 	"debug/elf"
 
-	"github.com/mkacmar/crack/internal/model"
+	"github.com/mkacmar/crack/internal/binary"
+	"github.com/mkacmar/crack/internal/rule"
+	"github.com/mkacmar/crack/internal/toolchain"
 )
 
 // RELRORule checks for partial RELRO
 // ld: https://sourceware.org/binutils/docs/ld/Options.html
 type RELRORule struct{}
 
-func (r RELRORule) ID() string                 { return "relro" }
-func (r RELRORule) Name() string               { return "Partial RELRO" }
+func (r RELRORule) ID() string   { return "relro" }
+func (r RELRORule) Name() string { return "Partial RELRO" }
 
-func (r RELRORule) Applicability() model.Applicability {
-	return model.Applicability{
-		Arch: model.ArchAll,
-		Compilers: map[model.Compiler]model.CompilerRequirement{
-			model.CompilerGCC:   {MinVersion: model.Version{Major: 3, Minor: 0}, DefaultVersion: model.Version{Major: 3, Minor: 0}, Flag: "-Wl,-z,relro"},
-			model.CompilerClang: {MinVersion: model.Version{Major: 3, Minor: 0}, DefaultVersion: model.Version{Major: 3, Minor: 0}, Flag: "-Wl,-z,relro"},
+func (r RELRORule) Applicability() rule.Applicability {
+	return rule.Applicability{
+		Arch: binary.ArchAll,
+		Compilers: map[toolchain.Compiler]rule.CompilerRequirement{
+			toolchain.CompilerGCC:   {MinVersion: toolchain.Version{Major: 3, Minor: 0}, DefaultVersion: toolchain.Version{Major: 3, Minor: 0}, Flag: "-Wl,-z,relro"},
+			toolchain.CompilerClang: {MinVersion: toolchain.Version{Major: 3, Minor: 0}, DefaultVersion: toolchain.Version{Major: 3, Minor: 0}, Flag: "-Wl,-z,relro"},
 		},
 	}
 }
 
-func (r RELRORule) Execute(f *elf.File, info *model.ParsedBinary) model.RuleResult {
+func (r RELRORule) Execute(f *elf.File, info *binary.Parsed) rule.Result {
 	hasRELRO := false
 	for _, prog := range f.Progs {
 		if prog.Type == elf.PT_GNU_RELRO {
@@ -33,13 +35,13 @@ func (r RELRORule) Execute(f *elf.File, info *model.ParsedBinary) model.RuleResu
 	}
 
 	if hasRELRO {
-		return model.RuleResult{
-			State:   model.CheckStatePassed,
+		return rule.Result{
+			State:   rule.CheckStatePassed,
 			Message: "Partial RELRO is enabled (some ELF sections read-only after load)",
 		}
 	}
-	return model.RuleResult{
-		State:   model.CheckStateFailed,
+	return rule.Result{
+		State:   rule.CheckStateFailed,
 		Message: "Partial RELRO is NOT enabled (ELF sections remain writable)",
 	}
 }

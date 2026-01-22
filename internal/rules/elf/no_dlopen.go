@@ -3,7 +3,9 @@ package elf
 import (
 	"debug/elf"
 
-	"github.com/mkacmar/crack/internal/model"
+	"github.com/mkacmar/crack/internal/binary"
+	"github.com/mkacmar/crack/internal/rule"
+	"github.com/mkacmar/crack/internal/toolchain"
 )
 
 const (
@@ -15,20 +17,20 @@ const (
 // ld: https://sourceware.org/binutils/docs/ld/Options.html#index-z-keyword
 type NoDLOpenRule struct{}
 
-func (r NoDLOpenRule) ID() string                 { return "no-dlopen" }
-func (r NoDLOpenRule) Name() string               { return "Disallow dlopen" }
+func (r NoDLOpenRule) ID() string   { return "no-dlopen" }
+func (r NoDLOpenRule) Name() string { return "Disallow dlopen" }
 
-func (r NoDLOpenRule) Applicability() model.Applicability {
-	return model.Applicability{
-		Arch: model.ArchAll,
-		Compilers: map[model.Compiler]model.CompilerRequirement{
-			model.CompilerGCC:   {MinVersion: model.Version{Major: 3, Minor: 0}, Flag: "-Wl,-z,nodlopen"},
-			model.CompilerClang: {MinVersion: model.Version{Major: 3, Minor: 0}, Flag: "-Wl,-z,nodlopen"},
+func (r NoDLOpenRule) Applicability() rule.Applicability {
+	return rule.Applicability{
+		Arch: binary.ArchAll,
+		Compilers: map[toolchain.Compiler]rule.CompilerRequirement{
+			toolchain.CompilerGCC:   {MinVersion: toolchain.Version{Major: 3, Minor: 0}, Flag: "-Wl,-z,nodlopen"},
+			toolchain.CompilerClang: {MinVersion: toolchain.Version{Major: 3, Minor: 0}, Flag: "-Wl,-z,nodlopen"},
 		},
 	}
 }
 
-func (r NoDLOpenRule) Execute(f *elf.File, info *model.ParsedBinary) model.RuleResult {
+func (r NoDLOpenRule) Execute(f *elf.File, info *binary.Parsed) rule.Result {
 	hasNoDLOpen := false
 
 	dynSec := f.Section(".dynamic")
@@ -74,13 +76,13 @@ func (r NoDLOpenRule) Execute(f *elf.File, info *model.ParsedBinary) model.RuleR
 	}
 
 	if hasNoDLOpen {
-		return model.RuleResult{
-			State:   model.CheckStatePassed,
+		return rule.Result{
+			State:   rule.CheckStatePassed,
 			Message: "dlopen is disabled via linker flags",
 		}
 	}
-	return model.RuleResult{
-		State:   model.CheckStateFailed,
+	return rule.Result{
+		State:   rule.CheckStateFailed,
 		Message: "dlopen is NOT disabled (binary can load libraries dynamically)",
 	}
 }

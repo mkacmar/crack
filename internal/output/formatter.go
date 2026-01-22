@@ -4,11 +4,12 @@ import (
 	"fmt"
 	"io"
 
-	"github.com/mkacmar/crack/internal/model"
+	"github.com/mkacmar/crack/internal/result"
+	"github.com/mkacmar/crack/internal/rule"
 )
 
 type Formatter interface {
-	Format(report *model.ScanResults, w io.Writer) error
+	Format(report *result.ScanResults, w io.Writer) error
 }
 
 type TextFormatter struct {
@@ -16,7 +17,7 @@ type TextFormatter struct {
 	ShowSkipped bool
 }
 
-func (f *TextFormatter) Format(report *model.ScanResults, w io.Writer) error {
+func (f *TextFormatter) Format(report *result.ScanResults, w io.Writer) error {
 	for _, result := range report.Results {
 		if result.Error != nil {
 			fmt.Fprintf(w, "ERROR = %s: %v\n", result.Path, result.Error)
@@ -25,17 +26,17 @@ func (f *TextFormatter) Format(report *model.ScanResults, w io.Writer) error {
 
 		for _, check := range result.Results {
 			switch check.State {
-			case model.CheckStatePassed:
+			case rule.CheckStatePassed:
 				if f.ShowPassed {
 					fmt.Fprintf(w, "PASS = %s @ %s: %s\n", check.RuleID, result.Path, check.Message)
 				}
-			case model.CheckStateFailed:
+			case rule.CheckStateFailed:
 				if check.Suggestion != "" {
 					fmt.Fprintf(w, "FAIL = %s @ %s: %s %s\n", check.RuleID, result.Path, check.Message, check.Suggestion)
 				} else {
 					fmt.Fprintf(w, "FAIL = %s @ %s: %s\n", check.RuleID, result.Path, check.Message)
 				}
-			case model.CheckStateSkipped:
+			case rule.CheckStateSkipped:
 				if f.ShowSkipped {
 					fmt.Fprintf(w, "SKIP = %s @ %s: %s\n", check.RuleID, result.Path, check.Message)
 				}

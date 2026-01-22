@@ -1,8 +1,8 @@
 package elf
 
-import "github.com/mkacmar/crack/internal/model"
+import "github.com/mkacmar/crack/internal/rule"
 
-var allRules = []model.ELFRule{
+var allRules = []rule.ELFRule{
 	PIERule{},
 	NXBitRule{},
 	RELRORule{},
@@ -33,14 +33,14 @@ var allRules = []model.ELFRule{
 	ARMMTERule{},
 }
 
-var AllRules = func() map[string]model.ELFRule {
-	m := make(map[string]model.ELFRule, len(allRules))
+var AllRules = func() map[string]rule.ELFRule {
+	m := make(map[string]rule.ELFRule, len(allRules))
 	for _, r := range allRules {
 		m[r.ID()] = r
 	}
 	return m
 }()
 
-func GetRuleByID(id string) model.ELFRule {
+func GetRuleByID(id string) rule.ELFRule {
 	return AllRules[id]
 }

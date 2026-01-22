@@ -4,7 +4,9 @@ import (
 	"debug/elf"
 	"strings"
 
-	"github.com/mkacmar/crack/internal/model"
+	"github.com/mkacmar/crack/internal/binary"
+	"github.com/mkacmar/crack/internal/rule"
+	"github.com/mkacmar/crack/internal/toolchain"
 )
 
 // StackCanaryRule checks for stack canary protection
@@ -12,20 +14,20 @@ import (
 // Clang: https://clang.llvm.org/docs/ClangCommandLineReference.html#cmdoption-clang-fstack-protector-strong
 type StackCanaryRule struct{}
 
-func (r StackCanaryRule) ID() string                 { return "stack-canary" }
-func (r StackCanaryRule) Name() string               { return "Stack Canary Protection" }
+func (r StackCanaryRule) ID() string   { return "stack-canary" }
+func (r StackCanaryRule) Name() string { return "Stack Canary Protection" }
 
-func (r StackCanaryRule) Applicability() model.Applicability {
-	return model.Applicability{
-		Arch: model.ArchAll,
-		Compilers: map[model.Compiler]model.CompilerRequirement{
-			model.CompilerGCC:   {MinVersion: model.Version{Major: 4, Minor: 9}, Flag: "-fstack-protector-strong"},
-			model.CompilerClang: {MinVersion: model.Version{Major: 3, Minor: 0}, Flag: "-fstack-protector-strong"},
+func (r StackCanaryRule) Applicability() rule.Applicability {
+	return rule.Applicability{
+		Arch: binary.ArchAll,
+		Compilers: map[toolchain.Compiler]rule.CompilerRequirement{
+			toolchain.CompilerGCC:   {MinVersion: toolchain.Version{Major: 4, Minor: 9}, Flag: "-fstack-protector-strong"},
+			toolchain.CompilerClang: {MinVersion: toolchain.Version{Major: 3, Minor: 0}, Flag: "-fstack-protector-strong"},
 		},
 	}
 }
 
-func (r StackCanaryRule) Execute(f *elf.File, info *model.ParsedBinary) model.RuleResult {
+func (r StackCanaryRule) Execute(f *elf.File, info *binary.Parsed) rule.Result {
 	symbols, _ := f.Symbols()
 	dynsyms, _ := f.DynamicSymbols()
 
@@ -38,8 +40,8 @@ func (r StackCanaryRule) Execute(f *elf.File, info *model.ParsedBinary) model.Ru
 		if strings.Contains(sym.Name, "__stack_chk_fail") ||
 			strings.Contains(sym.Name, "__stack_smash_handler") ||
 			strings.Contains(sym.Name, "__intel_security_cookie") {
-			return model.RuleResult{
-				State:   model.CheckStatePassed,
+			return rule.Result{
+				State:   rule.CheckStatePassed,
 				Message: "Stack canary protection is enabled",
 			}
 		}
@@ -47,8 +49,8 @@ func (r StackCanaryRule) Execute(f *elf.File, info *model.ParsedBinary) model.Ru
 
 	// No stack protection symbols found.
 	// While the compiler might omit these if no functions need protection, real-world binaries typically have stack buffers.
-	return model.RuleResult{
-		State:   model.CheckStateFailed,
+	return rule.Result{
+		State:   rule.CheckStateFailed,
 		Message: "Stack canary protection is NOT enabled",
 	}
 }

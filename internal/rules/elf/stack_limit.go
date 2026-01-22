@@ -4,27 +4,29 @@ import (
 	"debug/elf"
 	"fmt"
 
-	"github.com/mkacmar/crack/internal/model"
+	"github.com/mkacmar/crack/internal/binary"
+	"github.com/mkacmar/crack/internal/rule"
+	"github.com/mkacmar/crack/internal/toolchain"
 )
 
 // StackLimitRule checks for explicit stack size limit
 // ld: https://sourceware.org/binutils/docs/ld/Options.html#index-z-keyword
 type StackLimitRule struct{}
 
-func (r StackLimitRule) ID() string                 { return "stack-limit" }
-func (r StackLimitRule) Name() string               { return "Explicit Stack Size Limit" }
+func (r StackLimitRule) ID() string   { return "stack-limit" }
+func (r StackLimitRule) Name() string { return "Explicit Stack Size Limit" }
 
-func (r StackLimitRule) Applicability() model.Applicability {
-	return model.Applicability{
-		Arch: model.ArchAll,
-		Compilers: map[model.Compiler]model.CompilerRequirement{
-			model.CompilerGCC:   {MinVersion: model.Version{Major: 3, Minor: 0}, Flag: "-Wl,-z,stack-size=8388608"},
-			model.CompilerClang: {MinVersion: model.Version{Major: 3, Minor: 0}, Flag: "-Wl,-z,stack-size=8388608"},
+func (r StackLimitRule) Applicability() rule.Applicability {
+	return rule.Applicability{
+		Arch: binary.ArchAll,
+		Compilers: map[toolchain.Compiler]rule.CompilerRequirement{
+			toolchain.CompilerGCC:   {MinVersion: toolchain.Version{Major: 3, Minor: 0}, Flag: "-Wl,-z,stack-size=8388608"},
+			toolchain.CompilerClang: {MinVersion: toolchain.Version{Major: 3, Minor: 0}, Flag: "-Wl,-z,stack-size=8388608"},
 		},
 	}
 }
 
-func (r StackLimitRule) Execute(f *elf.File, info *model.ParsedBinary) model.RuleResult {
+func (r StackLimitRule) Execute(f *elf.File, info *binary.Parsed) rule.Result {
 	hasExplicitStackLimit := false
 	stackSize := uint64(0)
 	foundGNUStack := false
@@ -39,8 +41,8 @@ func (r StackLimitRule) Execute(f *elf.File, info *model.ParsedBinary) model.Rul
 	}
 
 	if hasExplicitStackLimit {
-		return model.RuleResult{
-			State:   model.CheckStatePassed,
+		return rule.Result{
+			State:   rule.CheckStatePassed,
 			Message: fmt.Sprintf("Stack has explicit size limit: %d bytes", stackSize),
 		}
 	}
@@ -49,8 +51,8 @@ func (r StackLimitRule) Execute(f *elf.File, info *model.ParsedBinary) model.Rul
 	if foundGNUStack {
 		msg = "Stack uses system default size (no explicit limit set)"
 	}
-	return model.RuleResult{
-		State:   model.CheckStateFailed,
+	return rule.Result{
+		State:   rule.CheckStateFailed,
 		Message: msg,
 	}
 }

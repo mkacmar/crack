@@ -5,44 +5,46 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/mkacmar/crack/internal/model"
+	"github.com/mkacmar/crack/internal/binary"
+	"github.com/mkacmar/crack/internal/rule"
+	"github.com/mkacmar/crack/internal/toolchain"
 )
 
 // NoInsecureRPATHRule checks for insecure RPATH values
 // ld: https://sourceware.org/binutils/docs/ld/Options.html
 type NoInsecureRPATHRule struct{}
 
-func (r NoInsecureRPATHRule) ID() string                 { return "no-insecure-rpath" }
-func (r NoInsecureRPATHRule) Name() string               { return "Secure RPATH" }
+func (r NoInsecureRPATHRule) ID() string   { return "no-insecure-rpath" }
+func (r NoInsecureRPATHRule) Name() string { return "Secure RPATH" }
 
-func (r NoInsecureRPATHRule) Applicability() model.Applicability {
-	return model.Applicability{
-		Arch: model.ArchAll,
-		Compilers: map[model.Compiler]model.CompilerRequirement{
-			model.CompilerGCC:   {MinVersion: model.Version{Major: 3, Minor: 0}, Flag: "-Wl,-rpath,/absolute/path"},
-			model.CompilerClang: {MinVersion: model.Version{Major: 3, Minor: 0}, Flag: "-Wl,-rpath,/absolute/path"},
+func (r NoInsecureRPATHRule) Applicability() rule.Applicability {
+	return rule.Applicability{
+		Arch: binary.ArchAll,
+		Compilers: map[toolchain.Compiler]rule.CompilerRequirement{
+			toolchain.CompilerGCC:   {MinVersion: toolchain.Version{Major: 3, Minor: 0}, Flag: "-Wl,-rpath,/absolute/path"},
+			toolchain.CompilerClang: {MinVersion: toolchain.Version{Major: 3, Minor: 0}, Flag: "-Wl,-rpath,/absolute/path"},
 		},
 	}
 }
 
-func (r NoInsecureRPATHRule) Execute(f *elf.File, info *model.ParsedBinary) model.RuleResult {
+func (r NoInsecureRPATHRule) Execute(f *elf.File, info *binary.Parsed) rule.Result {
 	rpath := GetDynString(f, elf.DT_RPATH)
 	if rpath == "" {
-		return model.RuleResult{
-			State:   model.CheckStatePassed,
+		return rule.Result{
+			State:   rule.CheckStatePassed,
 			Message: "No RPATH set",
 		}
 	}
 
 	if insecure := findInsecurePaths(rpath); len(insecure) > 0 {
-		return model.RuleResult{
-			State:   model.CheckStateFailed,
+		return rule.Result{
+			State:   rule.CheckStateFailed,
 			Message: fmt.Sprintf("Insecure RPATH: %s", strings.Join(insecure, ", ")),
 		}
 	}
 
-	return model.RuleResult{
-		State:   model.CheckStatePassed,
+	return rule.Result{
+		State:   rule.CheckStatePassed,
 		Message: "RPATH is secure",
 	}
 }

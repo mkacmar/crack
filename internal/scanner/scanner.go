@@ -14,15 +14,16 @@ import (
 
 	"golang.org/x/sync/errgroup"
 
+	"github.com/mkacmar/crack/internal/binary"
 	"github.com/mkacmar/crack/internal/debuginfo"
-	"github.com/mkacmar/crack/internal/model"
 	elfparser "github.com/mkacmar/crack/internal/parser/elf"
+	"github.com/mkacmar/crack/internal/result"
 	"github.com/mkacmar/crack/internal/rules"
 )
 
 type Scanner struct {
 	ruleEngine       *rules.Engine
-	parsers          []model.BinaryParser
+	parsers          []binary.Parser
 	logger           *slog.Logger
 	workers          int
 	debuginfodClient *debuginfo.Client
@@ -56,7 +57,7 @@ func NewScanner(ruleEngine *rules.Engine, opts Options) *Scanner {
 	}
 
 	return &Scanner{
-		parsers: []model.BinaryParser{
+		parsers: []binary.Parser{
 			elfparser.NewParser(),
 		},
 		ruleEngine:       ruleEngine,
@@ -66,7 +67,7 @@ func NewScanner(ruleEngine *rules.Engine, opts Options) *Scanner {
 	}
 }
 
-func (s *Scanner) ScanPaths(ctx context.Context, paths []string, recursive bool) <-chan model.FileScanResult {
+func (s *Scanner) ScanPaths(ctx context.Context, paths []string, recursive bool) <-chan result.FileScanResult {
 	var filesToScan []string
 
 	for _, path := range paths {
@@ -83,8 +84,8 @@ func (s *Scanner) ScanPaths(ctx context.Context, paths []string, recursive bool)
 	return s.scanFilesParallel(ctx, filesToScan)
 }
 
-func (s *Scanner) scanFilesParallel(ctx context.Context, files []string) <-chan model.FileScanResult {
-	results := make(chan model.FileScanResult)
+func (s *Scanner) scanFilesParallel(ctx context.Context, files []string) <-chan result.FileScanResult {
+	results := make(chan result.FileScanResult)
 
 	if len(files) == 0 {
 		close(results)
@@ -119,14 +120,14 @@ func (s *Scanner) scanFilesParallel(ctx context.Context, files []string) <-chan 
 	return results
 }
 
-func (s *Scanner) ScanFile(ctx context.Context, path string) model.FileScanResult {
-	result := model.FileScanResult{
+func (s *Scanner) ScanFile(ctx context.Context, path string) result.FileScanResult {
+	result := result.FileScanResult{
 		Path: path,
 	}
 
 	s.logger.Debug("scanning file", slog.String("path", path))
 
-	var parser model.BinaryParser
+	var parser binary.Parser
 	for _, p := range s.parsers {
 		canParse, err := p.CanParse(path)
 		if err != nil {
@@ -153,8 +154,8 @@ func (s *Scanner) ScanFile(ctx context.Context, path string) model.FileScanResul
 		return result
 	}
 
-	if info.ELFFile != nil {
-		defer info.ELFFile.Close()
+	if info.ELF != nil {
+		defer info.ELF.Close()
 	}
 
 	result.Format = info.Format

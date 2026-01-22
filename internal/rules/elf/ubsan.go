@@ -5,7 +5,9 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/mkacmar/crack/internal/model"
+	"github.com/mkacmar/crack/internal/binary"
+	"github.com/mkacmar/crack/internal/rule"
+	"github.com/mkacmar/crack/internal/toolchain"
 )
 
 var ubsanHandlers = []string{
@@ -39,20 +41,20 @@ var ubsanHandlers = []string{
 // GCC: https://gcc.gnu.org/onlinedocs/gcc/Instrumentation-Options.html#index-fsanitize=undefined
 type UBSanRule struct{}
 
-func (r UBSanRule) ID() string                 { return "ubsan" }
-func (r UBSanRule) Name() string               { return "Undefined Behavior Sanitizer" }
+func (r UBSanRule) ID() string   { return "ubsan" }
+func (r UBSanRule) Name() string { return "Undefined Behavior Sanitizer" }
 
-func (r UBSanRule) Applicability() model.Applicability {
-	return model.Applicability{
-		Arch: model.ArchAll,
-		Compilers: map[model.Compiler]model.CompilerRequirement{
-			model.CompilerGCC:   {MinVersion: model.Version{Major: 4, Minor: 9}, Flag: "-fsanitize=undefined"},
-			model.CompilerClang: {MinVersion: model.Version{Major: 3, Minor: 3}, Flag: "-fsanitize=undefined"},
+func (r UBSanRule) Applicability() rule.Applicability {
+	return rule.Applicability{
+		Arch: binary.ArchAll,
+		Compilers: map[toolchain.Compiler]rule.CompilerRequirement{
+			toolchain.CompilerGCC:   {MinVersion: toolchain.Version{Major: 4, Minor: 9}, Flag: "-fsanitize=undefined"},
+			toolchain.CompilerClang: {MinVersion: toolchain.Version{Major: 3, Minor: 3}, Flag: "-fsanitize=undefined"},
 		},
 	}
 }
 
-func (r UBSanRule) Execute(f *elf.File, info *model.ParsedBinary) model.RuleResult {
+func (r UBSanRule) Execute(f *elf.File, info *binary.Parsed) rule.Result {
 
 	symbols, _ := f.Symbols()
 	dynsyms, _ := f.DynamicSymbols()
@@ -76,13 +78,13 @@ func (r UBSanRule) Execute(f *elf.File, info *model.ParsedBinary) model.RuleResu
 	}
 
 	if len(foundHandlers) > 0 {
-		return model.RuleResult{
-			State:   model.CheckStatePassed,
+		return rule.Result{
+			State:   rule.CheckStatePassed,
 			Message: fmt.Sprintf("UBSan is enabled, found: %v", foundHandlers),
 		}
 	}
-	return model.RuleResult{
-		State:   model.CheckStateFailed,
+	return rule.Result{
+		State:   rule.CheckStateFailed,
 		Message: "UBSan is NOT enabled",
 	}
 }

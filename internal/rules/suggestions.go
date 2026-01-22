@@ -4,25 +4,26 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/mkacmar/crack/internal/model"
+	"github.com/mkacmar/crack/internal/rule"
+	"github.com/mkacmar/crack/internal/toolchain"
 )
 
-func buildSuggestion(tc model.Toolchain, applicability model.Applicability) string {
-	if tc.Compiler == model.CompilerUnknown {
+func buildSuggestion(tc toolchain.Toolchain, applicability rule.Applicability) string {
+	if tc.Compiler == toolchain.CompilerUnknown {
 		return buildGenericSuggestion(applicability)
 	}
 	return buildCompilerSuggestion(tc, applicability)
 }
 
-func buildGenericSuggestion(applicability model.Applicability) string {
+func buildGenericSuggestion(applicability rule.Applicability) string {
 	var parts []string
 	parts = append(parts, "Toolchain not detected (binary likely stripped), use")
 
 	var options []string
-	if gccReq, ok := applicability.Compilers[model.CompilerGCC]; ok && gccReq.Flag != "" {
+	if gccReq, ok := applicability.Compilers[toolchain.CompilerGCC]; ok && gccReq.Flag != "" {
 		options = append(options, fmt.Sprintf("GCC %s+ with \"%s\"", gccReq.MinVersion.String(), gccReq.Flag))
 	}
-	if clangReq, ok := applicability.Compilers[model.CompilerClang]; ok && clangReq.Flag != "" {
+	if clangReq, ok := applicability.Compilers[toolchain.CompilerClang]; ok && clangReq.Flag != "" {
 		options = append(options, fmt.Sprintf("Clang %s+ with \"%s\"", clangReq.MinVersion.String(), clangReq.Flag))
 	}
 
@@ -37,12 +38,12 @@ func buildGenericSuggestion(applicability model.Applicability) string {
 	return result
 }
 
-func buildCompilerSuggestion(tc model.Toolchain, applicability model.Applicability) string {
+func buildCompilerSuggestion(tc toolchain.Toolchain, applicability rule.Applicability) string {
 	req, ok := applicability.Compilers[tc.Compiler]
 	if !ok {
-		other := model.CompilerGCC
-		if tc.Compiler == model.CompilerGCC {
-			other = model.CompilerClang
+		other := toolchain.CompilerGCC
+		if tc.Compiler == toolchain.CompilerGCC {
+			other = toolchain.CompilerClang
 		}
 		if otherReq, ok := applicability.Compilers[other]; ok {
 			return fmt.Sprintf("Feature requires %s %s+. Consider switching or use alternatives.",
@@ -59,12 +60,12 @@ func buildCompilerSuggestion(tc model.Toolchain, applicability model.Applicabili
 			compilerName, req.MinVersion.String(), compilerName, tc.Version.String(), flag)
 	}
 
-	if req.DefaultVersion != (model.Version{}) && !tc.Version.IsAtLeast(req.DefaultVersion) {
+	if req.DefaultVersion != (toolchain.Version{}) && !tc.Version.IsAtLeast(req.DefaultVersion) {
 		return fmt.Sprintf("Use \"%s\" (default in %s %s+).",
 			flag, compilerName, req.DefaultVersion.String())
 	}
 
-	if req.DefaultVersion == (model.Version{}) {
+	if req.DefaultVersion == (toolchain.Version{}) {
 		return fmt.Sprintf("Use \"%s\".", flag)
 	}
 

@@ -7,7 +7,8 @@ import (
 	"net/url"
 	"strings"
 
-	"github.com/mkacmar/crack/internal/model"
+	"github.com/mkacmar/crack/internal/result"
+	"github.com/mkacmar/crack/internal/rule"
 )
 
 type SARIFReport struct {
@@ -84,7 +85,7 @@ type SARIFFormatter struct {
 	IncludePassed bool
 }
 
-func (f *SARIFFormatter) Format(report *model.ScanResults, w io.Writer) error {
+func (f *SARIFFormatter) Format(report *result.ScanResults, w io.Writer) error {
 	output := f.convertToSARIF(report)
 
 	encoder := json.NewEncoder(w)
@@ -93,10 +94,10 @@ func (f *SARIFFormatter) Format(report *model.ScanResults, w io.Writer) error {
 	return encoder.Encode(output)
 }
 
-func (f *SARIFFormatter) convertToSARIF(report *model.ScanResults) SARIFReport {
-	ruleMap := make(map[string]model.RuleResult)
-	for _, result := range report.Results {
-		for _, check := range result.Results {
+func (f *SARIFFormatter) convertToSARIF(report *result.ScanResults) SARIFReport {
+	ruleMap := make(map[string]rule.Result)
+	for _, res := range report.Results {
+		for _, check := range res.Results {
 			if _, exists := ruleMap[check.RuleID]; !exists {
 				ruleMap[check.RuleID] = check
 			}
@@ -124,17 +125,17 @@ func (f *SARIFFormatter) convertToSARIF(report *model.ScanResults) SARIFReport {
 	sarifResults := make([]SARIFResult, 0)
 	artifactHashes := make(map[string]string)
 
-	for _, result := range report.Results {
-		fileURI := toFileURI(result.Path)
-		artifactHashes[fileURI] = result.SHA256
+	for _, res := range report.Results {
+		fileURI := toFileURI(res.Path)
+		artifactHashes[fileURI] = res.SHA256
 
-		if result.Error != nil {
+		if res.Error != nil {
 			sarifResults = append(sarifResults, SARIFResult{
 				RuleID: "scan-error",
 				Kind:   "fail",
 				Level:  "error",
 				Message: SARIFMessage{
-					Text: fmt.Sprintf("Scan error: %v", result.Error),
+					Text: fmt.Sprintf("Scan error: %v", res.Error),
 				},
 				Locations: []SARIFLocation{
 					{PhysicalLocation: SARIFPhysicalLocation{
@@ -145,17 +146,17 @@ func (f *SARIFFormatter) convertToSARIF(report *model.ScanResults) SARIFReport {
 			continue
 		}
 
-		for _, check := range result.Results {
-			if check.State == model.CheckStatePassed && !f.IncludePassed {
+		for _, check := range res.Results {
+			if check.State == rule.CheckStatePassed && !f.IncludePassed {
 				continue
 			}
-			if check.State == model.CheckStateSkipped {
+			if check.State == rule.CheckStateSkipped {
 				continue
 			}
 
 			kind := "fail"
 			level := "warning"
-			if check.State == model.CheckStatePassed {
+			if check.State == rule.CheckStatePassed {
 				kind = "pass"
 				level = "note"
 			}

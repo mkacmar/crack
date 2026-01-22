@@ -3,37 +3,39 @@ package elf
 import (
 	"debug/elf"
 
-	"github.com/mkacmar/crack/internal/model"
+	"github.com/mkacmar/crack/internal/binary"
+	"github.com/mkacmar/crack/internal/rule"
+	"github.com/mkacmar/crack/internal/toolchain"
 )
 
 // ASLRRule checks if binary is ASLR compatible
 // Linux Kernel: https://github.com/torvalds/linux/blob/master/Documentation/admin-guide/sysctl/kernel.rst
 type ASLRRule struct{}
 
-func (r ASLRRule) ID() string                 { return "aslr" }
-func (r ASLRRule) Name() string               { return "ASLR Compatibility" }
+func (r ASLRRule) ID() string   { return "aslr" }
+func (r ASLRRule) Name() string { return "ASLR Compatibility" }
 
-func (r ASLRRule) Applicability() model.Applicability {
-	return model.Applicability{
-		Arch: model.ArchAll,
-		Compilers: map[model.Compiler]model.CompilerRequirement{
-			model.CompilerGCC:   {MinVersion: model.Version{Major: 6, Minor: 0}, DefaultVersion: model.Version{Major: 6, Minor: 0}, Flag: "-fPIE -pie -z noexecstack"},
-			model.CompilerClang: {MinVersion: model.Version{Major: 3, Minor: 0}, DefaultVersion: model.Version{Major: 6, Minor: 0}, Flag: "-fPIE -pie -z noexecstack"},
+func (r ASLRRule) Applicability() rule.Applicability {
+	return rule.Applicability{
+		Arch: binary.ArchAll,
+		Compilers: map[toolchain.Compiler]rule.CompilerRequirement{
+			toolchain.CompilerGCC:   {MinVersion: toolchain.Version{Major: 6, Minor: 0}, DefaultVersion: toolchain.Version{Major: 6, Minor: 0}, Flag: "-fPIE -pie -z noexecstack"},
+			toolchain.CompilerClang: {MinVersion: toolchain.Version{Major: 3, Minor: 0}, DefaultVersion: toolchain.Version{Major: 6, Minor: 0}, Flag: "-fPIE -pie -z noexecstack"},
 		},
 	}
 }
 
-func (r ASLRRule) Execute(f *elf.File, info *model.ParsedBinary) model.RuleResult {
+func (r ASLRRule) Execute(f *elf.File, info *binary.Parsed) rule.Result {
 	if f.Type == elf.ET_EXEC {
-		return model.RuleResult{
-			State:   model.CheckStateFailed,
+		return rule.Result{
+			State:   rule.CheckStateFailed,
 			Message: "Binary is NOT ASLR compatible (not compiled as PIE)",
 		}
 	}
 
 	if f.Type != elf.ET_DYN {
-		return model.RuleResult{
-			State:   model.CheckStateSkipped,
+		return rule.Result{
+			State:   rule.CheckStateSkipped,
 			Message: "Unknown binary type",
 		}
 	}
@@ -51,8 +53,8 @@ func (r ASLRRule) Execute(f *elf.File, info *model.ParsedBinary) model.RuleResul
 	}
 
 	if !isPIE {
-		return model.RuleResult{
-			State:   model.CheckStateSkipped,
+		return rule.Result{
+			State:   rule.CheckStateSkipped,
 			Message: "Shared library (ASLR check not applicable)",
 		}
 	}
@@ -66,22 +68,22 @@ func (r ASLRRule) Execute(f *elf.File, info *model.ParsedBinary) model.RuleResul
 	}
 
 	if !hasNXStack {
-		return model.RuleResult{
-			State:   model.CheckStateFailed,
+		return rule.Result{
+			State:   rule.CheckStateFailed,
 			Message: "Binary is NOT fully ASLR compatible (executable stack)",
 		}
 	}
 
 	// Check for text relocations (breaks ASLR)
 	if HasDynTag(f, elf.DT_TEXTREL) {
-		return model.RuleResult{
-			State:   model.CheckStateFailed,
+		return rule.Result{
+			State:   rule.CheckStateFailed,
 			Message: "Binary is NOT ASLR compatible (has text relocations)",
 		}
 	}
 
-	return model.RuleResult{
-		State:   model.CheckStatePassed,
+	return rule.Result{
+		State:   rule.CheckStatePassed,
 		Message: "Binary is fully ASLR compatible (PIE + NX stack + no text relocations)",
 	}
 }

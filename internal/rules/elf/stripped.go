@@ -4,27 +4,29 @@ import (
 	"debug/elf"
 	"strings"
 
-	"github.com/mkacmar/crack/internal/model"
+	"github.com/mkacmar/crack/internal/binary"
+	"github.com/mkacmar/crack/internal/rule"
+	"github.com/mkacmar/crack/internal/toolchain"
 )
 
 // StrippedRule checks if binary is fully stripped
 // ld: https://sourceware.org/binutils/docs/ld/Options.html#index-_002d_002dstrip_002dall
 type StrippedRule struct{}
 
-func (r StrippedRule) ID() string                 { return "stripped" }
-func (r StrippedRule) Name() string               { return "Stripped Binary" }
+func (r StrippedRule) ID() string   { return "stripped" }
+func (r StrippedRule) Name() string { return "Stripped Binary" }
 
-func (r StrippedRule) Applicability() model.Applicability {
-	return model.Applicability{
-		Arch: model.ArchAll,
-		Compilers: map[model.Compiler]model.CompilerRequirement{
-			model.CompilerGCC:   {MinVersion: model.Version{Major: 3, Minor: 0}, Flag: "-s"},
-			model.CompilerClang: {MinVersion: model.Version{Major: 3, Minor: 0}, Flag: "-s"},
+func (r StrippedRule) Applicability() rule.Applicability {
+	return rule.Applicability{
+		Arch: binary.ArchAll,
+		Compilers: map[toolchain.Compiler]rule.CompilerRequirement{
+			toolchain.CompilerGCC:   {MinVersion: toolchain.Version{Major: 3, Minor: 0}, Flag: "-s"},
+			toolchain.CompilerClang: {MinVersion: toolchain.Version{Major: 3, Minor: 0}, Flag: "-s"},
 		},
 	}
 }
 
-func (r StrippedRule) Execute(f *elf.File, info *model.ParsedBinary) model.RuleResult {
+func (r StrippedRule) Execute(f *elf.File, info *binary.Parsed) rule.Result {
 	hasSymbolTable := false
 	hasDebugSections := false
 
@@ -42,28 +44,28 @@ func (r StrippedRule) Execute(f *elf.File, info *model.ParsedBinary) model.RuleR
 	}
 
 	if !hasSymbolTable && !hasDebugSections {
-		return model.RuleResult{
-			State:   model.CheckStatePassed,
+		return rule.Result{
+			State:   rule.CheckStatePassed,
 			Message: "Binary is fully stripped (no symbol table or debug sections)",
 		}
 	}
 
 	if hasSymbolTable && hasDebugSections {
-		return model.RuleResult{
-			State:   model.CheckStateFailed,
+		return rule.Result{
+			State:   rule.CheckStateFailed,
 			Message: "Binary is NOT stripped (contains symbol table and debug sections)",
 		}
 	}
 
 	if hasSymbolTable {
-		return model.RuleResult{
-			State:   model.CheckStateFailed,
+		return rule.Result{
+			State:   rule.CheckStateFailed,
 			Message: "Binary is NOT stripped (contains symbol table)",
 		}
 	}
 
-	return model.RuleResult{
-		State:   model.CheckStateFailed,
+	return rule.Result{
+		State:   rule.CheckStateFailed,
 		Message: "Binary is partially stripped (no symbol table, but has debug sections)",
 	}
 }

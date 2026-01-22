@@ -13,9 +13,9 @@ import (
 	"time"
 
 	"github.com/mkacmar/crack/internal/debuginfo"
-	"github.com/mkacmar/crack/internal/model"
 	"github.com/mkacmar/crack/internal/output"
 	"github.com/mkacmar/crack/internal/preset"
+	"github.com/mkacmar/crack/internal/result"
 	"github.com/mkacmar/crack/internal/rules"
 	"github.com/mkacmar/crack/internal/rules/elf"
 	"github.com/mkacmar/crack/internal/scanner"
@@ -302,19 +302,19 @@ func (a *App) runAnalyze(prog string, args []string) int {
 	return a.processStreaming(resultsChan, showPassed, showSkipped)
 }
 
-func (a *App) processFullReport(resultsChan <-chan model.FileScanResult, aggregate, showPassed, showSkipped bool, sarifOutput string) int {
-	var results []model.FileScanResult
+func (a *App) processFullReport(resultsChan <-chan result.FileScanResult, aggregate, showPassed, showSkipped bool, sarifOutput string) int {
+	var results []result.FileScanResult
 	var totalFailed int
 
-	for result := range resultsChan {
-		if result.Skipped {
+	for res := range resultsChan {
+		if res.Skipped {
 			continue
 		}
-		results = append(results, result)
-		totalFailed += result.FailedChecks()
+		results = append(results, res)
+		totalFailed += res.FailedChecks()
 	}
 
-	report := &model.ScanResults{Results: results}
+	report := &result.ScanResults{Results: results}
 
 	if aggregate {
 		agg := output.AggregateFindings(report)
@@ -348,16 +348,16 @@ func (a *App) processFullReport(resultsChan <-chan model.FileScanResult, aggrega
 	return 0
 }
 
-func (a *App) processStreaming(resultsChan <-chan model.FileScanResult, showPassed, showSkipped bool) int {
+func (a *App) processStreaming(resultsChan <-chan result.FileScanResult, showPassed, showSkipped bool) int {
 	var totalFailed int
 	textFormatter, _ := output.GetFormatter("text", output.FormatterOptions{ShowPassed: showPassed, ShowSkipped: showSkipped})
 
-	for result := range resultsChan {
-		if result.Skipped {
+	for res := range resultsChan {
+		if res.Skipped {
 			continue
 		}
-		totalFailed += result.FailedChecks()
-		singleReport := &model.ScanResults{Results: []model.FileScanResult{result}}
+		totalFailed += res.FailedChecks()
+		singleReport := &result.ScanResults{Results: []result.FileScanResult{res}}
 		if err := textFormatter.Format(singleReport, os.Stdout); err != nil {
 			a.logger.Error("failed to format output", slog.Any("error", err))
 		}

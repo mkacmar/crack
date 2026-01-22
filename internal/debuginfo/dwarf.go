@@ -7,10 +7,11 @@ import (
 	"log/slog"
 	"strings"
 
-	"github.com/mkacmar/crack/internal/model"
+	"github.com/mkacmar/crack/internal/binary"
+	"github.com/mkacmar/crack/internal/toolchain"
 )
 
-func EnhanceWithDebugInfo(info *model.ParsedBinary, debugPath string, logger *slog.Logger) error {
+func EnhanceWithDebugInfo(info *binary.Parsed, debugPath string, logger *slog.Logger) error {
 	logger = logger.With(slog.String("component", "dwarf"))
 
 	debugFile, err := elf.Open(debugPath)
@@ -34,8 +35,8 @@ func EnhanceWithDebugInfo(info *model.ParsedBinary, debugPath string, logger *sl
 		return nil
 	}
 
-	newToolchain := model.ParseToolchain(compilerInfo)
-	if info.Build.Toolchain.Compiler == model.CompilerUnknown && newToolchain.Compiler != model.CompilerUnknown {
+	newToolchain := toolchain.ParseToolchain(compilerInfo)
+	if info.Build.Toolchain.Compiler == toolchain.CompilerUnknown && newToolchain.Compiler != toolchain.CompilerUnknown {
 		info.Build.Toolchain = newToolchain
 		logger.Debug("updated toolchain from DWARF", slog.String("compiler", newToolchain.Compiler.String()), slog.String("version", newToolchain.Version.String()))
 	}

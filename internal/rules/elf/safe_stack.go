@@ -4,7 +4,9 @@ import (
 	"debug/elf"
 	"strings"
 
-	"github.com/mkacmar/crack/internal/model"
+	"github.com/mkacmar/crack/internal/binary"
+	"github.com/mkacmar/crack/internal/rule"
+	"github.com/mkacmar/crack/internal/toolchain"
 )
 
 // SafeStackRule checks for SafeStack protection
@@ -12,27 +14,27 @@ import (
 // LLVM: https://llvm.org/docs/SafeStack.html
 type SafeStackRule struct{}
 
-func (r SafeStackRule) ID() string                 { return "safe-stack" }
-func (r SafeStackRule) Name() string               { return "SafeStack" }
+func (r SafeStackRule) ID() string   { return "safe-stack" }
+func (r SafeStackRule) Name() string { return "SafeStack" }
 
-func (r SafeStackRule) Applicability() model.Applicability {
-	return model.Applicability{
-		Arch: model.ArchAll,
-		Compilers: map[model.Compiler]model.CompilerRequirement{
-			model.CompilerClang: {MinVersion: model.Version{Major: 3, Minor: 8}, Flag: "-fsanitize=safe-stack"},
+func (r SafeStackRule) Applicability() rule.Applicability {
+	return rule.Applicability{
+		Arch: binary.ArchAll,
+		Compilers: map[toolchain.Compiler]rule.CompilerRequirement{
+			toolchain.CompilerClang: {MinVersion: toolchain.Version{Major: 3, Minor: 8}, Flag: "-fsanitize=safe-stack"},
 		},
 	}
 }
 
-func (r SafeStackRule) Execute(f *elf.File, info *model.ParsedBinary) model.RuleResult {
+func (r SafeStackRule) Execute(f *elf.File, info *binary.Parsed) rule.Result {
 
 	symbols, _ := f.Symbols()
 	dynsyms, _ := f.DynamicSymbols()
 
 	for _, sym := range symbols {
 		if strings.HasPrefix(sym.Name, "__safestack_") {
-			return model.RuleResult{
-				State:   model.CheckStatePassed,
+			return rule.Result{
+				State:   rule.CheckStatePassed,
 				Message: "SafeStack is enabled",
 			}
 		}
@@ -40,15 +42,15 @@ func (r SafeStackRule) Execute(f *elf.File, info *model.ParsedBinary) model.Rule
 
 	for _, sym := range dynsyms {
 		if strings.HasPrefix(sym.Name, "__safestack_") {
-			return model.RuleResult{
-				State:   model.CheckStatePassed,
+			return rule.Result{
+				State:   rule.CheckStatePassed,
 				Message: "SafeStack is enabled",
 			}
 		}
 	}
 
-	return model.RuleResult{
-		State:   model.CheckStateFailed,
+	return rule.Result{
+		State:   rule.CheckStateFailed,
 		Message: "SafeStack is NOT enabled",
 	}
 }

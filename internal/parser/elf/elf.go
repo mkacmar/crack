@@ -6,7 +6,8 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/mkacmar/crack/internal/model"
+	"github.com/mkacmar/crack/internal/binary"
+	"github.com/mkacmar/crack/internal/toolchain"
 )
 
 type Parser struct{}
@@ -30,16 +31,16 @@ func (p *Parser) CanParse(path string) (bool, error) {
 	return magic[0] == 0x7f && magic[1] == 'E' && magic[2] == 'L' && magic[3] == 'F', nil
 }
 
-func (p *Parser) Parse(path string) (*model.ParsedBinary, error) {
+func (p *Parser) Parse(path string) (*binary.Parsed, error) {
 	f, err := elf.Open(path)
 	if err != nil {
 		return nil, fmt.Errorf("failed to open ELF file: %w", err)
 	}
 
-	info := &model.ParsedBinary{
-		Path:    path,
-		Format:  model.FormatELF,
-		ELFFile: f,
+	info := &binary.Parsed{
+		Path:   path,
+		Format: binary.FormatELF,
+		ELF:    f,
 	}
 
 	info.Architecture = parseArchitecture(f.Machine)
@@ -49,7 +50,7 @@ func (p *Parser) Parse(path string) (*model.ParsedBinary, error) {
 		info.Bits = 32
 	}
 
-	info.Build = model.CompilerInfo{
+	info.Build = toolchain.CompilerInfo{
 		BuildID:   p.extractBuildID(f),
 		Toolchain: p.detectToolchain(f),
 	}
@@ -59,9 +60,9 @@ func (p *Parser) Parse(path string) (*model.ParsedBinary, error) {
 	return info, nil
 }
 
-func (p *Parser) detectToolchain(f *elf.File) model.Toolchain {
+func (p *Parser) detectToolchain(f *elf.File) toolchain.Toolchain {
 	compilerInfo := p.extractCompilerInfo(f)
-	return model.ParseToolchain(compilerInfo)
+	return toolchain.ParseToolchain(compilerInfo)
 }
 
 func (p *Parser) extractCompilerInfo(f *elf.File) string {
@@ -116,31 +117,30 @@ func parseFirstComment(data []byte) string {
 	return ""
 }
 
-func parseArchitecture(machine elf.Machine) model.Architecture {
+func parseArchitecture(machine elf.Machine) binary.Architecture {
 	switch machine {
 	case elf.EM_386:
-		return model.ArchX86
+		return binary.ArchX86
 	case elf.EM_X86_64:
-		return model.ArchX86_64
+		return binary.ArchX86_64
 	case elf.EM_ARM:
-		return model.ArchARM
+		return binary.ArchARM
 	case elf.EM_AARCH64:
-		return model.ArchARM64
+		return binary.ArchARM64
 	case elf.EM_RISCV:
-		return model.ArchRISCV
+		return binary.ArchRISCV
 	case elf.EM_PPC64:
-		return model.ArchPPC64
+		return binary.ArchPPC64
 	case elf.EM_MIPS:
-		return model.ArchMIPS
+		return binary.ArchMIPS
 	case elf.EM_S390:
-		return model.ArchS390X
+		return binary.ArchS390X
 	default:
-		return model.ArchUnknown
+		return binary.ArchUnknown
 	}
 }
 
-func (p *Parser) detectLibC(f *elf.File) model.LibC {
-	// Check interpreter path for dynamically linked binaries
+func (p *Parser) detectLibC(f *elf.File) toolchain.LibC {
 	for _, prog := range f.Progs {
 		if prog.Type == elf.PT_INTERP {
 			data := make([]byte, prog.Filesz)
@@ -150,13 +150,13 @@ func (p *Parser) detectLibC(f *elf.File) model.LibC {
 			interp := string(bytes.TrimRight(data, "\x00"))
 
 			if bytes.Contains([]byte(interp), []byte("ld-musl")) {
-				return model.LibCMusl
+				return toolchain.LibCMusl
 			}
 			if bytes.Contains([]byte(interp), []byte("ld-linux")) {
-				return model.LibCGlibc
+				return toolchain.LibCGlibc
 			}
 		}
 	}
 
-	return model.LibCUnknown
+	return toolchain.LibCUnknown
 }

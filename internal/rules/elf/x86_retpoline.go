@@ -4,7 +4,9 @@ import (
 	"debug/elf"
 	"strings"
 
-	"github.com/mkacmar/crack/internal/model"
+	"github.com/mkacmar/crack/internal/binary"
+	"github.com/mkacmar/crack/internal/rule"
+	"github.com/mkacmar/crack/internal/toolchain"
 )
 
 // X86RetpolineRule checks for Spectre v2 mitigation (retpoline)
@@ -12,27 +14,27 @@ import (
 // Clang: https://clang.llvm.org/docs/ClangCommandLineReference.html#cmdoption-clang-mretpoline
 type X86RetpolineRule struct{}
 
-func (r X86RetpolineRule) ID() string                 { return "x86-retpoline" }
-func (r X86RetpolineRule) Name() string               { return "x86 Retpoline (Spectre v2)" }
+func (r X86RetpolineRule) ID() string   { return "x86-retpoline" }
+func (r X86RetpolineRule) Name() string { return "x86 Retpoline (Spectre v2)" }
 
-func (r X86RetpolineRule) Applicability() model.Applicability {
-	return model.Applicability{
-		Arch: model.ArchAllX86,
-		Compilers: map[model.Compiler]model.CompilerRequirement{
-			model.CompilerGCC:   {MinVersion: model.Version{Major: 7, Minor: 3}, Flag: "-mindirect-branch=thunk -mfunction-return=thunk"},
-			model.CompilerClang: {MinVersion: model.Version{Major: 5, Minor: 0}, Flag: "-mretpoline"},
+func (r X86RetpolineRule) Applicability() rule.Applicability {
+	return rule.Applicability{
+		Arch: binary.ArchAllX86,
+		Compilers: map[toolchain.Compiler]rule.CompilerRequirement{
+			toolchain.CompilerGCC:   {MinVersion: toolchain.Version{Major: 7, Minor: 3}, Flag: "-mindirect-branch=thunk -mfunction-return=thunk"},
+			toolchain.CompilerClang: {MinVersion: toolchain.Version{Major: 5, Minor: 0}, Flag: "-mretpoline"},
 		},
 	}
 }
 
-func (r X86RetpolineRule) Execute(f *elf.File, info *model.ParsedBinary) model.RuleResult {
+func (r X86RetpolineRule) Execute(f *elf.File, info *binary.Parsed) rule.Result {
 	// CET-IBT and retpoline both mitigate Spectre v2 indirect branch attacks.
 	// Hardware mitigations take precedence over software (retpoline).
 	// See: https://www.kernel.org/doc/html/latest/admin-guide/hw-vuln/spectre.html
 	hasCETIBT := parseGNUProperty(f, GNU_PROPERTY_X86_FEATURE_1_AND, GNU_PROPERTY_X86_FEATURE_1_IBT)
 	if hasCETIBT {
-		return model.RuleResult{
-			State:   model.CheckStateSkipped,
+		return rule.Result{
+			State:   rule.CheckStateSkipped,
 			Message: "CET-IBT enabled (hardware mitigation supersedes retpoline)",
 		}
 	}
@@ -47,8 +49,8 @@ func (r X86RetpolineRule) Execute(f *elf.File, info *model.ParsedBinary) model.R
 		}
 	}
 	if !hasSymtab {
-		return model.RuleResult{
-			State:   model.CheckStateSkipped,
+		return rule.Result{
+			State:   rule.CheckStateSkipped,
 			Message: "Stripped binary (retpoline symbols not available)",
 		}
 	}
@@ -75,13 +77,13 @@ func (r X86RetpolineRule) Execute(f *elf.File, info *model.ParsedBinary) model.R
 		if hasLLVMRetpoline {
 			msg = "Retpoline enabled (LLVM)"
 		}
-		return model.RuleResult{
-			State:   model.CheckStatePassed,
+		return rule.Result{
+			State:   rule.CheckStatePassed,
 			Message: msg,
 		}
 	}
-	return model.RuleResult{
-		State:   model.CheckStateFailed,
+	return rule.Result{
+		State:   rule.CheckStateFailed,
 		Message: "Retpoline is NOT enabled (x86 Spectre v2 mitigation missing)",
 	}
 }

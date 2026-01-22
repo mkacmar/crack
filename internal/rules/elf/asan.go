@@ -4,7 +4,9 @@ import (
 	"debug/elf"
 	"strings"
 
-	"github.com/mkacmar/crack/internal/model"
+	"github.com/mkacmar/crack/internal/binary"
+	"github.com/mkacmar/crack/internal/rule"
+	"github.com/mkacmar/crack/internal/toolchain"
 )
 
 // ASANRule checks for AddressSanitizer instrumentation
@@ -12,20 +14,20 @@ import (
 // GCC: https://gcc.gnu.org/onlinedocs/gcc/Instrumentation-Options.html#index-fsanitize=address
 type ASANRule struct{}
 
-func (r ASANRule) ID() string                 { return "asan" }
-func (r ASANRule) Name() string               { return "Address Sanitizer" }
+func (r ASANRule) ID() string   { return "asan" }
+func (r ASANRule) Name() string { return "Address Sanitizer" }
 
-func (r ASANRule) Applicability() model.Applicability {
-	return model.Applicability{
-		Arch: model.ArchAll,
-		Compilers: map[model.Compiler]model.CompilerRequirement{
-			model.CompilerGCC:   {MinVersion: model.Version{Major: 4, Minor: 8}, Flag: "-fsanitize=address"},
-			model.CompilerClang: {MinVersion: model.Version{Major: 3, Minor: 1}, Flag: "-fsanitize=address"},
+func (r ASANRule) Applicability() rule.Applicability {
+	return rule.Applicability{
+		Arch: binary.ArchAll,
+		Compilers: map[toolchain.Compiler]rule.CompilerRequirement{
+			toolchain.CompilerGCC:   {MinVersion: toolchain.Version{Major: 4, Minor: 8}, Flag: "-fsanitize=address"},
+			toolchain.CompilerClang: {MinVersion: toolchain.Version{Major: 3, Minor: 1}, Flag: "-fsanitize=address"},
 		},
 	}
 }
 
-func (r ASANRule) Execute(f *elf.File, info *model.ParsedBinary) model.RuleResult {
+func (r ASANRule) Execute(f *elf.File, info *binary.Parsed) rule.Result {
 
 	hasASan := false
 
@@ -56,13 +58,13 @@ func (r ASANRule) Execute(f *elf.File, info *model.ParsedBinary) model.RuleResul
 	}
 
 	if hasASan {
-		return model.RuleResult{
-			State:   model.CheckStatePassed,
+		return rule.Result{
+			State:   rule.CheckStatePassed,
 			Message: "AddressSanitizer is enabled",
 		}
 	}
-	return model.RuleResult{
-		State:   model.CheckStateFailed,
+	return rule.Result{
+		State:   rule.CheckStateFailed,
 		Message: "AddressSanitizer is NOT enabled",
 	}
 }

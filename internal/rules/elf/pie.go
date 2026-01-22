@@ -3,7 +3,9 @@ package elf
 import (
 	"debug/elf"
 
-	"github.com/mkacmar/crack/internal/model"
+	"github.com/mkacmar/crack/internal/binary"
+	"github.com/mkacmar/crack/internal/rule"
+	"github.com/mkacmar/crack/internal/toolchain"
 )
 
 const DF_1_PIE = 0x08000000
@@ -13,30 +15,30 @@ const DF_1_PIE = 0x08000000
 // Clang: https://clang.llvm.org/docs/ClangCommandLineReference.html#cmdoption-clang-fpie
 type PIERule struct{}
 
-func (r PIERule) ID() string                 { return "pie" }
-func (r PIERule) Name() string               { return "Position Independent Executable" }
+func (r PIERule) ID() string   { return "pie" }
+func (r PIERule) Name() string { return "Position Independent Executable" }
 
-func (r PIERule) Applicability() model.Applicability {
-	return model.Applicability{
-		Arch: model.ArchAll,
-		Compilers: map[model.Compiler]model.CompilerRequirement{
-			model.CompilerGCC:   {MinVersion: model.Version{Major: 6, Minor: 0}, DefaultVersion: model.Version{Major: 6, Minor: 0}, Flag: "-fPIE -pie"},
-			model.CompilerClang: {MinVersion: model.Version{Major: 3, Minor: 0}, DefaultVersion: model.Version{Major: 6, Minor: 0}, Flag: "-fPIE -pie"},
+func (r PIERule) Applicability() rule.Applicability {
+	return rule.Applicability{
+		Arch: binary.ArchAll,
+		Compilers: map[toolchain.Compiler]rule.CompilerRequirement{
+			toolchain.CompilerGCC:   {MinVersion: toolchain.Version{Major: 6, Minor: 0}, DefaultVersion: toolchain.Version{Major: 6, Minor: 0}, Flag: "-fPIE -pie"},
+			toolchain.CompilerClang: {MinVersion: toolchain.Version{Major: 3, Minor: 0}, DefaultVersion: toolchain.Version{Major: 6, Minor: 0}, Flag: "-fPIE -pie"},
 		},
 	}
 }
 
-func (r PIERule) Execute(f *elf.File, info *model.ParsedBinary) model.RuleResult {
+func (r PIERule) Execute(f *elf.File, info *binary.Parsed) rule.Result {
 	if f.Type == elf.ET_EXEC {
-		return model.RuleResult{
-			State:   model.CheckStateFailed,
+		return rule.Result{
+			State:   rule.CheckStateFailed,
 			Message: "Binary is NOT compiled as PIE (ASLR not possible)",
 		}
 	}
 
 	if f.Type != elf.ET_DYN {
-		return model.RuleResult{
-			State:   model.CheckStateSkipped,
+		return rule.Result{
+			State:   rule.CheckStateSkipped,
 			Message: "Not an executable or shared library",
 		}
 	}
@@ -46,23 +48,23 @@ func (r PIERule) Execute(f *elf.File, info *model.ParsedBinary) model.RuleResult
 	// 2. PT_INTERP program header - present in dynamically linked executables but not in shared libraries.
 	// static-pie binaries (-static-pie) have DF_1_PIE but no PT_INTERP, so the DF_1_PIE check must come first.
 	if HasDynFlag(f, elf.DT_FLAGS_1, DF_1_PIE) {
-		return model.RuleResult{
-			State:   model.CheckStatePassed,
+		return rule.Result{
+			State:   rule.CheckStatePassed,
 			Message: "Binary is compiled as PIE (enables ASLR when system supports it)",
 		}
 	}
 
 	for _, prog := range f.Progs {
 		if prog.Type == elf.PT_INTERP {
-			return model.RuleResult{
-				State:   model.CheckStatePassed,
+			return rule.Result{
+				State:   rule.CheckStatePassed,
 				Message: "Binary is compiled as PIE (enables ASLR when system supports it)",
 			}
 		}
 	}
 
-	return model.RuleResult{
-		State:   model.CheckStateSkipped,
+	return rule.Result{
+		State:   rule.CheckStateSkipped,
 		Message: "Shared library (PIE check not applicable)",
 	}
 }

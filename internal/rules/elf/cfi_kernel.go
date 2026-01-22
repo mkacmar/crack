@@ -4,7 +4,9 @@ import (
 	"debug/elf"
 	"strings"
 
-	"github.com/mkacmar/crack/internal/model"
+	"github.com/mkacmar/crack/internal/binary"
+	"github.com/mkacmar/crack/internal/rule"
+	"github.com/mkacmar/crack/internal/toolchain"
 )
 
 // KernelCFIRule checks for Kernel CFI (kCFI) protection
@@ -12,19 +14,19 @@ import (
 // Clang: https://clang.llvm.org/docs/ClangCommandLineReference.html#cmdoption-clang-fsanitize-kcfi
 type KernelCFIRule struct{}
 
-func (r KernelCFIRule) ID() string                 { return "kernel-cfi" }
-func (r KernelCFIRule) Name() string               { return "Kernel CFI (kCFI)" }
+func (r KernelCFIRule) ID() string   { return "kernel-cfi" }
+func (r KernelCFIRule) Name() string { return "Kernel CFI (kCFI)" }
 
-func (r KernelCFIRule) Applicability() model.Applicability {
-	return model.Applicability{
-		Arch: model.ArchAll,
-		Compilers: map[model.Compiler]model.CompilerRequirement{
-			model.CompilerClang: {MinVersion: model.Version{Major: 12, Minor: 0}, Flag: "-fsanitize=kcfi"},
+func (r KernelCFIRule) Applicability() rule.Applicability {
+	return rule.Applicability{
+		Arch: binary.ArchAll,
+		Compilers: map[toolchain.Compiler]rule.CompilerRequirement{
+			toolchain.CompilerClang: {MinVersion: toolchain.Version{Major: 12, Minor: 0}, Flag: "-fsanitize=kcfi"},
 		},
 	}
 }
 
-func (r KernelCFIRule) Execute(f *elf.File, info *model.ParsedBinary) model.RuleResult {
+func (r KernelCFIRule) Execute(f *elf.File, info *binary.Parsed) rule.Result {
 	symbols, _ := f.Symbols()
 	dynsyms, _ := f.DynamicSymbols()
 
@@ -45,13 +47,13 @@ func (r KernelCFIRule) Execute(f *elf.File, info *model.ParsedBinary) model.Rule
 	}
 
 	if hasKCFI {
-		return model.RuleResult{
-			State:   model.CheckStatePassed,
+		return rule.Result{
+			State:   rule.CheckStatePassed,
 			Message: "Kernel CFI (kCFI) is enabled",
 		}
 	}
-	return model.RuleResult{
-		State:   model.CheckStateFailed,
+	return rule.Result{
+		State:   rule.CheckStateFailed,
 		Message: "Kernel CFI is NOT enabled",
 	}
 }

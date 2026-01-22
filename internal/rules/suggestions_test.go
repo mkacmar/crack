@@ -4,55 +4,57 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/mkacmar/crack/internal/model"
+	"github.com/mkacmar/crack/internal/binary"
+	"github.com/mkacmar/crack/internal/rule"
+	"github.com/mkacmar/crack/internal/toolchain"
 )
 
 func TestBuildSuggestion(t *testing.T) {
 	tests := []struct {
 		name          string
-		toolchain     model.Toolchain
-		applicability model.Applicability
+		toolchain     toolchain.Toolchain
+		applicability rule.Applicability
 		wantContain   []string
 		wantExact     string
 	}{
 		{
 			name:      "unknown compiler shows both options",
-			toolchain: model.Toolchain{Compiler: model.CompilerUnknown},
-			applicability: model.Applicability{
-				Arch: model.ArchAll,
-				Compilers: map[model.Compiler]model.CompilerRequirement{
-					model.CompilerGCC:   {MinVersion: model.Version{Major: 4, Minor: 9}, Flag: "-fstack-protector-strong"},
-					model.CompilerClang: {MinVersion: model.Version{Major: 3, Minor: 5}, Flag: "-fstack-protector-strong"},
+			toolchain: toolchain.Toolchain{Compiler: toolchain.CompilerUnknown},
+			applicability: rule.Applicability{
+				Arch: binary.ArchAll,
+				Compilers: map[toolchain.Compiler]rule.CompilerRequirement{
+					toolchain.CompilerGCC:   {MinVersion: toolchain.Version{Major: 4, Minor: 9}, Flag: "-fstack-protector-strong"},
+					toolchain.CompilerClang: {MinVersion: toolchain.Version{Major: 3, Minor: 5}, Flag: "-fstack-protector-strong"},
 				},
 			},
 			wantContain: []string{"Toolchain not detected", "GCC 4.9+", "Clang 3.5+"},
 		},
 		{
 			name: "compiler below minimum version",
-			toolchain: model.Toolchain{
-				Compiler: model.CompilerGCC,
-				Version:  model.Version{Major: 4, Minor: 8},
+			toolchain: toolchain.Toolchain{
+				Compiler: toolchain.CompilerGCC,
+				Version:  toolchain.Version{Major: 4, Minor: 8},
 			},
-			applicability: model.Applicability{
-				Arch: model.ArchAll,
-				Compilers: map[model.Compiler]model.CompilerRequirement{
-					model.CompilerGCC: {MinVersion: model.Version{Major: 4, Minor: 9}, Flag: "-fstack-protector-strong"},
+			applicability: rule.Applicability{
+				Arch: binary.ArchAll,
+				Compilers: map[toolchain.Compiler]rule.CompilerRequirement{
+					toolchain.CompilerGCC: {MinVersion: toolchain.Version{Major: 4, Minor: 9}, Flag: "-fstack-protector-strong"},
 				},
 			},
 			wantContain: []string{"Requires gcc 4.9+", "you have gcc 4.8"},
 		},
 		{
 			name: "compiler above min but below default version",
-			toolchain: model.Toolchain{
-				Compiler: model.CompilerGCC,
-				Version:  model.Version{Major: 10, Minor: 0},
+			toolchain: toolchain.Toolchain{
+				Compiler: toolchain.CompilerGCC,
+				Version:  toolchain.Version{Major: 10, Minor: 0},
 			},
-			applicability: model.Applicability{
-				Arch: model.ArchAll,
-				Compilers: map[model.Compiler]model.CompilerRequirement{
-					model.CompilerGCC: {
-						MinVersion:     model.Version{Major: 8, Minor: 0},
-						DefaultVersion: model.Version{Major: 12, Minor: 0},
+			applicability: rule.Applicability{
+				Arch: binary.ArchAll,
+				Compilers: map[toolchain.Compiler]rule.CompilerRequirement{
+					toolchain.CompilerGCC: {
+						MinVersion:     toolchain.Version{Major: 8, Minor: 0},
+						DefaultVersion: toolchain.Version{Major: 12, Minor: 0},
 						Flag:           "-fstack-clash-protection",
 					},
 				},
@@ -61,44 +63,44 @@ func TestBuildSuggestion(t *testing.T) {
 		},
 		{
 			name: "compiler has no default version",
-			toolchain: model.Toolchain{
-				Compiler: model.CompilerClang,
-				Version:  model.Version{Major: 15, Minor: 0},
+			toolchain: toolchain.Toolchain{
+				Compiler: toolchain.CompilerClang,
+				Version:  toolchain.Version{Major: 15, Minor: 0},
 			},
-			applicability: model.Applicability{
-				Arch: model.ArchAll,
-				Compilers: map[model.Compiler]model.CompilerRequirement{
-					model.CompilerClang: {MinVersion: model.Version{Major: 7, Minor: 0}, Flag: "-fsanitize=safe-stack"},
+			applicability: rule.Applicability{
+				Arch: binary.ArchAll,
+				Compilers: map[toolchain.Compiler]rule.CompilerRequirement{
+					toolchain.CompilerClang: {MinVersion: toolchain.Version{Major: 7, Minor: 0}, Flag: "-fsanitize=safe-stack"},
 				},
 			},
 			wantExact: "Use \"-fsanitize=safe-stack\".",
 		},
 		{
 			name: "feature not supported by detected compiler",
-			toolchain: model.Toolchain{
-				Compiler: model.CompilerGCC,
-				Version:  model.Version{Major: 12, Minor: 0},
+			toolchain: toolchain.Toolchain{
+				Compiler: toolchain.CompilerGCC,
+				Version:  toolchain.Version{Major: 12, Minor: 0},
 			},
-			applicability: model.Applicability{
-				Arch: model.ArchAll,
-				Compilers: map[model.Compiler]model.CompilerRequirement{
-					model.CompilerClang: {MinVersion: model.Version{Major: 3, Minor: 7}, Flag: "-fsanitize=cfi"},
+			applicability: rule.Applicability{
+				Arch: binary.ArchAll,
+				Compilers: map[toolchain.Compiler]rule.CompilerRequirement{
+					toolchain.CompilerClang: {MinVersion: toolchain.Version{Major: 3, Minor: 7}, Flag: "-fsanitize=cfi"},
 				},
 			},
 			wantContain: []string{"requires clang"},
 		},
 		{
 			name: "compiler above default version",
-			toolchain: model.Toolchain{
-				Compiler: model.CompilerGCC,
-				Version:  model.Version{Major: 14, Minor: 0},
+			toolchain: toolchain.Toolchain{
+				Compiler: toolchain.CompilerGCC,
+				Version:  toolchain.Version{Major: 14, Minor: 0},
 			},
-			applicability: model.Applicability{
-				Arch: model.ArchAll,
-				Compilers: map[model.Compiler]model.CompilerRequirement{
-					model.CompilerGCC: {
-						MinVersion:     model.Version{Major: 8, Minor: 0},
-						DefaultVersion: model.Version{Major: 12, Minor: 0},
+			applicability: rule.Applicability{
+				Arch: binary.ArchAll,
+				Compilers: map[toolchain.Compiler]rule.CompilerRequirement{
+					toolchain.CompilerGCC: {
+						MinVersion:     toolchain.Version{Major: 8, Minor: 0},
+						DefaultVersion: toolchain.Version{Major: 12, Minor: 0},
 						Flag:           "-fstack-clash-protection",
 					},
 				},
@@ -107,8 +109,8 @@ func TestBuildSuggestion(t *testing.T) {
 		},
 		{
 			name:          "empty requirements",
-			toolchain:     model.Toolchain{Compiler: model.CompilerGCC, Version: model.Version{Major: 12, Minor: 0}},
-			applicability: model.Applicability{Arch: model.ArchAll, Compilers: nil},
+			toolchain:     toolchain.Toolchain{Compiler: toolchain.CompilerGCC, Version: toolchain.Version{Major: 12, Minor: 0}},
+			applicability: rule.Applicability{Arch: binary.ArchAll, Compilers: nil},
 			wantExact:     "Feature not supported by detected compilers.",
 		},
 	}
@@ -136,16 +138,16 @@ func TestBuildSuggestion(t *testing.T) {
 func TestBuildGenericSuggestion(t *testing.T) {
 	tests := []struct {
 		name           string
-		applicability  model.Applicability
+		applicability  rule.Applicability
 		wantContain    []string
 		wantNotContain []string
 	}{
 		{
 			name: "only GCC requirement",
-			applicability: model.Applicability{
-				Arch: model.ArchAll,
-				Compilers: map[model.Compiler]model.CompilerRequirement{
-					model.CompilerGCC: {MinVersion: model.Version{Major: 7, Minor: 0}, Flag: "-mindirect-branch=thunk"},
+			applicability: rule.Applicability{
+				Arch: binary.ArchAll,
+				Compilers: map[toolchain.Compiler]rule.CompilerRequirement{
+					toolchain.CompilerGCC: {MinVersion: toolchain.Version{Major: 7, Minor: 0}, Flag: "-mindirect-branch=thunk"},
 				},
 			},
 			wantContain:    []string{"GCC 7.0+"},
@@ -153,10 +155,10 @@ func TestBuildGenericSuggestion(t *testing.T) {
 		},
 		{
 			name: "only Clang requirement",
-			applicability: model.Applicability{
-				Arch: model.ArchAll,
-				Compilers: map[model.Compiler]model.CompilerRequirement{
-					model.CompilerClang: {MinVersion: model.Version{Major: 3, Minor: 7}, Flag: "-fsanitize=cfi"},
+			applicability: rule.Applicability{
+				Arch: binary.ArchAll,
+				Compilers: map[toolchain.Compiler]rule.CompilerRequirement{
+					toolchain.CompilerClang: {MinVersion: toolchain.Version{Major: 3, Minor: 7}, Flag: "-fsanitize=cfi"},
 				},
 			},
 			wantContain:    []string{"Clang 3.7+"},
@@ -164,11 +166,11 @@ func TestBuildGenericSuggestion(t *testing.T) {
 		},
 		{
 			name: "both compilers",
-			applicability: model.Applicability{
-				Arch: model.ArchAll,
-				Compilers: map[model.Compiler]model.CompilerRequirement{
-					model.CompilerGCC:   {MinVersion: model.Version{Major: 4, Minor: 9}, Flag: "-fPIE"},
-					model.CompilerClang: {MinVersion: model.Version{Major: 3, Minor: 0}, Flag: "-fPIE"},
+			applicability: rule.Applicability{
+				Arch: binary.ArchAll,
+				Compilers: map[toolchain.Compiler]rule.CompilerRequirement{
+					toolchain.CompilerGCC:   {MinVersion: toolchain.Version{Major: 4, Minor: 9}, Flag: "-fPIE"},
+					toolchain.CompilerClang: {MinVersion: toolchain.Version{Major: 3, Minor: 0}, Flag: "-fPIE"},
 				},
 			},
 			wantContain: []string{"GCC 4.9+", "Clang 3.0+", " or "},

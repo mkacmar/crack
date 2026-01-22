@@ -6,24 +6,26 @@ import (
 	"slices"
 	"strings"
 
-	"github.com/mkacmar/crack/internal/model"
+	"github.com/mkacmar/crack/internal/result"
+	"github.com/mkacmar/crack/internal/rule"
 	"github.com/mkacmar/crack/internal/rules/elf"
+	"github.com/mkacmar/crack/internal/toolchain"
 )
 
 type AggregatedReport struct {
-	Upgrades  map[model.Compiler]map[string]map[string]bool // compiler -> version -> paths
-	Flags     map[string]map[string]bool                    // flag -> paths
+	Upgrades  map[toolchain.Compiler]map[string]map[string]bool // compiler -> version -> paths
+	Flags     map[string]map[string]bool                        // flag -> paths
 	PassedAll []string
 }
 
 func NewAggregatedReport() *AggregatedReport {
 	return &AggregatedReport{
-		Upgrades: make(map[model.Compiler]map[string]map[string]bool),
+		Upgrades: make(map[toolchain.Compiler]map[string]map[string]bool),
 		Flags:    make(map[string]map[string]bool),
 	}
 }
 
-func AggregateFindings(report *model.ScanResults) *AggregatedReport {
+func AggregateFindings(report *result.ScanResults) *AggregatedReport {
 	agg := NewAggregatedReport()
 
 	for _, result := range report.Results {
@@ -34,16 +36,16 @@ func AggregateFindings(report *model.ScanResults) *AggregatedReport {
 	return agg
 }
 
-func processFileScanResult(agg *AggregatedReport, result model.FileScanResult) {
+func processFileScanResult(agg *AggregatedReport, result result.FileScanResult) {
 	if result.Error != nil {
 		return
 	}
 
-	var failedChecks []model.RuleResult
+	var failedChecks []rule.Result
 	allPassed := true
 
 	for _, check := range result.Results {
-		if check.State == model.CheckStateFailed {
+		if check.State == rule.CheckStateFailed {
 			failedChecks = append(failedChecks, check)
 			allPassed = false
 		}
@@ -59,7 +61,7 @@ func processFileScanResult(agg *AggregatedReport, result model.FileScanResult) {
 	}
 }
 
-func processFailedCheck(agg *AggregatedReport, check model.RuleResult, path string, detectedCompiler model.Compiler) {
+func processFailedCheck(agg *AggregatedReport, check rule.Result, path string, detectedCompiler toolchain.Compiler) {
 	rule := elf.GetRuleByID(check.RuleID)
 	if rule == nil {
 		return
@@ -72,16 +74,16 @@ func processFailedCheck(agg *AggregatedReport, check model.RuleResult, path stri
 	}
 }
 
-func processRequirement(agg *AggregatedReport, compiler model.Compiler, req model.CompilerRequirement, path string, detectedCompiler model.Compiler) {
-	if detectedCompiler != model.CompilerUnknown && compiler != detectedCompiler {
+func processRequirement(agg *AggregatedReport, compiler toolchain.Compiler, req rule.CompilerRequirement, path string, detectedCompiler toolchain.Compiler) {
+	if detectedCompiler != toolchain.CompilerUnknown && compiler != detectedCompiler {
 		return
 	}
 
 	ver := req.DefaultVersion
-	if ver == (model.Version{}) {
+	if ver == (toolchain.Version{}) {
 		ver = req.MinVersion
 	}
-	if ver != (model.Version{}) {
+	if ver != (toolchain.Version{}) {
 		addToUpgrades(agg, compiler, ver.String(), path)
 	}
 
@@ -92,7 +94,7 @@ func processRequirement(agg *AggregatedReport, compiler model.Compiler, req mode
 	addToFlags(agg.Flags, req.Flag, path)
 }
 
-func addToUpgrades(agg *AggregatedReport, compiler model.Compiler, version, path string) {
+func addToUpgrades(agg *AggregatedReport, compiler toolchain.Compiler, version, path string) {
 	if agg.Upgrades[compiler] == nil {
 		agg.Upgrades[compiler] = make(map[string]map[string]bool)
 	}
@@ -116,8 +118,8 @@ func mapKeys(m map[string]bool) []string {
 func FormatAggregated(agg *AggregatedReport) string {
 	var sb strings.Builder
 
-	gccUpgrades := agg.Upgrades[model.CompilerGCC]
-	clangUpgrades := agg.Upgrades[model.CompilerClang]
+	gccUpgrades := agg.Upgrades[toolchain.CompilerGCC]
+	clangUpgrades := agg.Upgrades[toolchain.CompilerClang]
 
 	gccVer := getHighestVersion(gccUpgrades)
 	clangVer := getHighestVersion(clangUpgrades)
@@ -136,15 +138,15 @@ func FormatAggregated(agg *AggregatedReport) string {
 				}
 				sb.WriteString("\n")
 			} else {
-				formatCompilerUpgrades(&sb, model.CompilerGCC, gccVer, gccBinaries)
-				formatCompilerUpgrades(&sb, model.CompilerClang, clangVer, clangBinaries)
+				formatCompilerUpgrades(&sb, toolchain.CompilerGCC, gccVer, gccBinaries)
+				formatCompilerUpgrades(&sb, toolchain.CompilerClang, clangVer, clangBinaries)
 			}
 		} else {
 			if gccVer != "" {
-				formatCompilerUpgrades(&sb, model.CompilerGCC, gccVer, mapKeys(gccUpgrades[gccVer]))
+				formatCompilerUpgrades(&sb, toolchain.CompilerGCC, gccVer, mapKeys(gccUpgrades[gccVer]))
 			}
 			if clangVer != "" {
-				formatCompilerUpgrades(&sb, model.CompilerClang, clangVer, mapKeys(clangUpgrades[clangVer]))
+				formatCompilerUpgrades(&sb, toolchain.CompilerClang, clangVer, mapKeys(clangUpgrades[clangVer]))
 			}
 		}
 	}
@@ -176,9 +178,9 @@ func getHighestVersion(upgrades map[string]map[string]bool) string {
 		return ""
 	}
 	var highest string
-	var highestVer model.Version
+	var highestVer toolchain.Version
 	for v := range upgrades {
-		parsed, err := model.ParseVersion(v)
+		parsed, err := toolchain.ParseVersion(v)
 		if err != nil {
 			continue
 		}
@@ -200,7 +202,7 @@ func collectAllBinaries(flags map[string]map[string]bool) map[string]bool {
 	return all
 }
 
-func formatCompilerUpgrades(sb *strings.Builder, compiler model.Compiler, ver string, binaries []string) {
+func formatCompilerUpgrades(sb *strings.Builder, compiler toolchain.Compiler, ver string, binaries []string) {
 	if ver == "" || len(binaries) == 0 {
 		return
 	}
