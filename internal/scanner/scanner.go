@@ -117,7 +117,7 @@ func (s *Scanner) ScanFile(ctx context.Context, path string) result.FileScanResu
 		if errors.Is(parseErr, binary.ErrUnsupportedFormat) {
 			continue
 		}
-		s.logger.Debug("failed to parse binary", slog.String("path", path), slog.Any("error", parseErr))
+		s.logger.Warn("failed to parse binary", slog.String("path", path), slog.Any("error", parseErr))
 		res.Error = parseErr
 		return res
 	}
@@ -141,10 +141,10 @@ func (s *Scanner) ScanFile(ctx context.Context, path string) result.FileScanResu
 
 		debugPath, err := s.debuginfodClient.FetchDebugInfo(ctx, info.Build.BuildID)
 		if err != nil {
-			s.logger.Debug("failed to fetch debug symbols", slog.String("path", path), slog.Any("error", err))
+			s.logger.Warn("failed to fetch debug symbols", slog.String("path", path), slog.Any("error", err))
 		} else {
 			if err := debuginfo.EnhanceWithDebugInfo(info, debugPath, s.logger); err != nil {
-				s.logger.Debug("failed to parse debug symbols", slog.String("path", path), slog.Any("error", err))
+				s.logger.Error("failed to parse debug symbols", slog.String("path", path), slog.Any("error", err))
 			}
 		}
 	}
