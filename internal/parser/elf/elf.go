@@ -4,7 +4,7 @@ import (
 	"bytes"
 	"debug/elf"
 	"fmt"
-	"os"
+	"strings"
 
 	"github.com/mkacmar/crack/internal/binary"
 	"github.com/mkacmar/crack/internal/toolchain"
@@ -16,24 +16,12 @@ func NewParser() *Parser {
 	return &Parser{}
 }
 
-func (p *Parser) CanParse(path string) (bool, error) {
-	f, err := os.Open(path)
-	if err != nil {
-		return false, err
-	}
-	defer f.Close()
-
-	magic := make([]byte, 4)
-	if _, err := f.Read(magic); err != nil {
-		return false, nil
-	}
-
-	return magic[0] == 0x7f && magic[1] == 'E' && magic[2] == 'L' && magic[3] == 'F', nil
-}
-
 func (p *Parser) Parse(path string) (*binary.Parsed, error) {
 	f, err := elf.Open(path)
 	if err != nil {
+		if isNotELFError(err) {
+			return nil, binary.ErrUnsupportedFormat
+		}
 		return nil, fmt.Errorf("failed to open ELF file: %w", err)
 	}
 
@@ -58,6 +46,12 @@ func (p *Parser) Parse(path string) (*binary.Parsed, error) {
 	info.LibC = p.detectLibC(f)
 
 	return info, nil
+}
+
+func isNotELFError(err error) bool {
+	msg := err.Error()
+	return strings.Contains(msg, "bad magic number") ||
+		strings.Contains(msg, "invalid argument")
 }
 
 func (p *Parser) detectToolchain(f *elf.File) toolchain.Toolchain {

@@ -121,45 +121,39 @@ func (s *Scanner) scanFilesParallel(ctx context.Context, files []string) <-chan 
 }
 
 func (s *Scanner) ScanFile(ctx context.Context, path string) result.FileScanResult {
-	result := result.FileScanResult{
+	res := result.FileScanResult{
 		Path: path,
 	}
 
 	s.logger.Debug("scanning file", slog.String("path", path))
 
-	var parser binary.Parser
+	var info *binary.Parsed
+	var parseErr error
 	for _, p := range s.parsers {
-		canParse, err := p.CanParse(path)
-		if err != nil {
-			s.logger.Debug("failed to check file", slog.String("path", path), slog.Any("error", err))
-			result.Error = err
-			return result
-		}
-		if canParse {
-			parser = p
+		info, parseErr = p.Parse(path)
+		if parseErr == nil {
 			break
 		}
+		if parseErr == binary.ErrUnsupportedFormat {
+			continue
+		}
+		s.logger.Debug("failed to parse binary", slog.String("path", path), slog.Any("error", parseErr))
+		res.Error = parseErr
+		return res
 	}
 
-	if parser == nil {
+	if info == nil {
 		s.logger.Debug("skipping non-binary file", slog.String("path", path))
-		result.Skipped = true
-		return result
-	}
-
-	info, err := parser.Parse(path)
-	if err != nil {
-		s.logger.Debug("failed to parse binary", slog.String("path", path), slog.Any("error", err))
-		result.Error = err
-		return result
+		res.Skipped = true
+		return res
 	}
 
 	if info.ELF != nil {
 		defer info.ELF.Close()
 	}
 
-	result.Format = info.Format
-	result.SHA256 = computeSHA256(path)
+	res.Format = info.Format
+	res.SHA256 = computeSHA256(path)
 	s.logger.Debug("parsed binary", slog.String("path", path), slog.String("format", info.Format.String()), slog.String("arch", info.Architecture.String()))
 
 	if s.debuginfodClient != nil && info.Build.BuildID != "" {
@@ -175,17 +169,17 @@ func (s *Scanner) ScanFile(ctx context.Context, path string) result.FileScanResu
 		}
 	}
 
-	result.Toolchain = info.Build.Toolchain
+	res.Toolchain = info.Build.Toolchain
 
 	checkResults := s.ruleEngine.ExecuteRules(info)
-	result.Results = checkResults
+	res.Results = checkResults
 
 	s.logger.Debug("scan complete",
 		slog.String("path", path),
-		slog.Int("passed", result.PassedChecks()),
-		slog.Int("failed", result.FailedChecks()))
+		slog.Int("passed", res.PassedChecks()),
+		slog.Int("failed", res.FailedChecks()))
 
-	return result
+	return res
 }
 
 func (s *Scanner) collectFiles(path string, recursive bool) ([]string, error) {

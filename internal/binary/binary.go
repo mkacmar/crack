@@ -2,9 +2,12 @@ package binary
 
 import (
 	"debug/elf"
+	"errors"
 
 	"github.com/mkacmar/crack/internal/toolchain"
 )
+
+var ErrUnsupportedFormat = errors.New("unsupported binary format")
 
 type Format int
 
@@ -70,14 +73,6 @@ func (a Architecture) Matches(target Architecture) bool {
 	return a&target != 0
 }
 
-func (a Architecture) IsX86() bool {
-	return a&ArchAllX86 != 0
-}
-
-func (a Architecture) IsARM() bool {
-	return a&ArchAllARM != 0
-}
-
 type Parsed struct {
 	Path         string
 	Format       Format
@@ -89,6 +84,5 @@ type Parsed struct {
 }
 
 type Parser interface {
-	CanParse(path string) (bool, error)
 	Parse(path string) (*Parsed, error)
 }

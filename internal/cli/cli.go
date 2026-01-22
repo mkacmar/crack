@@ -12,6 +12,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/mkacmar/crack/internal/binary"
 	"github.com/mkacmar/crack/internal/debuginfo"
 	"github.com/mkacmar/crack/internal/output"
 	"github.com/mkacmar/crack/internal/preset"
@@ -201,9 +202,9 @@ func (a *App) runAnalyze(prog string, args []string) int {
 				continue
 			}
 			arch := rule.Applicability().Arch
-			if arch.IsX86() && !arch.IsARM() {
+			if arch.Matches(binary.ArchAllX86) && !arch.Matches(binary.ArchAllARM) {
 				x86 = append(x86, ruleID)
-			} else if arch.IsARM() && !arch.IsX86() {
+			} else if arch.Matches(binary.ArchAllARM) && !arch.Matches(binary.ArchAllX86) {
 				arm = append(arm, ruleID)
 			} else {
 				general = append(general, ruleID)
