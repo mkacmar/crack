@@ -82,9 +82,9 @@ func (s *Scanner) scanFilesParallel(ctx context.Context, files []string) <-chan 
 				if ctx.Err() != nil {
 					return ctx.Err()
 				}
-				result := s.ScanFile(ctx, path)
+				res := s.ScanFile(ctx, path)
 				select {
-				case results <- result:
+				case results <- res:
 				case <-ctx.Done():
 					return ctx.Err()
 				}
