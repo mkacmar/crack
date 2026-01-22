@@ -4,6 +4,7 @@ import (
 	"context"
 	"crypto/sha256"
 	"encoding/hex"
+	"errors"
 	"fmt"
 	"io"
 	"io/fs"
@@ -113,7 +114,7 @@ func (s *Scanner) ScanFile(ctx context.Context, path string) result.FileScanResu
 		if parseErr == nil {
 			break
 		}
-		if parseErr == binary.ErrUnsupportedFormat {
+		if errors.Is(parseErr, binary.ErrUnsupportedFormat) {
 			continue
 		}
 		s.logger.Debug("failed to parse binary", slog.String("path", path), slog.Any("error", parseErr))
