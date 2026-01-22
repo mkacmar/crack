@@ -40,6 +40,8 @@ func (a *App) Run(args []string) int {
 	switch cmd {
 	case "analyze":
 		return a.runAnalyze(args[0], args[2:])
+	case "list-rules":
+		return a.runListRules(args[0], args[2:])
 	case "version", "-v", "--version":
 		a.printVersion()
 		return 0
@@ -47,7 +49,7 @@ func (a *App) Run(args []string) int {
 		a.printUsage(args[0])
 		return 0
 	default:
-		fmt.Fprintf(os.Stderr, "Unknown command: %s\n\n", cmd)
+		fmt.Fprintf(os.Stderr, "Error: unknown command: %s\n\n", cmd)
 		a.printUsage(args[0])
 		return 1
 	}
@@ -67,9 +69,10 @@ func (a *App) printUsage(prog string) {
 	fmt.Fprintf(os.Stderr, "CRACK - Compiler Hardening Checker\n\n")
 	fmt.Fprintf(os.Stderr, "Usage: %s <command> [options]\n\n", prog)
 	fmt.Fprintf(os.Stderr, "Commands:\n")
-	fmt.Fprintf(os.Stderr, "  analyze    Analyze binaries for security hardening features\n")
-	fmt.Fprintf(os.Stderr, "  version    Show version information\n")
-	fmt.Fprintf(os.Stderr, "  help       Show this help message\n")
+	fmt.Fprintf(os.Stderr, "  analyze      Analyze binaries for security hardening features\n")
+	fmt.Fprintf(os.Stderr, "  list-rules   List available security rules\n")
+	fmt.Fprintf(os.Stderr, "  version      Show version information\n")
+	fmt.Fprintf(os.Stderr, "  help         Show this help message\n")
 	fmt.Fprintf(os.Stderr, "\nRun '%s <command> -h' for more information on a command.\n", prog)
 }
 
@@ -100,7 +103,102 @@ func (a *App) printAnalyzeUsage(prog string) {
 			fmt.Fprintf(os.Stderr, "  %s\n", name)
 		}
 	}
-	fmt.Fprintf(os.Stderr, "\nUse 'crack analyze --preset=<name> --list-rules' to see rules in a preset.\n")
+	fmt.Fprintf(os.Stderr, "\nUse 'crack list-rules --preset=<name>' to see rules in a preset.\n")
+}
+
+func (a *App) printListRulesUsage(prog string) {
+	fmt.Fprintf(os.Stderr, "Usage: %s list-rules [options]\n\n", prog)
+	fmt.Fprintf(os.Stderr, "List available security rules.\n\n")
+	fmt.Fprintf(os.Stderr, "Options:\n")
+	fmt.Fprintf(os.Stderr, "  -P, --preset string    Show rules for a specific preset (default \"recommended\")\n")
+	fmt.Fprintf(os.Stderr, "\nPresets:\n")
+	for _, name := range preset.Names() {
+		if name == "recommended" {
+			fmt.Fprintf(os.Stderr, "  %s (default)\n", name)
+		} else {
+			fmt.Fprintf(os.Stderr, "  %s\n", name)
+		}
+	}
+}
+
+func (a *App) runListRules(prog string, args []string) int {
+	fs := flag.NewFlagSet("list-rules", flag.ExitOnError)
+
+	var presetName string
+	fs.StringVar(&presetName, "preset", "recommended", "")
+	fs.StringVar(&presetName, "P", "recommended", "")
+
+	fs.Usage = func() {
+		a.printListRulesUsage(prog)
+	}
+
+	if err := fs.Parse(args); err != nil {
+		return 1
+	}
+
+	p, ok := preset.Get(presetName)
+	if !ok {
+		fmt.Fprintf(os.Stderr, "Error: unknown preset %q\n", presetName)
+		fmt.Fprintf(os.Stderr, "Available presets: %s\n", strings.Join(preset.Names(), ", "))
+		return 1
+	}
+
+	var general, x86, arm []string
+	for _, ruleID := range p.Rules {
+		rule := elf.GetRuleByID(ruleID)
+		if rule == nil {
+			general = append(general, ruleID)
+			continue
+		}
+		arch := rule.Applicability().Arch
+		if arch.Matches(binary.ArchAllX86) && !arch.Matches(binary.ArchAllARM) {
+			x86 = append(x86, ruleID)
+		} else if arch.Matches(binary.ArchAllARM) && !arch.Matches(binary.ArchAllX86) {
+			arm = append(arm, ruleID)
+		} else {
+			general = append(general, ruleID)
+		}
+	}
+
+	sort.Strings(general)
+	sort.Strings(x86)
+	sort.Strings(arm)
+
+	if len(general) > 0 {
+		fmt.Println("General:")
+		for _, ruleID := range general {
+			rule := elf.GetRuleByID(ruleID)
+			if rule != nil {
+				fmt.Printf("  %-24s %s\n", ruleID, rule.Name())
+			} else {
+				fmt.Printf("  %-24s (unknown)\n", ruleID)
+			}
+		}
+	}
+
+	if len(x86) > 0 {
+		if len(general) > 0 {
+			fmt.Println()
+		}
+		fmt.Println("x86:")
+		for _, ruleID := range x86 {
+			rule := elf.GetRuleByID(ruleID)
+			fmt.Printf("  %-24s %s\n", ruleID, rule.Name())
+		}
+	}
+
+	if len(arm) > 0 {
+		if len(general) > 0 || len(x86) > 0 {
+			fmt.Println()
+		}
+		fmt.Println("ARM:")
+		for _, ruleID := range arm {
+			rule := elf.GetRuleByID(ruleID)
+			fmt.Printf("  %-24s %s\n", ruleID, rule.Name())
+		}
+	}
+
+	return 0
 }
 
 func (a *App) runAnalyze(prog string, args []string) int {
@@ -110,7 +208,6 @@ func (a *App) runAnalyze(prog string, args []string) int {
 		presetName        string
 		presetSet         bool
 		rulesFlag         string
-		listRules         bool
 		sarifOutput       string
 		aggregate         bool
 		recursive         bool
@@ -129,7 +226,6 @@ func (a *App) runAnalyze(prog string, args []string) int {
 	fs.StringVar(&presetName, "P", "recommended", "")
 	fs.StringVar(&rulesFlag, "rules", "", "")
 	fs.StringVar(&rulesFlag, "R", "", "")
-	fs.BoolVar(&listRules, "list-rules", false, "")
 	fs.StringVar(&sarifOutput, "sarif", "", "")
 	fs.StringVar(&sarifOutput, "o", "", "")
 	fs.BoolVar(&aggregate, "aggregate", false, "")
@@ -177,7 +273,7 @@ func (a *App) runAnalyze(prog string, args []string) int {
 		for _, id := range ruleIDs {
 			if elf.GetRuleByID(id) == nil {
 				fmt.Fprintf(os.Stderr, "Error: unknown rule %q\n", id)
-				fmt.Fprintf(os.Stderr, "Use 'crack analyze --preset=hardened --list-rules' to see available rules.\n")
+				fmt.Fprintf(os.Stderr, "Use 'crack list-rules' to see available rules.\n")
 				return 1
 			}
 		}
@@ -190,65 +286,6 @@ func (a *App) runAnalyze(prog string, args []string) int {
 			fmt.Fprintf(os.Stderr, "Available presets: %s\n", strings.Join(preset.Names(), ", "))
 			return 1
 		}
-	}
-
-	if listRules {
-		var general, x86, arm []string
-		for _, ruleID := range p.Rules {
-			rule := elf.GetRuleByID(ruleID)
-			if rule == nil {
-				general = append(general, ruleID)
-				continue
-			}
-			arch := rule.Applicability().Arch
-			if arch.Matches(binary.ArchAllX86) && !arch.Matches(binary.ArchAllARM) {
-				x86 = append(x86, ruleID)
-			} else if arch.Matches(binary.ArchAllARM) && !arch.Matches(binary.ArchAllX86) {
-				arm = append(arm, ruleID)
-			} else {
-				general = append(general, ruleID)
-			}
-		}
-
-		sort.Strings(general)
-		sort.Strings(x86)
-		sort.Strings(arm)
-
-		if len(general) > 0 {
-			fmt.Println("General:")
-			for _, ruleID := range general {
-				rule := elf.GetRuleByID(ruleID)
-				if rule != nil {
-					fmt.Printf("  %-24s %s\n", ruleID, rule.Name())
-				} else {
-					fmt.Printf("  %-24s (unknown)\n", ruleID)
-				}
-			}
-		}
-
-		if len(x86) > 0 {
-			if len(general) > 0 {
-				fmt.Println()
-			}
-			fmt.Println("x86:")
-			for _, ruleID := range x86 {
-				rule := elf.GetRuleByID(ruleID)
-				fmt.Printf("  %-24s %s\n", ruleID, rule.Name())
-			}
-		}
-
-		if len(arm) > 0 {
-			if len(general) > 0 || len(x86) > 0 {
-				fmt.Println()
-			}
-			fmt.Println("ARM:")
-			for _, ruleID := range arm {
-				rule := elf.GetRuleByID(ruleID)
-				fmt.Printf("  %-24s %s\n", ruleID, rule.Name())
-			}
-		}
-
-		return 0
 	}
 
 	if fs.NArg() == 0 {
