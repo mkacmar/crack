@@ -83,7 +83,7 @@ func (s *Scanner) scanFilesParallel(ctx context.Context, files []string) <-chan 
 				if ctx.Err() != nil {
 					return ctx.Err()
 				}
-				res := s.ScanFile(ctx, path)
+				res := s.scanFile(ctx, path)
 				select {
 				case results <- res:
 				case <-ctx.Done():
@@ -100,7 +100,7 @@ func (s *Scanner) scanFilesParallel(ctx context.Context, files []string) <-chan 
 	return results
 }
 
-func (s *Scanner) ScanFile(ctx context.Context, path string) result.FileScanResult {
+func (s *Scanner) scanFile(ctx context.Context, path string) result.FileScanResult {
 	res := result.FileScanResult{
 		Path: path,
 	}
@@ -133,7 +133,11 @@ func (s *Scanner) ScanFile(ctx context.Context, path string) result.FileScanResu
 	}
 
 	res.Format = info.Format
-	res.SHA256 = computeSHA256(path)
+	hash, err := computeSHA256(path)
+	if err != nil {
+		s.logger.Warn("failed to compute SHA256", slog.String("path", path), slog.Any("error", err))
+	}
+	res.SHA256 = hash
 	s.logger.Debug("parsed binary", slog.String("path", path), slog.String("format", info.Format.String()), slog.String("arch", info.Architecture.String()))
 
 	if s.debuginfodClient != nil && info.Build.BuildID != "" {
@@ -141,7 +145,7 @@ func (s *Scanner) ScanFile(ctx context.Context, path string) result.FileScanResu
 
 		debugPath, err := s.debuginfodClient.FetchDebugInfo(ctx, info.Build.BuildID)
 		if err != nil {
-			s.logger.Warn("failed to fetch debug symbols", slog.String("path", path), slog.Any("error", err))
+			s.logger.Error("failed to fetch debug symbols", slog.String("path", path), slog.Any("error", err))
 		} else {
 			if err := debuginfo.EnhanceWithDebugInfo(info, debugPath, s.logger); err != nil {
 				s.logger.Error("failed to parse debug symbols", slog.String("path", path), slog.Any("error", err))
@@ -203,17 +207,17 @@ func (s *Scanner) collectFiles(path string, recursive bool) ([]string, error) {
 	return files, nil
 }
 
-func computeSHA256(path string) string {
+func computeSHA256(path string) (string, error) {
 	f, err := os.Open(path)
 	if err != nil {
-		return ""
+		return "", err
 	}
 	defer f.Close()
 
 	h := sha256.New()
 	if _, err := io.Copy(h, f); err != nil {
-		return ""
+		return "", err
 	}
 
-	return hex.EncodeToString(h.Sum(nil))
+	return hex.EncodeToString(h.Sum(nil)), nil
 }
