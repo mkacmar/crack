@@ -413,13 +413,15 @@ func (a *App) processStreaming(resultsChan <-chan result.FileScanResult, showPas
 	return 0
 }
 
+const logLevelDisabled = slog.Level(99)
+
 func setupLogger(level string) (*slog.Logger, bool) {
 	var logLevel slog.Level
 	valid := true
 
 	switch level {
 	case "none":
-		logLevel = slog.Level(99)
+		logLevel = logLevelDisabled
 	case "debug":
 		logLevel = slog.LevelDebug
 	case "info":
