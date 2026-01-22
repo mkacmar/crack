@@ -206,7 +206,6 @@ func (a *App) runAnalyze(prog string, args []string) int {
 
 	var (
 		presetName        string
-		presetSet         bool
 		rulesFlag         string
 		sarifOutput       string
 		aggregate         bool
@@ -222,8 +221,8 @@ func (a *App) runAnalyze(prog string, args []string) int {
 		debuginfodRetries int
 	)
 
-	fs.StringVar(&presetName, "preset", "recommended", "")
-	fs.StringVar(&presetName, "P", "recommended", "")
+	fs.StringVar(&presetName, "preset", "", "")
+	fs.StringVar(&presetName, "P", "", "")
 	fs.StringVar(&rulesFlag, "rules", "", "")
 	fs.StringVar(&rulesFlag, "R", "", "")
 	fs.StringVar(&sarifOutput, "sarif", "", "")
@@ -252,14 +251,7 @@ func (a *App) runAnalyze(prog string, args []string) int {
 		return 1
 	}
 
-	// Check if --preset was explicitly set
-	fs.Visit(func(f *flag.Flag) {
-		if f.Name == "preset" || f.Name == "P" {
-			presetSet = true
-		}
-	})
-
-	if rulesFlag != "" && presetSet {
+	if rulesFlag != "" && presetName != "" {
 		fmt.Fprintf(os.Stderr, "Error: --rules and --preset are mutually exclusive\n")
 		return 1
 	}
@@ -279,6 +271,9 @@ func (a *App) runAnalyze(prog string, args []string) int {
 		}
 		p = preset.Preset{Rules: ruleIDs}
 	} else {
+		if presetName == "" {
+			presetName = "recommended"
+		}
 		var ok bool
 		p, ok = preset.Get(presetName)
 		if !ok {
