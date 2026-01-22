@@ -15,8 +15,6 @@ type ARMPACRule struct{}
 func (r ARMPACRule) ID() string                 { return "arm-pac" }
 func (r ARMPACRule) Name() string               { return "ARM Pointer Authentication" }
 func (r ARMPACRule) Format() model.BinaryFormat { return model.FormatELF }
-func (r ARMPACRule) FlagType() model.FlagType   { return model.FlagTypeCompile }
-func (r ARMPACRule) HasPerfImpact() bool        { return false }
 
 func (r ARMPACRule) Applicability() model.Applicability {
 	return model.Applicability{

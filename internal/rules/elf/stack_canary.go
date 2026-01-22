@@ -15,8 +15,6 @@ type StackCanaryRule struct{}
 func (r StackCanaryRule) ID() string                 { return "stack-canary" }
 func (r StackCanaryRule) Name() string               { return "Stack Canary Protection" }
 func (r StackCanaryRule) Format() model.BinaryFormat { return model.FormatELF }
-func (r StackCanaryRule) FlagType() model.FlagType   { return model.FlagTypeCompile }
-func (r StackCanaryRule) HasPerfImpact() bool        { return false }
 
 func (r StackCanaryRule) Applicability() model.Applicability {
 	return model.Applicability{

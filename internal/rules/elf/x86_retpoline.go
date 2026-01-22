@@ -15,8 +15,6 @@ type X86RetpolineRule struct{}
 func (r X86RetpolineRule) ID() string                 { return "x86-retpoline" }
 func (r X86RetpolineRule) Name() string               { return "x86 Retpoline (Spectre v2)" }
 func (r X86RetpolineRule) Format() model.BinaryFormat { return model.FormatELF }
-func (r X86RetpolineRule) FlagType() model.FlagType   { return model.FlagTypeCompile }
-func (r X86RetpolineRule) HasPerfImpact() bool        { return true }
 
 func (r X86RetpolineRule) Applicability() model.Applicability {
 	return model.Applicability{

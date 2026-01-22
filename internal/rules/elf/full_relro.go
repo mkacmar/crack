@@ -18,8 +18,6 @@ type FullRELRORule struct{}
 func (r FullRELRORule) ID() string                 { return "full-relro" }
 func (r FullRELRORule) Name() string               { return "Full RELRO" }
 func (r FullRELRORule) Format() model.BinaryFormat { return model.FormatELF }
-func (r FullRELRORule) FlagType() model.FlagType   { return model.FlagTypeLink }
-func (r FullRELRORule) HasPerfImpact() bool        { return false }
 
 func (r FullRELRORule) Applicability() model.Applicability {
 	return model.Applicability{

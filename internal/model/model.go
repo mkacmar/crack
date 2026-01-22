@@ -203,20 +203,10 @@ type RuleResult struct {
 	Suggestion string
 }
 
-type FlagType int
-
-const (
-	FlagTypeCompile FlagType = iota
-	FlagTypeLink
-	FlagTypeBoth
-)
-
 type Rule interface {
 	ID() string
 	Name() string
 	Format() BinaryFormat
-	FlagType() FlagType
-	HasPerfImpact() bool
 	Applicability() Applicability
 	Execute(f *elf.File, info *ParsedBinary) RuleResult
 }

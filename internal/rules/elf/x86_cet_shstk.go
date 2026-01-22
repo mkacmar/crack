@@ -13,8 +13,6 @@ type X86CETShadowStackRule struct{}
 func (r X86CETShadowStackRule) ID() string                 { return "x86-cet-shstk" }
 func (r X86CETShadowStackRule) Name() string               { return "x86 CET - Shadow Stack" }
 func (r X86CETShadowStackRule) Format() model.BinaryFormat { return model.FormatELF }
-func (r X86CETShadowStackRule) FlagType() model.FlagType   { return model.FlagTypeCompile }
-func (r X86CETShadowStackRule) HasPerfImpact() bool        { return false }
 
 func (r X86CETShadowStackRule) Applicability() model.Applicability {
 	return model.Applicability{

@@ -13,8 +13,6 @@ type SeparateCodeRule struct{}
 func (r SeparateCodeRule) ID() string                 { return "separate-code" }
 func (r SeparateCodeRule) Name() string               { return "Separate Code Segments" }
 func (r SeparateCodeRule) Format() model.BinaryFormat { return model.FormatELF }
-func (r SeparateCodeRule) FlagType() model.FlagType   { return model.FlagTypeLink }
-func (r SeparateCodeRule) HasPerfImpact() bool        { return false }
 
 func (r SeparateCodeRule) Applicability() model.Applicability {
 	return model.Applicability{

@@ -15,8 +15,6 @@ type KernelCFIRule struct{}
 func (r KernelCFIRule) ID() string                 { return "kernel-cfi" }
 func (r KernelCFIRule) Name() string               { return "Kernel CFI (kCFI)" }
 func (r KernelCFIRule) Format() model.BinaryFormat { return model.FormatELF }
-func (r KernelCFIRule) FlagType() model.FlagType   { return model.FlagTypeCompile }
-func (r KernelCFIRule) HasPerfImpact() bool        { return true }
 
 func (r KernelCFIRule) Applicability() model.Applicability {
 	return model.Applicability{

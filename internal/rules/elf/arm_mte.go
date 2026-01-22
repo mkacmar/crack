@@ -14,8 +14,6 @@ type ARMMTERule struct{}
 func (r ARMMTERule) ID() string                 { return "arm-mte" }
 func (r ARMMTERule) Name() string               { return "ARM Memory Tagging Extension" }
 func (r ARMMTERule) Format() model.BinaryFormat { return model.FormatELF }
-func (r ARMMTERule) FlagType() model.FlagType   { return model.FlagTypeCompile }
-func (r ARMMTERule) HasPerfImpact() bool        { return true }
 
 func (r ARMMTERule) Applicability() model.Applicability {
 	return model.Applicability{

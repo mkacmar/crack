@@ -42,8 +42,6 @@ type UBSanRule struct{}
 func (r UBSanRule) ID() string                 { return "ubsan" }
 func (r UBSanRule) Name() string               { return "Undefined Behavior Sanitizer" }
 func (r UBSanRule) Format() model.BinaryFormat { return model.FormatELF }
-func (r UBSanRule) FlagType() model.FlagType   { return model.FlagTypeCompile }
-func (r UBSanRule) HasPerfImpact() bool        { return true }
 
 func (r UBSanRule) Applicability() model.Applicability {
 	return model.Applicability{

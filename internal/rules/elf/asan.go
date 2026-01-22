@@ -15,8 +15,6 @@ type ASANRule struct{}
 func (r ASANRule) ID() string                 { return "asan" }
 func (r ASANRule) Name() string               { return "Address Sanitizer" }
 func (r ASANRule) Format() model.BinaryFormat { return model.FormatELF }
-func (r ASANRule) FlagType() model.FlagType   { return model.FlagTypeCompile }
-func (r ASANRule) HasPerfImpact() bool        { return true }
 
 func (r ASANRule) Applicability() model.Applicability {
 	return model.Applicability{

@@ -14,8 +14,6 @@ type StrippedRule struct{}
 func (r StrippedRule) ID() string                 { return "stripped" }
 func (r StrippedRule) Name() string               { return "Stripped Binary" }
 func (r StrippedRule) Format() model.BinaryFormat { return model.FormatELF }
-func (r StrippedRule) FlagType() model.FlagType   { return model.FlagTypeLink }
-func (r StrippedRule) HasPerfImpact() bool        { return false }
 
 func (r StrippedRule) Applicability() model.Applicability {
 	return model.Applicability{

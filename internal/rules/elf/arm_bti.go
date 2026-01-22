@@ -12,8 +12,6 @@ type ARMBTIRule struct{}
 func (r ARMBTIRule) ID() string                 { return "arm-bti" }
 func (r ARMBTIRule) Name() string               { return "ARM Branch Target Identification" }
 func (r ARMBTIRule) Format() model.BinaryFormat { return model.FormatELF }
-func (r ARMBTIRule) FlagType() model.FlagType   { return model.FlagTypeCompile }
-func (r ARMBTIRule) HasPerfImpact() bool        { return false }
 
 func (r ARMBTIRule) Applicability() model.Applicability {
 	return model.Applicability{

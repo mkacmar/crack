@@ -15,8 +15,6 @@ type ARMBranchProtectionRule struct{}
 func (r ARMBranchProtectionRule) ID() string                 { return "arm-branch-protection" }
 func (r ARMBranchProtectionRule) Name() string               { return "ARM Branch Protection" }
 func (r ARMBranchProtectionRule) Format() model.BinaryFormat { return model.FormatELF }
-func (r ARMBranchProtectionRule) FlagType() model.FlagType   { return model.FlagTypeCompile }
-func (r ARMBranchProtectionRule) HasPerfImpact() bool        { return false }
 
 func (r ARMBranchProtectionRule) Applicability() model.Applicability {
 	return model.Applicability{

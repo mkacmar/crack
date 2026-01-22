@@ -16,8 +16,6 @@ type NoPLTRule struct{}
 func (r NoPLTRule) ID() string                 { return "no-plt" }
 func (r NoPLTRule) Name() string               { return "No PLT" }
 func (r NoPLTRule) Format() model.BinaryFormat { return model.FormatELF }
-func (r NoPLTRule) FlagType() model.FlagType   { return model.FlagTypeCompile }
-func (r NoPLTRule) HasPerfImpact() bool        { return false }
 
 func (r NoPLTRule) Applicability() model.Applicability {
 	return model.Applicability{

@@ -11,19 +11,15 @@ import (
 )
 
 type AggregatedReport struct {
-	Upgrades        map[model.Compiler]map[string]map[string]bool // compiler -> version -> paths
-	CompileFlags    map[string]map[string]bool                    // flag -> paths
-	LinkFlags       map[string]map[string]bool                    // flag -> paths
-	PerfImpactFlags map[string]bool
-	PassedAll       []string
+	Upgrades  map[model.Compiler]map[string]map[string]bool // compiler -> version -> paths
+	Flags     map[string]map[string]bool                    // flag -> paths
+	PassedAll []string
 }
 
 func NewAggregatedReport() *AggregatedReport {
 	return &AggregatedReport{
-		Upgrades:        make(map[model.Compiler]map[string]map[string]bool),
-		CompileFlags:    make(map[string]map[string]bool),
-		LinkFlags:       make(map[string]map[string]bool),
-		PerfImpactFlags: make(map[string]bool),
+		Upgrades: make(map[model.Compiler]map[string]map[string]bool),
+		Flags:    make(map[string]map[string]bool),
 	}
 }
 
@@ -70,14 +66,13 @@ func processFailedCheck(agg *AggregatedReport, check model.RuleResult, path stri
 	}
 
 	applicability := rule.Applicability()
-	hasPerfImpact := rule.HasPerfImpact()
 
 	for compiler, req := range applicability.Compilers {
-		processRequirement(agg, compiler, req, rule.FlagType(), path, detectedCompiler, hasPerfImpact)
+		processRequirement(agg, compiler, req, path, detectedCompiler)
 	}
 }
 
-func processRequirement(agg *AggregatedReport, compiler model.Compiler, req model.CompilerRequirement, flagType model.FlagType, path string, detectedCompiler model.Compiler, hasPerfImpact bool) {
+func processRequirement(agg *AggregatedReport, compiler model.Compiler, req model.CompilerRequirement, path string, detectedCompiler model.Compiler) {
 	if detectedCompiler != model.CompilerUnknown && compiler != detectedCompiler {
 		return
 	}
@@ -94,19 +89,7 @@ func processRequirement(agg *AggregatedReport, compiler model.Compiler, req mode
 		return
 	}
 
-	if flagType == model.FlagTypeCompile || flagType == model.FlagTypeBoth {
-		addToFlags(agg.CompileFlags, req.Flag, path)
-		if hasPerfImpact {
-			agg.PerfImpactFlags[req.Flag] = true
-		}
-	}
-
-	if flagType == model.FlagTypeLink || flagType == model.FlagTypeBoth {
-		addToFlags(agg.LinkFlags, req.Flag, path)
-		if hasPerfImpact {
-			agg.PerfImpactFlags[req.Flag] = true
-		}
-	}
+	addToFlags(agg.Flags, req.Flag, path)
 }
 
 func addToUpgrades(agg *AggregatedReport, compiler model.Compiler, version, path string) {
@@ -166,28 +149,13 @@ func FormatAggregated(agg *AggregatedReport) string {
 		}
 	}
 
-	allBinaries := collectAllBinaries(agg.CompileFlags, agg.LinkFlags)
+	allBinaries := collectAllBinaries(agg.Flags)
 	totalWithFindings := len(allBinaries)
 
-	if len(agg.CompileFlags) > 0 || len(agg.LinkFlags) > 0 {
+	if len(agg.Flags) > 0 {
 		sb.WriteString("Add following flags, even with the correct toolchain, these flags must be explicitly added:\n\n")
-	}
-
-	if len(agg.CompileFlags) > 0 {
-		sb.WriteString("  Compiler flags (CFLAGS/CXXFLAGS):\n")
-		formatFlagSection(&sb, agg.CompileFlags, totalWithFindings, "    ")
+		formatFlagSection(&sb, agg.Flags, totalWithFindings, "  ")
 		sb.WriteString("\n")
-	}
-
-	if len(agg.LinkFlags) > 0 {
-		sb.WriteString("  Linker flags (LDFLAGS):\n")
-		formatFlagSection(&sb, agg.LinkFlags, totalWithFindings, "    ")
-		sb.WriteString("\n")
-	}
-
-	if len(agg.PerfImpactFlags) > 0 {
-		perfFlags := mapKeys(agg.PerfImpactFlags)
-		sb.WriteString(fmt.Sprintf("Note: Some flags have performance impact: %s\n\n", strings.Join(perfFlags, ", ")))
 	}
 
 	if len(agg.PassedAll) > 0 {
@@ -222,14 +190,9 @@ func getHighestVersion(upgrades map[string]map[string]bool) string {
 	return highest
 }
 
-func collectAllBinaries(compileFlags, linkFlags map[string]map[string]bool) map[string]bool {
+func collectAllBinaries(flags map[string]map[string]bool) map[string]bool {
 	all := make(map[string]bool)
-	for _, paths := range compileFlags {
-		for p := range paths {
-			all[p] = true
-		}
-	}
-	for _, paths := range linkFlags {
+	for _, paths := range flags {
 		for p := range paths {
 			all[p] = true
 		}

@@ -14,8 +14,6 @@ type StackLimitRule struct{}
 func (r StackLimitRule) ID() string                 { return "stack-limit" }
 func (r StackLimitRule) Name() string               { return "Explicit Stack Size Limit" }
 func (r StackLimitRule) Format() model.BinaryFormat { return model.FormatELF }
-func (r StackLimitRule) FlagType() model.FlagType   { return model.FlagTypeLink }
-func (r StackLimitRule) HasPerfImpact() bool        { return false }
 
 func (r StackLimitRule) Applicability() model.Applicability {
 	return model.Applicability{
