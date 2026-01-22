@@ -53,23 +53,14 @@ type Toolchain struct {
 }
 
 type CompilerRequirement struct {
-	Compiler       Compiler
 	MinVersion     Version
 	DefaultVersion Version
 	Flag           string
 }
 
-type FeatureAvailability struct {
-	Requirements []CompilerRequirement
-}
-
-func (f FeatureAvailability) GetRequirement(compiler Compiler) *CompilerRequirement {
-	for i := range f.Requirements {
-		if f.Requirements[i].Compiler == compiler {
-			return &f.Requirements[i]
-		}
-	}
-	return nil
+type Applicability struct {
+	Arch      Architecture
+	Compilers map[Compiler]CompilerRequirement
 }
 
 type BinaryFormat int
@@ -225,9 +216,8 @@ type Rule interface {
 	Name() string
 	Format() BinaryFormat
 	FlagType() FlagType
-	TargetArch() Architecture
 	HasPerfImpact() bool
-	Feature() FeatureAvailability
+	Applicability() Applicability
 	Execute(f *elf.File, info *ParsedBinary) RuleResult
 }
 

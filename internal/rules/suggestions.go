@@ -7,22 +7,22 @@ import (
 	"github.com/mkacmar/crack/internal/model"
 )
 
-func buildSuggestion(tc model.Toolchain, feature model.FeatureAvailability) string {
+func buildSuggestion(tc model.Toolchain, applicability model.Applicability) string {
 	if tc.Compiler == model.CompilerUnknown {
-		return buildGenericSuggestion(feature)
+		return buildGenericSuggestion(applicability)
 	}
-	return buildCompilerSuggestion(tc, feature)
+	return buildCompilerSuggestion(tc, applicability)
 }
 
-func buildGenericSuggestion(feature model.FeatureAvailability) string {
+func buildGenericSuggestion(applicability model.Applicability) string {
 	var parts []string
 	parts = append(parts, "Toolchain not detected (binary likely stripped), use")
 
 	var options []string
-	if gccReq := feature.GetRequirement(model.CompilerGCC); gccReq != nil && gccReq.Flag != "" {
+	if gccReq, ok := applicability.Compilers[model.CompilerGCC]; ok && gccReq.Flag != "" {
 		options = append(options, fmt.Sprintf("GCC %s+ with \"%s\"", gccReq.MinVersion.String(), gccReq.Flag))
 	}
-	if clangReq := feature.GetRequirement(model.CompilerClang); clangReq != nil && clangReq.Flag != "" {
+	if clangReq, ok := applicability.Compilers[model.CompilerClang]; ok && clangReq.Flag != "" {
 		options = append(options, fmt.Sprintf("Clang %s+ with \"%s\"", clangReq.MinVersion.String(), clangReq.Flag))
 	}
 
@@ -37,15 +37,14 @@ func buildGenericSuggestion(feature model.FeatureAvailability) string {
 	return result
 }
 
-func buildCompilerSuggestion(tc model.Toolchain, feature model.FeatureAvailability) string {
-	req := feature.GetRequirement(tc.Compiler)
-	if req == nil {
+func buildCompilerSuggestion(tc model.Toolchain, applicability model.Applicability) string {
+	req, ok := applicability.Compilers[tc.Compiler]
+	if !ok {
 		other := model.CompilerGCC
 		if tc.Compiler == model.CompilerGCC {
 			other = model.CompilerClang
 		}
-		otherReq := feature.GetRequirement(other)
-		if otherReq != nil {
+		if otherReq, ok := applicability.Compilers[other]; ok {
 			return fmt.Sprintf("Feature requires %s %s+. Consider switching or use alternatives.",
 				other.String(), otherReq.MinVersion.String())
 		}

@@ -15,18 +15,18 @@ const (
 // ld: https://sourceware.org/binutils/docs/ld/Options.html#index-z-keyword
 type NoDLOpenRule struct{}
 
-func (r NoDLOpenRule) ID() string                     { return "no-dlopen" }
-func (r NoDLOpenRule) Name() string                   { return "Disallow dlopen" }
-func (r NoDLOpenRule) Format() model.BinaryFormat     { return model.FormatELF }
-func (r NoDLOpenRule) FlagType() model.FlagType       { return model.FlagTypeLink }
-func (r NoDLOpenRule) TargetArch() model.Architecture { return model.ArchAll }
-func (r NoDLOpenRule) HasPerfImpact() bool            { return false }
+func (r NoDLOpenRule) ID() string                 { return "no-dlopen" }
+func (r NoDLOpenRule) Name() string               { return "Disallow dlopen" }
+func (r NoDLOpenRule) Format() model.BinaryFormat { return model.FormatELF }
+func (r NoDLOpenRule) FlagType() model.FlagType   { return model.FlagTypeLink }
+func (r NoDLOpenRule) HasPerfImpact() bool        { return false }
 
-func (r NoDLOpenRule) Feature() model.FeatureAvailability {
-	return model.FeatureAvailability{
-		Requirements: []model.CompilerRequirement{
-			{Compiler: model.CompilerGCC, MinVersion: model.Version{Major: 3, Minor: 0}, Flag: "-Wl,-z,nodlopen"},
-			{Compiler: model.CompilerClang, MinVersion: model.Version{Major: 3, Minor: 0}, Flag: "-Wl,-z,nodlopen"},
+func (r NoDLOpenRule) Applicability() model.Applicability {
+	return model.Applicability{
+		Arch: model.ArchAll,
+		Compilers: map[model.Compiler]model.CompilerRequirement{
+			model.CompilerGCC:   {MinVersion: model.Version{Major: 3, Minor: 0}, Flag: "-Wl,-z,nodlopen"},
+			model.CompilerClang: {MinVersion: model.Version{Major: 3, Minor: 0}, Flag: "-Wl,-z,nodlopen"},
 		},
 	}
 }

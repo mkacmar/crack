@@ -11,17 +11,17 @@ import (
 // Clang: https://clang.llvm.org/docs/MemTagSanitizer.html
 type ARMMTERule struct{}
 
-func (r ARMMTERule) ID() string                     { return "arm-mte" }
-func (r ARMMTERule) Name() string                   { return "ARM Memory Tagging Extension" }
-func (r ARMMTERule) Format() model.BinaryFormat     { return model.FormatELF }
-func (r ARMMTERule) FlagType() model.FlagType       { return model.FlagTypeCompile }
-func (r ARMMTERule) TargetArch() model.Architecture { return model.ArchARM64 }
-func (r ARMMTERule) HasPerfImpact() bool            { return true }
+func (r ARMMTERule) ID() string                 { return "arm-mte" }
+func (r ARMMTERule) Name() string               { return "ARM Memory Tagging Extension" }
+func (r ARMMTERule) Format() model.BinaryFormat { return model.FormatELF }
+func (r ARMMTERule) FlagType() model.FlagType   { return model.FlagTypeCompile }
+func (r ARMMTERule) HasPerfImpact() bool        { return true }
 
-func (r ARMMTERule) Feature() model.FeatureAvailability {
-	return model.FeatureAvailability{
-		Requirements: []model.CompilerRequirement{
-			{Compiler: model.CompilerClang, MinVersion: model.Version{Major: 11, Minor: 0}, Flag: "-march=armv8.5-a+memtag -fsanitize=memtag"},
+func (r ARMMTERule) Applicability() model.Applicability {
+	return model.Applicability{
+		Arch: model.ArchARM64,
+		Compilers: map[model.Compiler]model.CompilerRequirement{
+			model.CompilerClang: {MinVersion: model.Version{Major: 11, Minor: 0}, Flag: "-march=armv8.5-a+memtag -fsanitize=memtag"},
 		},
 	}
 }

@@ -12,18 +12,18 @@ import (
 // Clang: https://clang.llvm.org/docs/ClangCommandLineReference.html#cmdoption-clang-mbranch-protection
 type ARMBranchProtectionRule struct{}
 
-func (r ARMBranchProtectionRule) ID() string                     { return "arm-branch-protection" }
-func (r ARMBranchProtectionRule) Name() string                   { return "ARM Branch Protection" }
-func (r ARMBranchProtectionRule) Format() model.BinaryFormat     { return model.FormatELF }
-func (r ARMBranchProtectionRule) FlagType() model.FlagType       { return model.FlagTypeCompile }
-func (r ARMBranchProtectionRule) TargetArch() model.Architecture { return model.ArchARM64 }
-func (r ARMBranchProtectionRule) HasPerfImpact() bool            { return false }
+func (r ARMBranchProtectionRule) ID() string                 { return "arm-branch-protection" }
+func (r ARMBranchProtectionRule) Name() string               { return "ARM Branch Protection" }
+func (r ARMBranchProtectionRule) Format() model.BinaryFormat { return model.FormatELF }
+func (r ARMBranchProtectionRule) FlagType() model.FlagType   { return model.FlagTypeCompile }
+func (r ARMBranchProtectionRule) HasPerfImpact() bool        { return false }
 
-func (r ARMBranchProtectionRule) Feature() model.FeatureAvailability {
-	return model.FeatureAvailability{
-		Requirements: []model.CompilerRequirement{
-			{Compiler: model.CompilerGCC, MinVersion: model.Version{Major: 9, Minor: 1}, Flag: "-mbranch-protection=standard"},
-			{Compiler: model.CompilerClang, MinVersion: model.Version{Major: 8, Minor: 0}, Flag: "-mbranch-protection=standard"},
+func (r ARMBranchProtectionRule) Applicability() model.Applicability {
+	return model.Applicability{
+		Arch: model.ArchARM64,
+		Compilers: map[model.Compiler]model.CompilerRequirement{
+			model.CompilerGCC:   {MinVersion: model.Version{Major: 9, Minor: 1}, Flag: "-mbranch-protection=standard"},
+			model.CompilerClang: {MinVersion: model.Version{Major: 8, Minor: 0}, Flag: "-mbranch-protection=standard"},
 		},
 	}
 }

@@ -11,18 +11,18 @@ import (
 // ld: https://sourceware.org/binutils/docs/ld/Options.html#index-_002d_002dstrip_002dall
 type StrippedRule struct{}
 
-func (r StrippedRule) ID() string                     { return "stripped" }
-func (r StrippedRule) Name() string                   { return "Stripped Binary" }
-func (r StrippedRule) Format() model.BinaryFormat     { return model.FormatELF }
-func (r StrippedRule) FlagType() model.FlagType       { return model.FlagTypeLink }
-func (r StrippedRule) TargetArch() model.Architecture { return model.ArchAll }
-func (r StrippedRule) HasPerfImpact() bool            { return false }
+func (r StrippedRule) ID() string                 { return "stripped" }
+func (r StrippedRule) Name() string               { return "Stripped Binary" }
+func (r StrippedRule) Format() model.BinaryFormat { return model.FormatELF }
+func (r StrippedRule) FlagType() model.FlagType   { return model.FlagTypeLink }
+func (r StrippedRule) HasPerfImpact() bool        { return false }
 
-func (r StrippedRule) Feature() model.FeatureAvailability {
-	return model.FeatureAvailability{
-		Requirements: []model.CompilerRequirement{
-			{Compiler: model.CompilerGCC, MinVersion: model.Version{Major: 3, Minor: 0}, Flag: "-s"},
-			{Compiler: model.CompilerClang, MinVersion: model.Version{Major: 3, Minor: 0}, Flag: "-s"},
+func (r StrippedRule) Applicability() model.Applicability {
+	return model.Applicability{
+		Arch: model.ArchAll,
+		Compilers: map[model.Compiler]model.CompilerRequirement{
+			model.CompilerGCC:   {MinVersion: model.Version{Major: 3, Minor: 0}, Flag: "-s"},
+			model.CompilerClang: {MinVersion: model.Version{Major: 3, Minor: 0}, Flag: "-s"},
 		},
 	}
 }

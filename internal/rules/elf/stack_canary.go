@@ -12,18 +12,18 @@ import (
 // Clang: https://clang.llvm.org/docs/ClangCommandLineReference.html#cmdoption-clang-fstack-protector-strong
 type StackCanaryRule struct{}
 
-func (r StackCanaryRule) ID() string                     { return "stack-canary" }
-func (r StackCanaryRule) Name() string                   { return "Stack Canary Protection" }
-func (r StackCanaryRule) Format() model.BinaryFormat     { return model.FormatELF }
-func (r StackCanaryRule) FlagType() model.FlagType       { return model.FlagTypeCompile }
-func (r StackCanaryRule) TargetArch() model.Architecture { return model.ArchAll }
-func (r StackCanaryRule) HasPerfImpact() bool            { return false }
+func (r StackCanaryRule) ID() string                 { return "stack-canary" }
+func (r StackCanaryRule) Name() string               { return "Stack Canary Protection" }
+func (r StackCanaryRule) Format() model.BinaryFormat { return model.FormatELF }
+func (r StackCanaryRule) FlagType() model.FlagType   { return model.FlagTypeCompile }
+func (r StackCanaryRule) HasPerfImpact() bool        { return false }
 
-func (r StackCanaryRule) Feature() model.FeatureAvailability {
-	return model.FeatureAvailability{
-		Requirements: []model.CompilerRequirement{
-			{Compiler: model.CompilerGCC, MinVersion: model.Version{Major: 4, Minor: 9}, Flag: "-fstack-protector-strong"},
-			{Compiler: model.CompilerClang, MinVersion: model.Version{Major: 3, Minor: 0}, Flag: "-fstack-protector-strong"},
+func (r StackCanaryRule) Applicability() model.Applicability {
+	return model.Applicability{
+		Arch: model.ArchAll,
+		Compilers: map[model.Compiler]model.CompilerRequirement{
+			model.CompilerGCC:   {MinVersion: model.Version{Major: 4, Minor: 9}, Flag: "-fstack-protector-strong"},
+			model.CompilerClang: {MinVersion: model.Version{Major: 3, Minor: 0}, Flag: "-fstack-protector-strong"},
 		},
 	}
 }

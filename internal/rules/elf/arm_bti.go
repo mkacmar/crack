@@ -9,18 +9,18 @@ import (
 // ARMBTIRule checks for ARM Branch Target Identification
 type ARMBTIRule struct{}
 
-func (r ARMBTIRule) ID() string                     { return "arm-bti" }
-func (r ARMBTIRule) Name() string                   { return "ARM Branch Target Identification" }
-func (r ARMBTIRule) Format() model.BinaryFormat     { return model.FormatELF }
-func (r ARMBTIRule) FlagType() model.FlagType       { return model.FlagTypeCompile }
-func (r ARMBTIRule) TargetArch() model.Architecture { return model.ArchARM64 }
-func (r ARMBTIRule) HasPerfImpact() bool            { return false }
+func (r ARMBTIRule) ID() string                 { return "arm-bti" }
+func (r ARMBTIRule) Name() string               { return "ARM Branch Target Identification" }
+func (r ARMBTIRule) Format() model.BinaryFormat { return model.FormatELF }
+func (r ARMBTIRule) FlagType() model.FlagType   { return model.FlagTypeCompile }
+func (r ARMBTIRule) HasPerfImpact() bool        { return false }
 
-func (r ARMBTIRule) Feature() model.FeatureAvailability {
-	return model.FeatureAvailability{
-		Requirements: []model.CompilerRequirement{
-			{Compiler: model.CompilerGCC, MinVersion: model.Version{Major: 9, Minor: 1}, Flag: "-mbranch-protection=bti"},
-			{Compiler: model.CompilerClang, MinVersion: model.Version{Major: 8, Minor: 0}, Flag: "-mbranch-protection=bti"},
+func (r ARMBTIRule) Applicability() model.Applicability {
+	return model.Applicability{
+		Arch: model.ArchARM64,
+		Compilers: map[model.Compiler]model.CompilerRequirement{
+			model.CompilerGCC:   {MinVersion: model.Version{Major: 9, Minor: 1}, Flag: "-mbranch-protection=bti"},
+			model.CompilerClang: {MinVersion: model.Version{Major: 8, Minor: 0}, Flag: "-mbranch-protection=bti"},
 		},
 	}
 }

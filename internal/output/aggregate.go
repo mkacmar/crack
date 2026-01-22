@@ -69,16 +69,16 @@ func processFailedCheck(agg *AggregatedReport, check model.RuleResult, path stri
 		return
 	}
 
-	feature := rule.Feature()
+	applicability := rule.Applicability()
 	hasPerfImpact := rule.HasPerfImpact()
 
-	for _, req := range feature.Requirements {
-		processRequirement(agg, req, rule.FlagType(), path, detectedCompiler, hasPerfImpact)
+	for compiler, req := range applicability.Compilers {
+		processRequirement(agg, compiler, req, rule.FlagType(), path, detectedCompiler, hasPerfImpact)
 	}
 }
 
-func processRequirement(agg *AggregatedReport, req model.CompilerRequirement, flagType model.FlagType, path string, detectedCompiler model.Compiler, hasPerfImpact bool) {
-	if detectedCompiler != model.CompilerUnknown && req.Compiler != detectedCompiler {
+func processRequirement(agg *AggregatedReport, compiler model.Compiler, req model.CompilerRequirement, flagType model.FlagType, path string, detectedCompiler model.Compiler, hasPerfImpact bool) {
+	if detectedCompiler != model.CompilerUnknown && compiler != detectedCompiler {
 		return
 	}
 
@@ -87,7 +87,7 @@ func processRequirement(agg *AggregatedReport, req model.CompilerRequirement, fl
 		ver = req.MinVersion
 	}
 	if ver != (model.Version{}) {
-		addToUpgrades(agg, req.Compiler, ver.String(), path)
+		addToUpgrades(agg, compiler, ver.String(), path)
 	}
 
 	if req.Flag == "" {

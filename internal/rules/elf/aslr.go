@@ -10,18 +10,18 @@ import (
 // Linux Kernel: https://github.com/torvalds/linux/blob/master/Documentation/admin-guide/sysctl/kernel.rst
 type ASLRRule struct{}
 
-func (r ASLRRule) ID() string                     { return "aslr" }
-func (r ASLRRule) Name() string                   { return "ASLR Compatibility" }
-func (r ASLRRule) Format() model.BinaryFormat     { return model.FormatELF }
-func (r ASLRRule) FlagType() model.FlagType       { return model.FlagTypeBoth }
-func (r ASLRRule) TargetArch() model.Architecture { return model.ArchAll }
-func (r ASLRRule) HasPerfImpact() bool            { return false }
+func (r ASLRRule) ID() string                 { return "aslr" }
+func (r ASLRRule) Name() string               { return "ASLR Compatibility" }
+func (r ASLRRule) Format() model.BinaryFormat { return model.FormatELF }
+func (r ASLRRule) FlagType() model.FlagType   { return model.FlagTypeBoth }
+func (r ASLRRule) HasPerfImpact() bool        { return false }
 
-func (r ASLRRule) Feature() model.FeatureAvailability {
-	return model.FeatureAvailability{
-		Requirements: []model.CompilerRequirement{
-			{Compiler: model.CompilerGCC, MinVersion: model.Version{Major: 6, Minor: 0}, DefaultVersion: model.Version{Major: 6, Minor: 0}, Flag: "-fPIE -pie -z noexecstack"},
-			{Compiler: model.CompilerClang, MinVersion: model.Version{Major: 3, Minor: 0}, DefaultVersion: model.Version{Major: 6, Minor: 0}, Flag: "-fPIE -pie -z noexecstack"},
+func (r ASLRRule) Applicability() model.Applicability {
+	return model.Applicability{
+		Arch: model.ArchAll,
+		Compilers: map[model.Compiler]model.CompilerRequirement{
+			model.CompilerGCC:   {MinVersion: model.Version{Major: 6, Minor: 0}, DefaultVersion: model.Version{Major: 6, Minor: 0}, Flag: "-fPIE -pie -z noexecstack"},
+			model.CompilerClang: {MinVersion: model.Version{Major: 3, Minor: 0}, DefaultVersion: model.Version{Major: 6, Minor: 0}, Flag: "-fPIE -pie -z noexecstack"},
 		},
 	}
 }

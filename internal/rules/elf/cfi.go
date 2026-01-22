@@ -21,17 +21,17 @@ var cfiSymbols = []string{
 // Clang: https://clang.llvm.org/docs/ControlFlowIntegrity.html
 type CFIRule struct{}
 
-func (r CFIRule) ID() string                     { return "cfi" }
-func (r CFIRule) Name() string                   { return "Control Flow Integrity" }
-func (r CFIRule) Format() model.BinaryFormat     { return model.FormatELF }
-func (r CFIRule) FlagType() model.FlagType       { return model.FlagTypeCompile }
-func (r CFIRule) TargetArch() model.Architecture { return model.ArchAll }
-func (r CFIRule) HasPerfImpact() bool            { return true }
+func (r CFIRule) ID() string                 { return "cfi" }
+func (r CFIRule) Name() string               { return "Control Flow Integrity" }
+func (r CFIRule) Format() model.BinaryFormat { return model.FormatELF }
+func (r CFIRule) FlagType() model.FlagType   { return model.FlagTypeCompile }
+func (r CFIRule) HasPerfImpact() bool        { return true }
 
-func (r CFIRule) Feature() model.FeatureAvailability {
-	return model.FeatureAvailability{
-		Requirements: []model.CompilerRequirement{
-			{Compiler: model.CompilerClang, MinVersion: model.Version{Major: 3, Minor: 7}, Flag: "-fsanitize=cfi -flto -fvisibility=hidden"},
+func (r CFIRule) Applicability() model.Applicability {
+	return model.Applicability{
+		Arch: model.ArchAll,
+		Compilers: map[model.Compiler]model.CompilerRequirement{
+			model.CompilerClang: {MinVersion: model.Version{Major: 3, Minor: 7}, Flag: "-fsanitize=cfi -flto -fvisibility=hidden"},
 		},
 	}
 }

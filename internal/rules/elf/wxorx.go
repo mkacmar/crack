@@ -11,18 +11,18 @@ import (
 // GNU ld: https://sourceware.org/binutils/docs/ld/Options.html (-z noexecstack)
 type WXorXRule struct{}
 
-func (r WXorXRule) ID() string                     { return "wxorx" }
-func (r WXorXRule) Name() string                   { return "W^X (Write XOR Execute)" }
-func (r WXorXRule) Format() model.BinaryFormat     { return model.FormatELF }
-func (r WXorXRule) FlagType() model.FlagType       { return model.FlagTypeLink }
-func (r WXorXRule) TargetArch() model.Architecture { return model.ArchAll }
-func (r WXorXRule) HasPerfImpact() bool            { return false }
+func (r WXorXRule) ID() string                 { return "wxorx" }
+func (r WXorXRule) Name() string               { return "W^X (Write XOR Execute)" }
+func (r WXorXRule) Format() model.BinaryFormat { return model.FormatELF }
+func (r WXorXRule) FlagType() model.FlagType   { return model.FlagTypeLink }
+func (r WXorXRule) HasPerfImpact() bool        { return false }
 
-func (r WXorXRule) Feature() model.FeatureAvailability {
-	return model.FeatureAvailability{
-		Requirements: []model.CompilerRequirement{
-			{Compiler: model.CompilerGCC, MinVersion: model.Version{Major: 3, Minor: 0}, DefaultVersion: model.Version{Major: 3, Minor: 0}, Flag: "-z noexecstack"},
-			{Compiler: model.CompilerClang, MinVersion: model.Version{Major: 3, Minor: 0}, DefaultVersion: model.Version{Major: 3, Minor: 0}, Flag: "-z noexecstack"},
+func (r WXorXRule) Applicability() model.Applicability {
+	return model.Applicability{
+		Arch: model.ArchAll,
+		Compilers: map[model.Compiler]model.CompilerRequirement{
+			model.CompilerGCC:   {MinVersion: model.Version{Major: 3, Minor: 0}, DefaultVersion: model.Version{Major: 3, Minor: 0}, Flag: "-z noexecstack"},
+			model.CompilerClang: {MinVersion: model.Version{Major: 3, Minor: 0}, DefaultVersion: model.Version{Major: 3, Minor: 0}, Flag: "-z noexecstack"},
 		},
 	}
 }

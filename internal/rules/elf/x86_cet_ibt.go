@@ -10,18 +10,18 @@ import (
 // GCC: https://gcc.gnu.org/onlinedocs/gcc/x86-Options.html#index-fcf-protection
 type X86CETIBTRule struct{}
 
-func (r X86CETIBTRule) ID() string                     { return "x86-cet-ibt" }
-func (r X86CETIBTRule) Name() string                   { return "x86 CET - Indirect Branch Tracking" }
-func (r X86CETIBTRule) Format() model.BinaryFormat     { return model.FormatELF }
-func (r X86CETIBTRule) FlagType() model.FlagType       { return model.FlagTypeCompile }
-func (r X86CETIBTRule) TargetArch() model.Architecture { return model.ArchAllX86 }
-func (r X86CETIBTRule) HasPerfImpact() bool            { return false }
+func (r X86CETIBTRule) ID() string                 { return "x86-cet-ibt" }
+func (r X86CETIBTRule) Name() string               { return "x86 CET - Indirect Branch Tracking" }
+func (r X86CETIBTRule) Format() model.BinaryFormat { return model.FormatELF }
+func (r X86CETIBTRule) FlagType() model.FlagType   { return model.FlagTypeCompile }
+func (r X86CETIBTRule) HasPerfImpact() bool        { return false }
 
-func (r X86CETIBTRule) Feature() model.FeatureAvailability {
-	return model.FeatureAvailability{
-		Requirements: []model.CompilerRequirement{
-			{Compiler: model.CompilerGCC, MinVersion: model.Version{Major: 8, Minor: 1}, Flag: "-fcf-protection=full"},
-			{Compiler: model.CompilerClang, MinVersion: model.Version{Major: 7, Minor: 0}, Flag: "-fcf-protection=full"},
+func (r X86CETIBTRule) Applicability() model.Applicability {
+	return model.Applicability{
+		Arch: model.ArchAllX86,
+		Compilers: map[model.Compiler]model.CompilerRequirement{
+			model.CompilerGCC:   {MinVersion: model.Version{Major: 8, Minor: 1}, Flag: "-fcf-protection=full"},
+			model.CompilerClang: {MinVersion: model.Version{Major: 7, Minor: 0}, Flag: "-fcf-protection=full"},
 		},
 	}
 }

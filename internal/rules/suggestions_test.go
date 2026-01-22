@@ -9,19 +9,20 @@ import (
 
 func TestBuildSuggestion(t *testing.T) {
 	tests := []struct {
-		name        string
-		toolchain   model.Toolchain
-		feature     model.FeatureAvailability
-		wantContain []string
-		wantExact   string
+		name          string
+		toolchain     model.Toolchain
+		applicability model.Applicability
+		wantContain   []string
+		wantExact     string
 	}{
 		{
 			name:      "unknown compiler shows both options",
 			toolchain: model.Toolchain{Compiler: model.CompilerUnknown},
-			feature: model.FeatureAvailability{
-				Requirements: []model.CompilerRequirement{
-					{Compiler: model.CompilerGCC, MinVersion: model.Version{Major: 4, Minor: 9}, Flag: "-fstack-protector-strong"},
-					{Compiler: model.CompilerClang, MinVersion: model.Version{Major: 3, Minor: 5}, Flag: "-fstack-protector-strong"},
+			applicability: model.Applicability{
+				Arch: model.ArchAll,
+				Compilers: map[model.Compiler]model.CompilerRequirement{
+					model.CompilerGCC:   {MinVersion: model.Version{Major: 4, Minor: 9}, Flag: "-fstack-protector-strong"},
+					model.CompilerClang: {MinVersion: model.Version{Major: 3, Minor: 5}, Flag: "-fstack-protector-strong"},
 				},
 			},
 			wantContain: []string{"Toolchain not detected", "GCC 4.9+", "Clang 3.5+"},
@@ -32,9 +33,10 @@ func TestBuildSuggestion(t *testing.T) {
 				Compiler: model.CompilerGCC,
 				Version:  model.Version{Major: 4, Minor: 8},
 			},
-			feature: model.FeatureAvailability{
-				Requirements: []model.CompilerRequirement{
-					{Compiler: model.CompilerGCC, MinVersion: model.Version{Major: 4, Minor: 9}, Flag: "-fstack-protector-strong"},
+			applicability: model.Applicability{
+				Arch: model.ArchAll,
+				Compilers: map[model.Compiler]model.CompilerRequirement{
+					model.CompilerGCC: {MinVersion: model.Version{Major: 4, Minor: 9}, Flag: "-fstack-protector-strong"},
 				},
 			},
 			wantContain: []string{"Requires gcc 4.9+", "you have gcc 4.8"},
@@ -45,10 +47,10 @@ func TestBuildSuggestion(t *testing.T) {
 				Compiler: model.CompilerGCC,
 				Version:  model.Version{Major: 10, Minor: 0},
 			},
-			feature: model.FeatureAvailability{
-				Requirements: []model.CompilerRequirement{
-					{
-						Compiler:       model.CompilerGCC,
+			applicability: model.Applicability{
+				Arch: model.ArchAll,
+				Compilers: map[model.Compiler]model.CompilerRequirement{
+					model.CompilerGCC: {
 						MinVersion:     model.Version{Major: 8, Minor: 0},
 						DefaultVersion: model.Version{Major: 12, Minor: 0},
 						Flag:           "-fstack-clash-protection",
@@ -63,9 +65,10 @@ func TestBuildSuggestion(t *testing.T) {
 				Compiler: model.CompilerClang,
 				Version:  model.Version{Major: 15, Minor: 0},
 			},
-			feature: model.FeatureAvailability{
-				Requirements: []model.CompilerRequirement{
-					{Compiler: model.CompilerClang, MinVersion: model.Version{Major: 7, Minor: 0}, Flag: "-fsanitize=safe-stack"},
+			applicability: model.Applicability{
+				Arch: model.ArchAll,
+				Compilers: map[model.Compiler]model.CompilerRequirement{
+					model.CompilerClang: {MinVersion: model.Version{Major: 7, Minor: 0}, Flag: "-fsanitize=safe-stack"},
 				},
 			},
 			wantExact: "Use \"-fsanitize=safe-stack\".",
@@ -76,9 +79,10 @@ func TestBuildSuggestion(t *testing.T) {
 				Compiler: model.CompilerGCC,
 				Version:  model.Version{Major: 12, Minor: 0},
 			},
-			feature: model.FeatureAvailability{
-				Requirements: []model.CompilerRequirement{
-					{Compiler: model.CompilerClang, MinVersion: model.Version{Major: 3, Minor: 7}, Flag: "-fsanitize=cfi"},
+			applicability: model.Applicability{
+				Arch: model.ArchAll,
+				Compilers: map[model.Compiler]model.CompilerRequirement{
+					model.CompilerClang: {MinVersion: model.Version{Major: 3, Minor: 7}, Flag: "-fsanitize=cfi"},
 				},
 			},
 			wantContain: []string{"requires clang"},
@@ -89,10 +93,10 @@ func TestBuildSuggestion(t *testing.T) {
 				Compiler: model.CompilerGCC,
 				Version:  model.Version{Major: 14, Minor: 0},
 			},
-			feature: model.FeatureAvailability{
-				Requirements: []model.CompilerRequirement{
-					{
-						Compiler:       model.CompilerGCC,
+			applicability: model.Applicability{
+				Arch: model.ArchAll,
+				Compilers: map[model.Compiler]model.CompilerRequirement{
+					model.CompilerGCC: {
 						MinVersion:     model.Version{Major: 8, Minor: 0},
 						DefaultVersion: model.Version{Major: 12, Minor: 0},
 						Flag:           "-fstack-clash-protection",
@@ -102,16 +106,16 @@ func TestBuildSuggestion(t *testing.T) {
 			wantContain: []string{"Should be enabled by default"},
 		},
 		{
-			name:      "empty requirements",
-			toolchain: model.Toolchain{Compiler: model.CompilerGCC, Version: model.Version{Major: 12, Minor: 0}},
-			feature:   model.FeatureAvailability{Requirements: nil},
-			wantExact: "Feature not supported by detected compilers.",
+			name:          "empty requirements",
+			toolchain:     model.Toolchain{Compiler: model.CompilerGCC, Version: model.Version{Major: 12, Minor: 0}},
+			applicability: model.Applicability{Arch: model.ArchAll, Compilers: nil},
+			wantExact:     "Feature not supported by detected compilers.",
 		},
 	}
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			result := buildSuggestion(tt.toolchain, tt.feature)
+			result := buildSuggestion(tt.toolchain, tt.applicability)
 
 			if tt.wantExact != "" {
 				if result != tt.wantExact {
@@ -132,15 +136,16 @@ func TestBuildSuggestion(t *testing.T) {
 func TestBuildGenericSuggestion(t *testing.T) {
 	tests := []struct {
 		name           string
-		feature        model.FeatureAvailability
+		applicability  model.Applicability
 		wantContain    []string
 		wantNotContain []string
 	}{
 		{
 			name: "only GCC requirement",
-			feature: model.FeatureAvailability{
-				Requirements: []model.CompilerRequirement{
-					{Compiler: model.CompilerGCC, MinVersion: model.Version{Major: 7, Minor: 0}, Flag: "-mindirect-branch=thunk"},
+			applicability: model.Applicability{
+				Arch: model.ArchAll,
+				Compilers: map[model.Compiler]model.CompilerRequirement{
+					model.CompilerGCC: {MinVersion: model.Version{Major: 7, Minor: 0}, Flag: "-mindirect-branch=thunk"},
 				},
 			},
 			wantContain:    []string{"GCC 7.0+"},
@@ -148,9 +153,10 @@ func TestBuildGenericSuggestion(t *testing.T) {
 		},
 		{
 			name: "only Clang requirement",
-			feature: model.FeatureAvailability{
-				Requirements: []model.CompilerRequirement{
-					{Compiler: model.CompilerClang, MinVersion: model.Version{Major: 3, Minor: 7}, Flag: "-fsanitize=cfi"},
+			applicability: model.Applicability{
+				Arch: model.ArchAll,
+				Compilers: map[model.Compiler]model.CompilerRequirement{
+					model.CompilerClang: {MinVersion: model.Version{Major: 3, Minor: 7}, Flag: "-fsanitize=cfi"},
 				},
 			},
 			wantContain:    []string{"Clang 3.7+"},
@@ -158,10 +164,11 @@ func TestBuildGenericSuggestion(t *testing.T) {
 		},
 		{
 			name: "both compilers",
-			feature: model.FeatureAvailability{
-				Requirements: []model.CompilerRequirement{
-					{Compiler: model.CompilerGCC, MinVersion: model.Version{Major: 4, Minor: 9}, Flag: "-fPIE"},
-					{Compiler: model.CompilerClang, MinVersion: model.Version{Major: 3, Minor: 0}, Flag: "-fPIE"},
+			applicability: model.Applicability{
+				Arch: model.ArchAll,
+				Compilers: map[model.Compiler]model.CompilerRequirement{
+					model.CompilerGCC:   {MinVersion: model.Version{Major: 4, Minor: 9}, Flag: "-fPIE"},
+					model.CompilerClang: {MinVersion: model.Version{Major: 3, Minor: 0}, Flag: "-fPIE"},
 				},
 			},
 			wantContain: []string{"GCC 4.9+", "Clang 3.0+", " or "},
@@ -170,7 +177,7 @@ func TestBuildGenericSuggestion(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			result := buildGenericSuggestion(tt.feature)
+			result := buildGenericSuggestion(tt.applicability)
 
 			for _, want := range tt.wantContain {
 				if !strings.Contains(result, want) {

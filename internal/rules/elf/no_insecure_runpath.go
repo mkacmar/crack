@@ -12,18 +12,18 @@ import (
 // ld: https://sourceware.org/binutils/docs/ld/Options.html
 type NoInsecureRUNPATHRule struct{}
 
-func (r NoInsecureRUNPATHRule) ID() string                     { return "no-insecure-runpath" }
-func (r NoInsecureRUNPATHRule) Name() string                   { return "Secure RUNPATH" }
-func (r NoInsecureRUNPATHRule) Format() model.BinaryFormat     { return model.FormatELF }
-func (r NoInsecureRUNPATHRule) FlagType() model.FlagType       { return model.FlagTypeLink }
-func (r NoInsecureRUNPATHRule) TargetArch() model.Architecture { return model.ArchAll }
-func (r NoInsecureRUNPATHRule) HasPerfImpact() bool            { return false }
+func (r NoInsecureRUNPATHRule) ID() string                 { return "no-insecure-runpath" }
+func (r NoInsecureRUNPATHRule) Name() string               { return "Secure RUNPATH" }
+func (r NoInsecureRUNPATHRule) Format() model.BinaryFormat { return model.FormatELF }
+func (r NoInsecureRUNPATHRule) FlagType() model.FlagType   { return model.FlagTypeLink }
+func (r NoInsecureRUNPATHRule) HasPerfImpact() bool        { return false }
 
-func (r NoInsecureRUNPATHRule) Feature() model.FeatureAvailability {
-	return model.FeatureAvailability{
-		Requirements: []model.CompilerRequirement{
-			{Compiler: model.CompilerGCC, MinVersion: model.Version{Major: 3, Minor: 0}, Flag: "-Wl,--enable-new-dtags -Wl,-rpath,/absolute/path"},
-			{Compiler: model.CompilerClang, MinVersion: model.Version{Major: 3, Minor: 0}, Flag: "-Wl,--enable-new-dtags -Wl,-rpath,/absolute/path"},
+func (r NoInsecureRUNPATHRule) Applicability() model.Applicability {
+	return model.Applicability{
+		Arch: model.ArchAll,
+		Compilers: map[model.Compiler]model.CompilerRequirement{
+			model.CompilerGCC:   {MinVersion: model.Version{Major: 3, Minor: 0}, Flag: "-Wl,--enable-new-dtags -Wl,-rpath,/absolute/path"},
+			model.CompilerClang: {MinVersion: model.Version{Major: 3, Minor: 0}, Flag: "-Wl,--enable-new-dtags -Wl,-rpath,/absolute/path"},
 		},
 	}
 }

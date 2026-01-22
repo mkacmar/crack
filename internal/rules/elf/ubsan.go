@@ -39,18 +39,18 @@ var ubsanHandlers = []string{
 // GCC: https://gcc.gnu.org/onlinedocs/gcc/Instrumentation-Options.html#index-fsanitize=undefined
 type UBSanRule struct{}
 
-func (r UBSanRule) ID() string                     { return "ubsan" }
-func (r UBSanRule) Name() string                   { return "Undefined Behavior Sanitizer" }
-func (r UBSanRule) Format() model.BinaryFormat     { return model.FormatELF }
-func (r UBSanRule) FlagType() model.FlagType       { return model.FlagTypeCompile }
-func (r UBSanRule) TargetArch() model.Architecture { return model.ArchAll }
-func (r UBSanRule) HasPerfImpact() bool            { return true }
+func (r UBSanRule) ID() string                 { return "ubsan" }
+func (r UBSanRule) Name() string               { return "Undefined Behavior Sanitizer" }
+func (r UBSanRule) Format() model.BinaryFormat { return model.FormatELF }
+func (r UBSanRule) FlagType() model.FlagType   { return model.FlagTypeCompile }
+func (r UBSanRule) HasPerfImpact() bool        { return true }
 
-func (r UBSanRule) Feature() model.FeatureAvailability {
-	return model.FeatureAvailability{
-		Requirements: []model.CompilerRequirement{
-			{Compiler: model.CompilerGCC, MinVersion: model.Version{Major: 4, Minor: 9}, Flag: "-fsanitize=undefined"},
-			{Compiler: model.CompilerClang, MinVersion: model.Version{Major: 3, Minor: 3}, Flag: "-fsanitize=undefined"},
+func (r UBSanRule) Applicability() model.Applicability {
+	return model.Applicability{
+		Arch: model.ArchAll,
+		Compilers: map[model.Compiler]model.CompilerRequirement{
+			model.CompilerGCC:   {MinVersion: model.Version{Major: 4, Minor: 9}, Flag: "-fsanitize=undefined"},
+			model.CompilerClang: {MinVersion: model.Version{Major: 3, Minor: 3}, Flag: "-fsanitize=undefined"},
 		},
 	}
 }

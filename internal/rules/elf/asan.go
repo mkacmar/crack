@@ -12,18 +12,18 @@ import (
 // GCC: https://gcc.gnu.org/onlinedocs/gcc/Instrumentation-Options.html#index-fsanitize=address
 type ASANRule struct{}
 
-func (r ASANRule) ID() string                     { return "asan" }
-func (r ASANRule) Name() string                   { return "Address Sanitizer" }
-func (r ASANRule) Format() model.BinaryFormat     { return model.FormatELF }
-func (r ASANRule) FlagType() model.FlagType       { return model.FlagTypeCompile }
-func (r ASANRule) TargetArch() model.Architecture { return model.ArchAll }
-func (r ASANRule) HasPerfImpact() bool            { return true }
+func (r ASANRule) ID() string                 { return "asan" }
+func (r ASANRule) Name() string               { return "Address Sanitizer" }
+func (r ASANRule) Format() model.BinaryFormat { return model.FormatELF }
+func (r ASANRule) FlagType() model.FlagType   { return model.FlagTypeCompile }
+func (r ASANRule) HasPerfImpact() bool        { return true }
 
-func (r ASANRule) Feature() model.FeatureAvailability {
-	return model.FeatureAvailability{
-		Requirements: []model.CompilerRequirement{
-			{Compiler: model.CompilerGCC, MinVersion: model.Version{Major: 4, Minor: 8}, Flag: "-fsanitize=address"},
-			{Compiler: model.CompilerClang, MinVersion: model.Version{Major: 3, Minor: 1}, Flag: "-fsanitize=address"},
+func (r ASANRule) Applicability() model.Applicability {
+	return model.Applicability{
+		Arch: model.ArchAll,
+		Compilers: map[model.Compiler]model.CompilerRequirement{
+			model.CompilerGCC:   {MinVersion: model.Version{Major: 4, Minor: 8}, Flag: "-fsanitize=address"},
+			model.CompilerClang: {MinVersion: model.Version{Major: 3, Minor: 1}, Flag: "-fsanitize=address"},
 		},
 	}
 }

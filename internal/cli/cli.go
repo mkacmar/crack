@@ -200,7 +200,7 @@ func (a *App) runAnalyze(prog string, args []string) int {
 				general = append(general, ruleID)
 				continue
 			}
-			arch := rule.TargetArch()
+			arch := rule.Applicability().Arch
 			if arch.IsX86() && !arch.IsARM() {
 				x86 = append(x86, ruleID)
 			} else if arch.IsARM() && !arch.IsX86() {

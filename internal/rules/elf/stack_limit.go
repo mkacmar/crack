@@ -11,18 +11,18 @@ import (
 // ld: https://sourceware.org/binutils/docs/ld/Options.html#index-z-keyword
 type StackLimitRule struct{}
 
-func (r StackLimitRule) ID() string                     { return "stack-limit" }
-func (r StackLimitRule) Name() string                   { return "Explicit Stack Size Limit" }
-func (r StackLimitRule) Format() model.BinaryFormat     { return model.FormatELF }
-func (r StackLimitRule) FlagType() model.FlagType       { return model.FlagTypeLink }
-func (r StackLimitRule) TargetArch() model.Architecture { return model.ArchAll }
-func (r StackLimitRule) HasPerfImpact() bool            { return false }
+func (r StackLimitRule) ID() string                 { return "stack-limit" }
+func (r StackLimitRule) Name() string               { return "Explicit Stack Size Limit" }
+func (r StackLimitRule) Format() model.BinaryFormat { return model.FormatELF }
+func (r StackLimitRule) FlagType() model.FlagType   { return model.FlagTypeLink }
+func (r StackLimitRule) HasPerfImpact() bool        { return false }
 
-func (r StackLimitRule) Feature() model.FeatureAvailability {
-	return model.FeatureAvailability{
-		Requirements: []model.CompilerRequirement{
-			{Compiler: model.CompilerGCC, MinVersion: model.Version{Major: 3, Minor: 0}, Flag: "-Wl,-z,stack-size=8388608"},
-			{Compiler: model.CompilerClang, MinVersion: model.Version{Major: 3, Minor: 0}, Flag: "-Wl,-z,stack-size=8388608"},
+func (r StackLimitRule) Applicability() model.Applicability {
+	return model.Applicability{
+		Arch: model.ArchAll,
+		Compilers: map[model.Compiler]model.CompilerRequirement{
+			model.CompilerGCC:   {MinVersion: model.Version{Major: 3, Minor: 0}, Flag: "-Wl,-z,stack-size=8388608"},
+			model.CompilerClang: {MinVersion: model.Version{Major: 3, Minor: 0}, Flag: "-Wl,-z,stack-size=8388608"},
 		},
 	}
 }

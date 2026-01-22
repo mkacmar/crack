@@ -13,18 +13,18 @@ const DF_1_PIE = 0x08000000
 // Clang: https://clang.llvm.org/docs/ClangCommandLineReference.html#cmdoption-clang-fpie
 type PIERule struct{}
 
-func (r PIERule) ID() string                     { return "pie" }
-func (r PIERule) Name() string                   { return "Position Independent Executable" }
-func (r PIERule) Format() model.BinaryFormat     { return model.FormatELF }
-func (r PIERule) FlagType() model.FlagType       { return model.FlagTypeBoth }
-func (r PIERule) TargetArch() model.Architecture { return model.ArchAll }
-func (r PIERule) HasPerfImpact() bool            { return false }
+func (r PIERule) ID() string                 { return "pie" }
+func (r PIERule) Name() string               { return "Position Independent Executable" }
+func (r PIERule) Format() model.BinaryFormat { return model.FormatELF }
+func (r PIERule) FlagType() model.FlagType   { return model.FlagTypeBoth }
+func (r PIERule) HasPerfImpact() bool        { return false }
 
-func (r PIERule) Feature() model.FeatureAvailability {
-	return model.FeatureAvailability{
-		Requirements: []model.CompilerRequirement{
-			{Compiler: model.CompilerGCC, MinVersion: model.Version{Major: 6, Minor: 0}, DefaultVersion: model.Version{Major: 6, Minor: 0}, Flag: "-fPIE -pie"},
-			{Compiler: model.CompilerClang, MinVersion: model.Version{Major: 3, Minor: 0}, DefaultVersion: model.Version{Major: 6, Minor: 0}, Flag: "-fPIE -pie"},
+func (r PIERule) Applicability() model.Applicability {
+	return model.Applicability{
+		Arch: model.ArchAll,
+		Compilers: map[model.Compiler]model.CompilerRequirement{
+			model.CompilerGCC:   {MinVersion: model.Version{Major: 6, Minor: 0}, DefaultVersion: model.Version{Major: 6, Minor: 0}, Flag: "-fPIE -pie"},
+			model.CompilerClang: {MinVersion: model.Version{Major: 3, Minor: 0}, DefaultVersion: model.Version{Major: 6, Minor: 0}, Flag: "-fPIE -pie"},
 		},
 	}
 }

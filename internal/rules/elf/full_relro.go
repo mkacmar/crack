@@ -15,18 +15,18 @@ const (
 // ld: https://sourceware.org/binutils/docs/ld/Options.html
 type FullRELRORule struct{}
 
-func (r FullRELRORule) ID() string                     { return "full-relro" }
-func (r FullRELRORule) Name() string                   { return "Full RELRO" }
-func (r FullRELRORule) Format() model.BinaryFormat     { return model.FormatELF }
-func (r FullRELRORule) FlagType() model.FlagType       { return model.FlagTypeLink }
-func (r FullRELRORule) TargetArch() model.Architecture { return model.ArchAll }
-func (r FullRELRORule) HasPerfImpact() bool            { return false }
+func (r FullRELRORule) ID() string                 { return "full-relro" }
+func (r FullRELRORule) Name() string               { return "Full RELRO" }
+func (r FullRELRORule) Format() model.BinaryFormat { return model.FormatELF }
+func (r FullRELRORule) FlagType() model.FlagType   { return model.FlagTypeLink }
+func (r FullRELRORule) HasPerfImpact() bool        { return false }
 
-func (r FullRELRORule) Feature() model.FeatureAvailability {
-	return model.FeatureAvailability{
-		Requirements: []model.CompilerRequirement{
-			{Compiler: model.CompilerGCC, MinVersion: model.Version{Major: 3, Minor: 0}, Flag: "-Wl,-z,relro,-z,now"},
-			{Compiler: model.CompilerClang, MinVersion: model.Version{Major: 3, Minor: 0}, Flag: "-Wl,-z,relro,-z,now"},
+func (r FullRELRORule) Applicability() model.Applicability {
+	return model.Applicability{
+		Arch: model.ArchAll,
+		Compilers: map[model.Compiler]model.CompilerRequirement{
+			model.CompilerGCC:   {MinVersion: model.Version{Major: 3, Minor: 0}, Flag: "-Wl,-z,relro,-z,now"},
+			model.CompilerClang: {MinVersion: model.Version{Major: 3, Minor: 0}, Flag: "-Wl,-z,relro,-z,now"},
 		},
 	}
 }

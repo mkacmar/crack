@@ -12,18 +12,18 @@ import (
 // Clang: https://clang.llvm.org/docs/ClangCommandLineReference.html#cmdoption-clang-mretpoline
 type X86RetpolineRule struct{}
 
-func (r X86RetpolineRule) ID() string                     { return "x86-retpoline" }
-func (r X86RetpolineRule) Name() string                   { return "x86 Retpoline (Spectre v2)" }
-func (r X86RetpolineRule) Format() model.BinaryFormat     { return model.FormatELF }
-func (r X86RetpolineRule) FlagType() model.FlagType       { return model.FlagTypeCompile }
-func (r X86RetpolineRule) TargetArch() model.Architecture { return model.ArchAllX86 }
-func (r X86RetpolineRule) HasPerfImpact() bool            { return true }
+func (r X86RetpolineRule) ID() string                 { return "x86-retpoline" }
+func (r X86RetpolineRule) Name() string               { return "x86 Retpoline (Spectre v2)" }
+func (r X86RetpolineRule) Format() model.BinaryFormat { return model.FormatELF }
+func (r X86RetpolineRule) FlagType() model.FlagType   { return model.FlagTypeCompile }
+func (r X86RetpolineRule) HasPerfImpact() bool        { return true }
 
-func (r X86RetpolineRule) Feature() model.FeatureAvailability {
-	return model.FeatureAvailability{
-		Requirements: []model.CompilerRequirement{
-			{Compiler: model.CompilerGCC, MinVersion: model.Version{Major: 7, Minor: 3}, Flag: "-mindirect-branch=thunk -mfunction-return=thunk"},
-			{Compiler: model.CompilerClang, MinVersion: model.Version{Major: 5, Minor: 0}, Flag: "-mretpoline"},
+func (r X86RetpolineRule) Applicability() model.Applicability {
+	return model.Applicability{
+		Arch: model.ArchAllX86,
+		Compilers: map[model.Compiler]model.CompilerRequirement{
+			model.CompilerGCC:   {MinVersion: model.Version{Major: 7, Minor: 3}, Flag: "-mindirect-branch=thunk -mfunction-return=thunk"},
+			model.CompilerClang: {MinVersion: model.Version{Major: 5, Minor: 0}, Flag: "-mretpoline"},
 		},
 	}
 }

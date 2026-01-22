@@ -12,18 +12,18 @@ const DF_1_NODUMP = 0x00001000
 // ld: https://sourceware.org/binutils/docs/ld/Options.html#index-z-keyword
 type NoDumpRule struct{}
 
-func (r NoDumpRule) ID() string                     { return "no-dump" }
-func (r NoDumpRule) Name() string                   { return "Core Dump Protection" }
-func (r NoDumpRule) Format() model.BinaryFormat     { return model.FormatELF }
-func (r NoDumpRule) FlagType() model.FlagType       { return model.FlagTypeLink }
-func (r NoDumpRule) TargetArch() model.Architecture { return model.ArchAll }
-func (r NoDumpRule) HasPerfImpact() bool            { return false }
+func (r NoDumpRule) ID() string                 { return "no-dump" }
+func (r NoDumpRule) Name() string               { return "Core Dump Protection" }
+func (r NoDumpRule) Format() model.BinaryFormat { return model.FormatELF }
+func (r NoDumpRule) FlagType() model.FlagType   { return model.FlagTypeLink }
+func (r NoDumpRule) HasPerfImpact() bool        { return false }
 
-func (r NoDumpRule) Feature() model.FeatureAvailability {
-	return model.FeatureAvailability{
-		Requirements: []model.CompilerRequirement{
-			{Compiler: model.CompilerGCC, MinVersion: model.Version{Major: 3, Minor: 0}, Flag: "-Wl,-z,nodump"},
-			{Compiler: model.CompilerClang, MinVersion: model.Version{Major: 3, Minor: 0}, Flag: "-Wl,-z,nodump"},
+func (r NoDumpRule) Applicability() model.Applicability {
+	return model.Applicability{
+		Arch: model.ArchAll,
+		Compilers: map[model.Compiler]model.CompilerRequirement{
+			model.CompilerGCC:   {MinVersion: model.Version{Major: 3, Minor: 0}, Flag: "-Wl,-z,nodump"},
+			model.CompilerClang: {MinVersion: model.Version{Major: 3, Minor: 0}, Flag: "-Wl,-z,nodump"},
 		},
 	}
 }

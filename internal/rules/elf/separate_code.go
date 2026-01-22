@@ -10,18 +10,18 @@ import (
 // ld: https://sourceware.org/binutils/docs/ld/Options.html#index-z-keyword
 type SeparateCodeRule struct{}
 
-func (r SeparateCodeRule) ID() string                     { return "separate-code" }
-func (r SeparateCodeRule) Name() string                   { return "Separate Code Segments" }
-func (r SeparateCodeRule) Format() model.BinaryFormat     { return model.FormatELF }
-func (r SeparateCodeRule) FlagType() model.FlagType       { return model.FlagTypeLink }
-func (r SeparateCodeRule) TargetArch() model.Architecture { return model.ArchAll }
-func (r SeparateCodeRule) HasPerfImpact() bool            { return false }
+func (r SeparateCodeRule) ID() string                 { return "separate-code" }
+func (r SeparateCodeRule) Name() string               { return "Separate Code Segments" }
+func (r SeparateCodeRule) Format() model.BinaryFormat { return model.FormatELF }
+func (r SeparateCodeRule) FlagType() model.FlagType   { return model.FlagTypeLink }
+func (r SeparateCodeRule) HasPerfImpact() bool        { return false }
 
-func (r SeparateCodeRule) Feature() model.FeatureAvailability {
-	return model.FeatureAvailability{
-		Requirements: []model.CompilerRequirement{
-			{Compiler: model.CompilerGCC, MinVersion: model.Version{Major: 3, Minor: 0}, Flag: "-Wl,-z,separate-code"},
-			{Compiler: model.CompilerClang, MinVersion: model.Version{Major: 3, Minor: 0}, Flag: "-Wl,-z,separate-code"},
+func (r SeparateCodeRule) Applicability() model.Applicability {
+	return model.Applicability{
+		Arch: model.ArchAll,
+		Compilers: map[model.Compiler]model.CompilerRequirement{
+			model.CompilerGCC:   {MinVersion: model.Version{Major: 3, Minor: 0}, Flag: "-Wl,-z,separate-code"},
+			model.CompilerClang: {MinVersion: model.Version{Major: 3, Minor: 0}, Flag: "-Wl,-z,separate-code"},
 		},
 	}
 }

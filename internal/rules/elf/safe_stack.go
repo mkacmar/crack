@@ -12,17 +12,17 @@ import (
 // LLVM: https://llvm.org/docs/SafeStack.html
 type SafeStackRule struct{}
 
-func (r SafeStackRule) ID() string                     { return "safe-stack" }
-func (r SafeStackRule) Name() string                   { return "SafeStack" }
-func (r SafeStackRule) Format() model.BinaryFormat     { return model.FormatELF }
-func (r SafeStackRule) FlagType() model.FlagType       { return model.FlagTypeCompile }
-func (r SafeStackRule) TargetArch() model.Architecture { return model.ArchAll }
-func (r SafeStackRule) HasPerfImpact() bool            { return true }
+func (r SafeStackRule) ID() string                 { return "safe-stack" }
+func (r SafeStackRule) Name() string               { return "SafeStack" }
+func (r SafeStackRule) Format() model.BinaryFormat { return model.FormatELF }
+func (r SafeStackRule) FlagType() model.FlagType   { return model.FlagTypeCompile }
+func (r SafeStackRule) HasPerfImpact() bool        { return true }
 
-func (r SafeStackRule) Feature() model.FeatureAvailability {
-	return model.FeatureAvailability{
-		Requirements: []model.CompilerRequirement{
-			{Compiler: model.CompilerClang, MinVersion: model.Version{Major: 3, Minor: 8}, Flag: "-fsanitize=safe-stack"},
+func (r SafeStackRule) Applicability() model.Applicability {
+	return model.Applicability{
+		Arch: model.ArchAll,
+		Compilers: map[model.Compiler]model.CompilerRequirement{
+			model.CompilerClang: {MinVersion: model.Version{Major: 3, Minor: 8}, Flag: "-fsanitize=safe-stack"},
 		},
 	}
 }

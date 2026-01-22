@@ -52,8 +52,8 @@ func (e *Engine) ExecuteRules(info *model.ParsedBinary) []model.RuleResult {
 			continue
 		}
 
-		targetArch := rule.TargetArch()
-		if targetArch != 0 && !info.Architecture.Matches(targetArch) {
+		applicability := rule.Applicability()
+		if !info.Architecture.Matches(applicability.Arch) {
 			continue
 		}
 
@@ -62,7 +62,7 @@ func (e *Engine) ExecuteRules(info *model.ParsedBinary) []model.RuleResult {
 		result.Name = rule.Name()
 
 		if result.State == model.CheckStateFailed {
-			result.Suggestion = buildSuggestion(info.Build.Toolchain, rule.Feature())
+			result.Suggestion = buildSuggestion(info.Build.Toolchain, applicability)
 		}
 
 		results = append(results, result)

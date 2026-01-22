@@ -12,18 +12,18 @@ import (
 // ld: https://sourceware.org/binutils/docs/ld/Options.html
 type NoInsecureRPATHRule struct{}
 
-func (r NoInsecureRPATHRule) ID() string                     { return "no-insecure-rpath" }
-func (r NoInsecureRPATHRule) Name() string                   { return "Secure RPATH" }
-func (r NoInsecureRPATHRule) Format() model.BinaryFormat     { return model.FormatELF }
-func (r NoInsecureRPATHRule) FlagType() model.FlagType       { return model.FlagTypeLink }
-func (r NoInsecureRPATHRule) TargetArch() model.Architecture { return model.ArchAll }
-func (r NoInsecureRPATHRule) HasPerfImpact() bool            { return false }
+func (r NoInsecureRPATHRule) ID() string                 { return "no-insecure-rpath" }
+func (r NoInsecureRPATHRule) Name() string               { return "Secure RPATH" }
+func (r NoInsecureRPATHRule) Format() model.BinaryFormat { return model.FormatELF }
+func (r NoInsecureRPATHRule) FlagType() model.FlagType   { return model.FlagTypeLink }
+func (r NoInsecureRPATHRule) HasPerfImpact() bool        { return false }
 
-func (r NoInsecureRPATHRule) Feature() model.FeatureAvailability {
-	return model.FeatureAvailability{
-		Requirements: []model.CompilerRequirement{
-			{Compiler: model.CompilerGCC, MinVersion: model.Version{Major: 3, Minor: 0}, Flag: "-Wl,-rpath,/absolute/path"},
-			{Compiler: model.CompilerClang, MinVersion: model.Version{Major: 3, Minor: 0}, Flag: "-Wl,-rpath,/absolute/path"},
+func (r NoInsecureRPATHRule) Applicability() model.Applicability {
+	return model.Applicability{
+		Arch: model.ArchAll,
+		Compilers: map[model.Compiler]model.CompilerRequirement{
+			model.CompilerGCC:   {MinVersion: model.Version{Major: 3, Minor: 0}, Flag: "-Wl,-rpath,/absolute/path"},
+			model.CompilerClang: {MinVersion: model.Version{Major: 3, Minor: 0}, Flag: "-Wl,-rpath,/absolute/path"},
 		},
 	}
 }

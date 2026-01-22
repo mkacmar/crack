@@ -10,18 +10,18 @@ import (
 // GCC: https://gcc.gnu.org/onlinedocs/gcc/x86-Options.html#index-fcf-protection
 type X86CETShadowStackRule struct{}
 
-func (r X86CETShadowStackRule) ID() string                     { return "x86-cet-shstk" }
-func (r X86CETShadowStackRule) Name() string                   { return "x86 CET - Shadow Stack" }
-func (r X86CETShadowStackRule) Format() model.BinaryFormat     { return model.FormatELF }
-func (r X86CETShadowStackRule) FlagType() model.FlagType       { return model.FlagTypeCompile }
-func (r X86CETShadowStackRule) TargetArch() model.Architecture { return model.ArchAllX86 }
-func (r X86CETShadowStackRule) HasPerfImpact() bool            { return false }
+func (r X86CETShadowStackRule) ID() string                 { return "x86-cet-shstk" }
+func (r X86CETShadowStackRule) Name() string               { return "x86 CET - Shadow Stack" }
+func (r X86CETShadowStackRule) Format() model.BinaryFormat { return model.FormatELF }
+func (r X86CETShadowStackRule) FlagType() model.FlagType   { return model.FlagTypeCompile }
+func (r X86CETShadowStackRule) HasPerfImpact() bool        { return false }
 
-func (r X86CETShadowStackRule) Feature() model.FeatureAvailability {
-	return model.FeatureAvailability{
-		Requirements: []model.CompilerRequirement{
-			{Compiler: model.CompilerGCC, MinVersion: model.Version{Major: 8, Minor: 1}, Flag: "-fcf-protection=full"},
-			{Compiler: model.CompilerClang, MinVersion: model.Version{Major: 7, Minor: 0}, Flag: "-fcf-protection=full"},
+func (r X86CETShadowStackRule) Applicability() model.Applicability {
+	return model.Applicability{
+		Arch: model.ArchAllX86,
+		Compilers: map[model.Compiler]model.CompilerRequirement{
+			model.CompilerGCC:   {MinVersion: model.Version{Major: 8, Minor: 1}, Flag: "-fcf-protection=full"},
+			model.CompilerClang: {MinVersion: model.Version{Major: 7, Minor: 0}, Flag: "-fcf-protection=full"},
 		},
 	}
 }

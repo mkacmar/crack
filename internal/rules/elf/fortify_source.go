@@ -39,18 +39,18 @@ var fortifiableFunctions = map[string]string{
 // GCC: https://gcc.gnu.org/onlinedocs/gcc/Instrumentation-Options.html#index-D_FORTIFY_SOURCE
 type FortifySourceRule struct{}
 
-func (r FortifySourceRule) ID() string                     { return "fortify-source" }
-func (r FortifySourceRule) Name() string                   { return "FORTIFY_SOURCE" }
-func (r FortifySourceRule) Format() model.BinaryFormat     { return model.FormatELF }
-func (r FortifySourceRule) FlagType() model.FlagType       { return model.FlagTypeCompile }
-func (r FortifySourceRule) TargetArch() model.Architecture { return model.ArchAll }
-func (r FortifySourceRule) HasPerfImpact() bool            { return false }
+func (r FortifySourceRule) ID() string                 { return "fortify-source" }
+func (r FortifySourceRule) Name() string               { return "FORTIFY_SOURCE" }
+func (r FortifySourceRule) Format() model.BinaryFormat { return model.FormatELF }
+func (r FortifySourceRule) FlagType() model.FlagType   { return model.FlagTypeCompile }
+func (r FortifySourceRule) HasPerfImpact() bool        { return false }
 
-func (r FortifySourceRule) Feature() model.FeatureAvailability {
-	return model.FeatureAvailability{
-		Requirements: []model.CompilerRequirement{
-			{Compiler: model.CompilerGCC, MinVersion: model.Version{Major: 12, Minor: 0}, Flag: "-D_FORTIFY_SOURCE=3 -O1"},
-			{Compiler: model.CompilerClang, MinVersion: model.Version{Major: 12, Minor: 0}, Flag: "-D_FORTIFY_SOURCE=3 -O1"},
+func (r FortifySourceRule) Applicability() model.Applicability {
+	return model.Applicability{
+		Arch: model.ArchAll,
+		Compilers: map[model.Compiler]model.CompilerRequirement{
+			model.CompilerGCC:   {MinVersion: model.Version{Major: 12, Minor: 0}, Flag: "-D_FORTIFY_SOURCE=3 -O1"},
+			model.CompilerClang: {MinVersion: model.Version{Major: 12, Minor: 0}, Flag: "-D_FORTIFY_SOURCE=3 -O1"},
 		},
 	}
 }
