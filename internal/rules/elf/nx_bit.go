@@ -25,25 +25,25 @@ func (r NXBitRule) Applicability() rule.Applicability {
 	}
 }
 
-func (r NXBitRule) Execute(f *elf.File, info *binary.Parsed) rule.Result {
+func (r NXBitRule) Execute(f *elf.File, info *binary.Parsed) rule.ExecuteResult {
 	for _, prog := range f.Progs {
 		if prog.Type == elf.PT_GNU_STACK {
 			if (prog.Flags & elf.PF_X) == 0 {
-				return rule.Result{
-					State:   rule.CheckStatePassed,
+				return rule.ExecuteResult{
+					Status: rule.StatusPassed,
 					Message: "Stack is marked as non-executable (NX bit enabled)",
 				}
 			}
-			return rule.Result{
-				State:   rule.CheckStateFailed,
+			return rule.ExecuteResult{
+				Status: rule.StatusFailed,
 				Message: "Stack is EXECUTABLE (NX bit NOT enabled)",
 			}
 		}
 	}
 
 	// PT_GNU_STACK missing - this typically means executable stack on older systems.
-	return rule.Result{
-		State:   rule.CheckStateFailed,
+	return rule.ExecuteResult{
+		Status: rule.StatusFailed,
 		Message: "PT_GNU_STACK segment missing (stack executability depends on system defaults)",
 	}
 }

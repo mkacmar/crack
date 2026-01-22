@@ -25,17 +25,17 @@ func (r ASLRRule) Applicability() rule.Applicability {
 	}
 }
 
-func (r ASLRRule) Execute(f *elf.File, info *binary.Parsed) rule.Result {
+func (r ASLRRule) Execute(f *elf.File, info *binary.Parsed) rule.ExecuteResult {
 	if f.Type == elf.ET_EXEC {
-		return rule.Result{
-			State:   rule.CheckStateFailed,
+		return rule.ExecuteResult{
+			Status: rule.StatusFailed,
 			Message: "Binary is NOT ASLR compatible (not compiled as PIE)",
 		}
 	}
 
 	if f.Type != elf.ET_DYN {
-		return rule.Result{
-			State:   rule.CheckStateSkipped,
+		return rule.ExecuteResult{
+			Status: rule.StatusSkipped,
 			Message: "Unknown binary type",
 		}
 	}
@@ -53,8 +53,8 @@ func (r ASLRRule) Execute(f *elf.File, info *binary.Parsed) rule.Result {
 	}
 
 	if !isPIE {
-		return rule.Result{
-			State:   rule.CheckStateSkipped,
+		return rule.ExecuteResult{
+			Status: rule.StatusSkipped,
 			Message: "Shared library (ASLR check not applicable)",
 		}
 	}
@@ -68,22 +68,22 @@ func (r ASLRRule) Execute(f *elf.File, info *binary.Parsed) rule.Result {
 	}
 
 	if !hasNXStack {
-		return rule.Result{
-			State:   rule.CheckStateFailed,
+		return rule.ExecuteResult{
+			Status: rule.StatusFailed,
 			Message: "Binary is NOT fully ASLR compatible (executable stack)",
 		}
 	}
 
 	// Check for text relocations (breaks ASLR)
 	if HasDynTag(f, elf.DT_TEXTREL) {
-		return rule.Result{
-			State:   rule.CheckStateFailed,
+		return rule.ExecuteResult{
+			Status: rule.StatusFailed,
 			Message: "Binary is NOT ASLR compatible (has text relocations)",
 		}
 	}
 
-	return rule.Result{
-		State:   rule.CheckStatePassed,
+	return rule.ExecuteResult{
+		Status: rule.StatusPassed,
 		Message: "Binary is fully ASLR compatible (PIE + NX stack + no text relocations)",
 	}
 }

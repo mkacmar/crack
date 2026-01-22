@@ -26,7 +26,7 @@ func (r StackLimitRule) Applicability() rule.Applicability {
 	}
 }
 
-func (r StackLimitRule) Execute(f *elf.File, info *binary.Parsed) rule.Result {
+func (r StackLimitRule) Execute(f *elf.File, info *binary.Parsed) rule.ExecuteResult {
 	hasExplicitStackLimit := false
 	stackSize := uint64(0)
 	foundGNUStack := false
@@ -41,8 +41,8 @@ func (r StackLimitRule) Execute(f *elf.File, info *binary.Parsed) rule.Result {
 	}
 
 	if hasExplicitStackLimit {
-		return rule.Result{
-			State:   rule.CheckStatePassed,
+		return rule.ExecuteResult{
+			Status: rule.StatusPassed,
 			Message: fmt.Sprintf("Stack has explicit size limit: %d bytes", stackSize),
 		}
 	}
@@ -51,8 +51,8 @@ func (r StackLimitRule) Execute(f *elf.File, info *binary.Parsed) rule.Result {
 	if foundGNUStack {
 		msg = "Stack uses system default size (no explicit limit set)"
 	}
-	return rule.Result{
-		State:   rule.CheckStateFailed,
+	return rule.ExecuteResult{
+		Status: rule.StatusFailed,
 		Message: msg,
 	}
 }

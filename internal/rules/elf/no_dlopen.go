@@ -30,7 +30,7 @@ func (r NoDLOpenRule) Applicability() rule.Applicability {
 	}
 }
 
-func (r NoDLOpenRule) Execute(f *elf.File, info *binary.Parsed) rule.Result {
+func (r NoDLOpenRule) Execute(f *elf.File, info *binary.Parsed) rule.ExecuteResult {
 	hasNoDLOpen := false
 
 	dynSec := f.Section(".dynamic")
@@ -76,13 +76,13 @@ func (r NoDLOpenRule) Execute(f *elf.File, info *binary.Parsed) rule.Result {
 	}
 
 	if hasNoDLOpen {
-		return rule.Result{
-			State:   rule.CheckStatePassed,
+		return rule.ExecuteResult{
+			Status: rule.StatusPassed,
 			Message: "dlopen is disabled via linker flags",
 		}
 	}
-	return rule.Result{
-		State:   rule.CheckStateFailed,
+	return rule.ExecuteResult{
+		Status: rule.StatusFailed,
 		Message: "dlopen is NOT disabled (binary can load libraries dynamically)",
 	}
 }

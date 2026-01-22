@@ -26,7 +26,7 @@ func (r KernelCFIRule) Applicability() rule.Applicability {
 	}
 }
 
-func (r KernelCFIRule) Execute(f *elf.File, info *binary.Parsed) rule.Result {
+func (r KernelCFIRule) Execute(f *elf.File, info *binary.Parsed) rule.ExecuteResult {
 	symbols, _ := f.Symbols()
 	dynsyms, _ := f.DynamicSymbols()
 
@@ -47,13 +47,13 @@ func (r KernelCFIRule) Execute(f *elf.File, info *binary.Parsed) rule.Result {
 	}
 
 	if hasKCFI {
-		return rule.Result{
-			State:   rule.CheckStatePassed,
+		return rule.ExecuteResult{
+			Status: rule.StatusPassed,
 			Message: "Kernel CFI (kCFI) is enabled",
 		}
 	}
-	return rule.Result{
-		State:   rule.CheckStateFailed,
+	return rule.ExecuteResult{
+		Status: rule.StatusFailed,
 		Message: "Kernel CFI is NOT enabled",
 	}
 }

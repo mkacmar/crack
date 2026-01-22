@@ -27,17 +27,17 @@ func (r ARMPACRule) Applicability() rule.Applicability {
 	}
 }
 
-func (r ARMPACRule) Execute(f *elf.File, info *binary.Parsed) rule.Result {
+func (r ARMPACRule) Execute(f *elf.File, info *binary.Parsed) rule.ExecuteResult {
 	hasPAC := parseGNUProperty(f, GNU_PROPERTY_AARCH64_FEATURE_1_AND, GNU_PROPERTY_AARCH64_FEATURE_1_PAC)
 
 	if hasPAC {
-		return rule.Result{
-			State:   rule.CheckStatePassed,
+		return rule.ExecuteResult{
+			Status: rule.StatusPassed,
 			Message: "ARM PAC (Pointer Authentication Code) is enabled",
 		}
 	}
-	return rule.Result{
-		State:   rule.CheckStateFailed,
+	return rule.ExecuteResult{
+		Status: rule.StatusFailed,
 		Message: "ARM PAC is NOT enabled (requires ARMv8.3+ hardware)",
 	}
 }

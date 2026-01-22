@@ -26,7 +26,7 @@ func (r StrippedRule) Applicability() rule.Applicability {
 	}
 }
 
-func (r StrippedRule) Execute(f *elf.File, info *binary.Parsed) rule.Result {
+func (r StrippedRule) Execute(f *elf.File, info *binary.Parsed) rule.ExecuteResult {
 	hasSymbolTable := false
 	hasDebugSections := false
 
@@ -44,28 +44,28 @@ func (r StrippedRule) Execute(f *elf.File, info *binary.Parsed) rule.Result {
 	}
 
 	if !hasSymbolTable && !hasDebugSections {
-		return rule.Result{
-			State:   rule.CheckStatePassed,
+		return rule.ExecuteResult{
+			Status: rule.StatusPassed,
 			Message: "Binary is fully stripped (no symbol table or debug sections)",
 		}
 	}
 
 	if hasSymbolTable && hasDebugSections {
-		return rule.Result{
-			State:   rule.CheckStateFailed,
+		return rule.ExecuteResult{
+			Status: rule.StatusFailed,
 			Message: "Binary is NOT stripped (contains symbol table and debug sections)",
 		}
 	}
 
 	if hasSymbolTable {
-		return rule.Result{
-			State:   rule.CheckStateFailed,
+		return rule.ExecuteResult{
+			Status: rule.StatusFailed,
 			Message: "Binary is NOT stripped (contains symbol table)",
 		}
 	}
 
-	return rule.Result{
-		State:   rule.CheckStateFailed,
+	return rule.ExecuteResult{
+		Status: rule.StatusFailed,
 		Message: "Binary is partially stripped (no symbol table, but has debug sections)",
 	}
 }

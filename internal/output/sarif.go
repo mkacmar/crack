@@ -95,7 +95,7 @@ func (f *SARIFFormatter) Format(report *result.ScanResults, w io.Writer) error {
 }
 
 func (f *SARIFFormatter) convertToSARIF(report *result.ScanResults) SARIFReport {
-	ruleMap := make(map[string]rule.Result)
+	ruleMap := make(map[string]rule.ProcessedResult)
 	for _, res := range report.Results {
 		for _, check := range res.Results {
 			if _, exists := ruleMap[check.RuleID]; !exists {
@@ -147,16 +147,16 @@ func (f *SARIFFormatter) convertToSARIF(report *result.ScanResults) SARIFReport 
 		}
 
 		for _, check := range res.Results {
-			if check.State == rule.CheckStatePassed && !f.IncludePassed {
+			if check.Status == rule.StatusPassed && !f.IncludePassed {
 				continue
 			}
-			if check.State == rule.CheckStateSkipped {
+			if check.Status == rule.StatusSkipped {
 				continue
 			}
 
 			kind := "fail"
 			level := "warning"
-			if check.State == rule.CheckStatePassed {
+			if check.Status == rule.StatusPassed {
 				kind = "pass"
 				level = "note"
 			}

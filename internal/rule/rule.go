@@ -7,32 +7,36 @@ import (
 	"github.com/mkacmar/crack/internal/toolchain"
 )
 
-type CheckState int
+type Status int
 
 const (
-	CheckStatePassed CheckState = iota
-	CheckStateFailed
-	CheckStateSkipped
+	StatusPassed Status = iota
+	StatusFailed
+	StatusSkipped
 )
 
-func (cs CheckState) String() string {
-	switch cs {
-	case CheckStatePassed:
+func (s Status) String() string {
+	switch s {
+	case StatusPassed:
 		return "passed"
-	case CheckStateFailed:
+	case StatusFailed:
 		return "failed"
-	case CheckStateSkipped:
+	case StatusSkipped:
 		return "skipped"
 	default:
 		return "unknown"
 	}
 }
 
-type Result struct {
+type ExecuteResult struct {
+	Status  Status
+	Message string
+}
+
+type ProcessedResult struct {
+	ExecuteResult
 	RuleID     string
 	Name       string
-	State      CheckState
-	Message    string
 	Suggestion string
 }
 
@@ -55,5 +59,5 @@ type Rule interface {
 
 type ELFRule interface {
 	Rule
-	Execute(f *elf.File, info *binary.Parsed) Result
+	Execute(f *elf.File, info *binary.Parsed) ExecuteResult
 }

@@ -25,7 +25,7 @@ func (r SeparateCodeRule) Applicability() rule.Applicability {
 	}
 }
 
-func (r SeparateCodeRule) Execute(f *elf.File, info *binary.Parsed) rule.Result {
+func (r SeparateCodeRule) Execute(f *elf.File, info *binary.Parsed) rule.ExecuteResult {
 	// Check file offsets at 4KB page granularity
 	const pageSize uint64 = 4096
 
@@ -48,8 +48,8 @@ func (r SeparateCodeRule) Execute(f *elf.File, info *binary.Parsed) rule.Result 
 	}
 
 	if len(codePages) == 0 {
-		return rule.Result{
-			State:   rule.CheckStateSkipped,
+		return rule.ExecuteResult{
+			Status: rule.StatusSkipped,
 			Message: "No code segments found",
 		}
 	}
@@ -58,16 +58,16 @@ func (r SeparateCodeRule) Execute(f *elf.File, info *binary.Parsed) rule.Result 
 	for _, code := range codePages {
 		for _, data := range dataPages {
 			if code[0] < data[1] && code[1] > data[0] {
-				return rule.Result{
-					State:   rule.CheckStateFailed,
+				return rule.ExecuteResult{
+					Status: rule.StatusFailed,
 					Message: "Code and data segments share page boundary",
 				}
 			}
 		}
 	}
 
-	return rule.Result{
-		State:   rule.CheckStatePassed,
+	return rule.ExecuteResult{
+		Status: rule.StatusPassed,
 		Message: "Code and data are in separate pages",
 	}
 }

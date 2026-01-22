@@ -54,12 +54,12 @@ func (r FortifySourceRule) Applicability() rule.Applicability {
 	}
 }
 
-func (r FortifySourceRule) Execute(f *elf.File, info *binary.Parsed) rule.Result {
+func (r FortifySourceRule) Execute(f *elf.File, info *binary.Parsed) rule.ExecuteResult {
 	// FORTIFY_SOURCE is a glibc feature - musl libc does not implement it.
 	// https://wiki.musl-libc.org/future-ideas#fortify-source
 	if info != nil && info.LibC == toolchain.LibCMusl {
-		return rule.Result{
-			State:   rule.CheckStateSkipped,
+		return rule.ExecuteResult{
+			Status: rule.StatusSkipped,
 			Message: "musl libc does not support FORTIFY_SOURCE",
 		}
 	}
@@ -95,8 +95,8 @@ func (r FortifySourceRule) Execute(f *elf.File, info *binary.Parsed) rule.Result
 		if len(unfortifiedFuncs) > 0 {
 			msg += fmt.Sprintf(", %d left unfortified %v", len(unfortifiedFuncs), unfortifiedFuncs)
 		}
-		return rule.Result{
-			State:   rule.CheckStatePassed,
+		return rule.ExecuteResult{
+			Status: rule.StatusPassed,
 			Message: msg,
 		}
 	}
@@ -104,14 +104,14 @@ func (r FortifySourceRule) Execute(f *elf.File, info *binary.Parsed) rule.Result
 	// If we see unfortified functions but no _chk variants, we report a failure.
 	// While the compiler might optimize them away if it can prove safety, real-world binaries typically have some unprovable buffer sizes.
 	if len(unfortifiedFuncs) > 0 {
-		return rule.Result{
-			State:   rule.CheckStateFailed,
+		return rule.ExecuteResult{
+			Status: rule.StatusFailed,
 			Message: fmt.Sprintf("FORTIFY_SOURCE is NOT enabled, unfortified: %v", unfortifiedFuncs),
 		}
 	}
 
-	return rule.Result{
-		State:   rule.CheckStateSkipped,
+	return rule.ExecuteResult{
+		Status: rule.StatusSkipped,
 		Message: "No fortifiable functions detected",
 	}
 }

@@ -11,25 +11,25 @@ type FileScanResult struct {
 	Format    binary.Format
 	Toolchain toolchain.Toolchain
 	SHA256    string
-	Results   []rule.Result
+	Results   []rule.ProcessedResult
 	Error     error
 	Skipped   bool
 }
 
-func (sr *FileScanResult) PassedChecks() int {
+func (sr *FileScanResult) PassedRules() int {
 	count := 0
 	for _, r := range sr.Results {
-		if r.State == rule.CheckStatePassed {
+		if r.Status == rule.StatusPassed {
 			count++
 		}
 	}
 	return count
 }
 
-func (sr *FileScanResult) FailedChecks() int {
+func (sr *FileScanResult) FailedRules() int {
 	count := 0
 	for _, r := range sr.Results {
-		if r.State == rule.CheckStateFailed {
+		if r.Status == rule.StatusFailed {
 			count++
 		}
 	}

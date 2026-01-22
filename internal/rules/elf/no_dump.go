@@ -27,7 +27,7 @@ func (r NoDumpRule) Applicability() rule.Applicability {
 	}
 }
 
-func (r NoDumpRule) Execute(f *elf.File, info *binary.Parsed) rule.Result {
+func (r NoDumpRule) Execute(f *elf.File, info *binary.Parsed) rule.ExecuteResult {
 	hasNoDump := false
 
 	dynSec := f.Section(".dynamic")
@@ -73,13 +73,13 @@ func (r NoDumpRule) Execute(f *elf.File, info *binary.Parsed) rule.Result {
 	}
 
 	if hasNoDump {
-		return rule.Result{
-			State:   rule.CheckStatePassed,
+		return rule.ExecuteResult{
+			Status: rule.StatusPassed,
 			Message: "Core dumps are disabled (DF_1_NODUMP set)",
 		}
 	}
-	return rule.Result{
-		State:   rule.CheckStateFailed,
+	return rule.ExecuteResult{
+		Status: rule.StatusFailed,
 		Message: "Core dumps are NOT explicitly disabled",
 	}
 }

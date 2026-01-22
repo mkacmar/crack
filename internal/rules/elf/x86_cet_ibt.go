@@ -25,17 +25,17 @@ func (r X86CETIBTRule) Applicability() rule.Applicability {
 	}
 }
 
-func (r X86CETIBTRule) Execute(f *elf.File, info *binary.Parsed) rule.Result {
+func (r X86CETIBTRule) Execute(f *elf.File, info *binary.Parsed) rule.ExecuteResult {
 	hasIBT := parseGNUProperty(f, GNU_PROPERTY_X86_FEATURE_1_AND, GNU_PROPERTY_X86_FEATURE_1_IBT)
 
 	if hasIBT {
-		return rule.Result{
-			State:   rule.CheckStatePassed,
+		return rule.ExecuteResult{
+			Status: rule.StatusPassed,
 			Message: "CET IBT (Indirect Branch Tracking) is enabled",
 		}
 	}
-	return rule.Result{
-		State:   rule.CheckStateFailed,
+	return rule.ExecuteResult{
+		Status: rule.StatusFailed,
 		Message: "CET IBT is NOT enabled",
 	}
 }

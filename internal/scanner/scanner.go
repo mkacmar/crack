@@ -160,8 +160,8 @@ func (s *Scanner) scanFile(ctx context.Context, path string) result.FileScanResu
 
 	s.logger.Debug("scan complete",
 		slog.String("path", path),
-		slog.Int("passed", res.PassedChecks()),
-		slog.Int("failed", res.FailedChecks()))
+		slog.Int("passed", res.PassedRules()),
+		slog.Int("failed", res.FailedRules()))
 
 	return res
 }

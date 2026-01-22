@@ -28,11 +28,11 @@ func (r NoPLTRule) Applicability() rule.Applicability {
 	}
 }
 
-func (r NoPLTRule) Execute(f *elf.File, info *binary.Parsed) rule.Result {
+func (r NoPLTRule) Execute(f *elf.File, info *binary.Parsed) rule.ExecuteResult {
 	// Skip for static binaries - PLT only applies to dynamically linked binaries
 	if f.Section(".dynamic") == nil {
-		return rule.Result{
-			State:   rule.CheckStateSkipped,
+		return rule.ExecuteResult{
+			Status: rule.StatusSkipped,
 			Message: "Static binary (PLT not applicable)",
 		}
 	}
@@ -42,8 +42,8 @@ func (r NoPLTRule) Execute(f *elf.File, info *binary.Parsed) rule.Result {
 
 	// No PLT section at all - definitely compiled with -fno-plt
 	if pltSection == nil {
-		return rule.Result{
-			State:   rule.CheckStatePassed,
+		return rule.ExecuteResult{
+			Status: rule.StatusPassed,
 			Message: "No PLT section (direct GOT access)",
 		}
 	}
@@ -51,14 +51,14 @@ func (r NoPLTRule) Execute(f *elf.File, info *binary.Parsed) rule.Result {
 	// .plt.sec is used by Intel CET - if present, PLT is being used
 	// but in a hardened way, so we consider this acceptable
 	if pltSecSection != nil {
-		return rule.Result{
-			State:   rule.CheckStatePassed,
+		return rule.ExecuteResult{
+			Status: rule.StatusPassed,
 			Message: "Using secure PLT (.plt.sec for CET compatibility)",
 		}
 	}
 
-	return rule.Result{
-		State:   rule.CheckStateFailed,
+	return rule.ExecuteResult{
+		Status: rule.StatusFailed,
 		Message: "PLT is used",
 	}
 }

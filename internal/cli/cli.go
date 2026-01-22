@@ -318,7 +318,7 @@ func (a *App) processFullReport(resultsChan <-chan result.FileScanResult, aggreg
 			continue
 		}
 		results = append(results, res)
-		totalFailed += res.FailedChecks()
+		totalFailed += res.FailedRules()
 	}
 
 	report := &result.ScanResults{Results: results}
@@ -363,7 +363,7 @@ func (a *App) processStreaming(resultsChan <-chan result.FileScanResult, showPas
 		if res.Skipped {
 			continue
 		}
-		totalFailed += res.FailedChecks()
+		totalFailed += res.FailedRules()
 		singleReport := &result.ScanResults{Results: []result.FileScanResult{res}}
 		if err := textFormatter.Format(singleReport, os.Stdout); err != nil {
 			a.logger.Error("failed to format output", slog.Any("error", err))

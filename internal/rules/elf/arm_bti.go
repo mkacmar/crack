@@ -24,17 +24,17 @@ func (r ARMBTIRule) Applicability() rule.Applicability {
 	}
 }
 
-func (r ARMBTIRule) Execute(f *elf.File, info *binary.Parsed) rule.Result {
+func (r ARMBTIRule) Execute(f *elf.File, info *binary.Parsed) rule.ExecuteResult {
 	hasBTI := parseGNUProperty(f, GNU_PROPERTY_AARCH64_FEATURE_1_AND, GNU_PROPERTY_AARCH64_FEATURE_1_BTI)
 
 	if hasBTI {
-		return rule.Result{
-			State:   rule.CheckStatePassed,
+		return rule.ExecuteResult{
+			Status: rule.StatusPassed,
 			Message: "ARM BTI (Branch Target Identification) is enabled",
 		}
 	}
-	return rule.Result{
-		State:   rule.CheckStateFailed,
+	return rule.ExecuteResult{
+		Status: rule.StatusFailed,
 		Message: "ARM BTI is NOT enabled (requires ARMv8.5+ hardware)",
 	}
 }

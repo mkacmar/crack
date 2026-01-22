@@ -27,14 +27,14 @@ func (r ARMBranchProtectionRule) Applicability() rule.Applicability {
 	}
 }
 
-func (r ARMBranchProtectionRule) Execute(f *elf.File, info *binary.Parsed) rule.Result {
+func (r ARMBranchProtectionRule) Execute(f *elf.File, info *binary.Parsed) rule.ExecuteResult {
 	hasPAC := parseGNUProperty(f, GNU_PROPERTY_AARCH64_FEATURE_1_AND, GNU_PROPERTY_AARCH64_FEATURE_1_PAC)
 	hasBTI := parseGNUProperty(f, GNU_PROPERTY_AARCH64_FEATURE_1_AND, GNU_PROPERTY_AARCH64_FEATURE_1_BTI)
 	hasBranchProt := hasPAC && hasBTI
 
 	if hasBranchProt {
-		return rule.Result{
-			State:   rule.CheckStatePassed,
+		return rule.ExecuteResult{
+			Status: rule.StatusPassed,
 			Message: "ARM branch protection (PAC+BTI) is fully enabled",
 		}
 	}
@@ -46,8 +46,8 @@ func (r ARMBranchProtectionRule) Execute(f *elf.File, info *binary.Parsed) rule.
 		message = "ARM branch protection is partial (BTI enabled, PAC missing, requires ARMv8.3+ hardware)"
 	}
 
-	return rule.Result{
-		State:   rule.CheckStateFailed,
+	return rule.ExecuteResult{
+		Status: rule.StatusFailed,
 		Message: message,
 	}
 }

@@ -25,18 +25,18 @@ func (f *TextFormatter) Format(report *result.ScanResults, w io.Writer) error {
 		}
 
 		for _, check := range result.Results {
-			switch check.State {
-			case rule.CheckStatePassed:
+			switch check.Status {
+			case rule.StatusPassed:
 				if f.ShowPassed {
 					fmt.Fprintf(w, "PASS = %s @ %s: %s\n", check.RuleID, result.Path, check.Message)
 				}
-			case rule.CheckStateFailed:
+			case rule.StatusFailed:
 				if check.Suggestion != "" {
 					fmt.Fprintf(w, "FAIL = %s @ %s: %s %s\n", check.RuleID, result.Path, check.Message, check.Suggestion)
 				} else {
 					fmt.Fprintf(w, "FAIL = %s @ %s: %s\n", check.RuleID, result.Path, check.Message)
 				}
-			case rule.CheckStateSkipped:
+			case rule.StatusSkipped:
 				if f.ShowSkipped {
 					fmt.Fprintf(w, "SKIP = %s @ %s: %s\n", check.RuleID, result.Path, check.Message)
 				}

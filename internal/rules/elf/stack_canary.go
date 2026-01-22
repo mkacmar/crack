@@ -27,7 +27,7 @@ func (r StackCanaryRule) Applicability() rule.Applicability {
 	}
 }
 
-func (r StackCanaryRule) Execute(f *elf.File, info *binary.Parsed) rule.Result {
+func (r StackCanaryRule) Execute(f *elf.File, info *binary.Parsed) rule.ExecuteResult {
 	symbols, _ := f.Symbols()
 	dynsyms, _ := f.DynamicSymbols()
 
@@ -40,8 +40,8 @@ func (r StackCanaryRule) Execute(f *elf.File, info *binary.Parsed) rule.Result {
 		if strings.Contains(sym.Name, "__stack_chk_fail") ||
 			strings.Contains(sym.Name, "__stack_smash_handler") ||
 			strings.Contains(sym.Name, "__intel_security_cookie") {
-			return rule.Result{
-				State:   rule.CheckStatePassed,
+			return rule.ExecuteResult{
+				Status: rule.StatusPassed,
 				Message: "Stack canary protection is enabled",
 			}
 		}
@@ -49,8 +49,8 @@ func (r StackCanaryRule) Execute(f *elf.File, info *binary.Parsed) rule.Result {
 
 	// No stack protection symbols found.
 	// While the compiler might omit these if no functions need protection, real-world binaries typically have stack buffers.
-	return rule.Result{
-		State:   rule.CheckStateFailed,
+	return rule.ExecuteResult{
+		Status: rule.StatusFailed,
 		Message: "Stack canary protection is NOT enabled",
 	}
 }

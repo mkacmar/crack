@@ -25,7 +25,7 @@ func (r RELRORule) Applicability() rule.Applicability {
 	}
 }
 
-func (r RELRORule) Execute(f *elf.File, info *binary.Parsed) rule.Result {
+func (r RELRORule) Execute(f *elf.File, info *binary.Parsed) rule.ExecuteResult {
 	hasRELRO := false
 	for _, prog := range f.Progs {
 		if prog.Type == elf.PT_GNU_RELRO {
@@ -35,13 +35,13 @@ func (r RELRORule) Execute(f *elf.File, info *binary.Parsed) rule.Result {
 	}
 
 	if hasRELRO {
-		return rule.Result{
-			State:   rule.CheckStatePassed,
+		return rule.ExecuteResult{
+			Status: rule.StatusPassed,
 			Message: "Partial RELRO is enabled (some ELF sections read-only after load)",
 		}
 	}
-	return rule.Result{
-		State:   rule.CheckStateFailed,
+	return rule.ExecuteResult{
+		Status: rule.StatusFailed,
 		Message: "Partial RELRO is NOT enabled (ELF sections remain writable)",
 	}
 }

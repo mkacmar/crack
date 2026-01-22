@@ -25,17 +25,17 @@ func (r X86CETShadowStackRule) Applicability() rule.Applicability {
 	}
 }
 
-func (r X86CETShadowStackRule) Execute(f *elf.File, info *binary.Parsed) rule.Result {
+func (r X86CETShadowStackRule) Execute(f *elf.File, info *binary.Parsed) rule.ExecuteResult {
 	hasShadowStack := parseGNUProperty(f, GNU_PROPERTY_X86_FEATURE_1_AND, GNU_PROPERTY_X86_FEATURE_1_SHSTK)
 
 	if hasShadowStack {
-		return rule.Result{
-			State:   rule.CheckStatePassed,
+		return rule.ExecuteResult{
+			Status: rule.StatusPassed,
 			Message: "CET Shadow Stack is enabled",
 		}
 	}
-	return rule.Result{
-		State:   rule.CheckStateFailed,
+	return rule.ExecuteResult{
+		Status: rule.StatusFailed,
 		Message: "CET Shadow Stack is NOT enabled",
 	}
 }

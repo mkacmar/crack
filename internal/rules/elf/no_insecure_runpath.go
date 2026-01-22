@@ -27,24 +27,24 @@ func (r NoInsecureRUNPATHRule) Applicability() rule.Applicability {
 	}
 }
 
-func (r NoInsecureRUNPATHRule) Execute(f *elf.File, info *binary.Parsed) rule.Result {
+func (r NoInsecureRUNPATHRule) Execute(f *elf.File, info *binary.Parsed) rule.ExecuteResult {
 	runpath := GetDynString(f, elf.DT_RUNPATH)
 	if runpath == "" {
-		return rule.Result{
-			State:   rule.CheckStatePassed,
+		return rule.ExecuteResult{
+			Status: rule.StatusPassed,
 			Message: "No RUNPATH set",
 		}
 	}
 
 	if insecure := findInsecurePaths(runpath); len(insecure) > 0 {
-		return rule.Result{
-			State:   rule.CheckStateFailed,
+		return rule.ExecuteResult{
+			Status: rule.StatusFailed,
 			Message: fmt.Sprintf("Insecure RUNPATH: %s", strings.Join(insecure, ", ")),
 		}
 	}
 
-	return rule.Result{
-		State:   rule.CheckStatePassed,
+	return rule.ExecuteResult{
+		Status: rule.StatusPassed,
 		Message: "RUNPATH is secure",
 	}
 }

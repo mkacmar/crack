@@ -33,13 +33,13 @@ func (e *Engine) LoadPreset(p preset.Preset) {
 	}
 }
 
-func (e *Engine) ExecuteRules(info *binary.Parsed) []rule.Result {
+func (e *Engine) ExecuteRules(info *binary.Parsed) []rule.ProcessedResult {
 	if len(e.rules) == 0 {
 		e.logger.Warn("no rules loaded, call LoadPreset() first")
 		return nil
 	}
 
-	results := make([]rule.Result, 0, len(e.rules))
+	results := make([]rule.ProcessedResult, 0, len(e.rules))
 
 	for _, r := range e.rules {
 		applicability := r.Applicability()
@@ -47,7 +47,7 @@ func (e *Engine) ExecuteRules(info *binary.Parsed) []rule.Result {
 			continue
 		}
 
-		var result rule.Result
+		var result rule.ExecuteResult
 		switch elfRule := r.(type) {
 		case rule.ELFRule:
 			if info.Format != binary.FormatELF {
@@ -58,14 +58,17 @@ func (e *Engine) ExecuteRules(info *binary.Parsed) []rule.Result {
 			continue
 		}
 
-		result.RuleID = r.ID()
-		result.Name = r.Name()
-
-		if result.State == rule.CheckStateFailed {
-			result.Suggestion = buildSuggestion(info.Build.Toolchain, applicability)
+		evaluated := rule.ProcessedResult{
+			ExecuteResult: result,
+			RuleID:        r.ID(),
+			Name:          r.Name(),
 		}
 
-		results = append(results, result)
+		if result.Status == rule.StatusFailed {
+			evaluated.Suggestion = buildSuggestion(info.Build.Toolchain, applicability)
+		}
+
+		results = append(results, evaluated)
 	}
 
 	return results

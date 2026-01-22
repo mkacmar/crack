@@ -54,7 +54,7 @@ func (r UBSanRule) Applicability() rule.Applicability {
 	}
 }
 
-func (r UBSanRule) Execute(f *elf.File, info *binary.Parsed) rule.Result {
+func (r UBSanRule) Execute(f *elf.File, info *binary.Parsed) rule.ExecuteResult {
 
 	symbols, _ := f.Symbols()
 	dynsyms, _ := f.DynamicSymbols()
@@ -78,13 +78,13 @@ func (r UBSanRule) Execute(f *elf.File, info *binary.Parsed) rule.Result {
 	}
 
 	if len(foundHandlers) > 0 {
-		return rule.Result{
-			State:   rule.CheckStatePassed,
+		return rule.ExecuteResult{
+			Status: rule.StatusPassed,
 			Message: fmt.Sprintf("UBSan is enabled, found: %v", foundHandlers),
 		}
 	}
-	return rule.Result{
-		State:   rule.CheckStateFailed,
+	return rule.ExecuteResult{
+		Status: rule.StatusFailed,
 		Message: "UBSan is NOT enabled",
 	}
 }

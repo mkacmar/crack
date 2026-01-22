@@ -26,15 +26,15 @@ func (r SafeStackRule) Applicability() rule.Applicability {
 	}
 }
 
-func (r SafeStackRule) Execute(f *elf.File, info *binary.Parsed) rule.Result {
+func (r SafeStackRule) Execute(f *elf.File, info *binary.Parsed) rule.ExecuteResult {
 
 	symbols, _ := f.Symbols()
 	dynsyms, _ := f.DynamicSymbols()
 
 	for _, sym := range symbols {
 		if strings.HasPrefix(sym.Name, "__safestack_") {
-			return rule.Result{
-				State:   rule.CheckStatePassed,
+			return rule.ExecuteResult{
+				Status: rule.StatusPassed,
 				Message: "SafeStack is enabled",
 			}
 		}
@@ -42,15 +42,15 @@ func (r SafeStackRule) Execute(f *elf.File, info *binary.Parsed) rule.Result {
 
 	for _, sym := range dynsyms {
 		if strings.HasPrefix(sym.Name, "__safestack_") {
-			return rule.Result{
-				State:   rule.CheckStatePassed,
+			return rule.ExecuteResult{
+				Status: rule.StatusPassed,
 				Message: "SafeStack is enabled",
 			}
 		}
 	}
 
-	return rule.Result{
-		State:   rule.CheckStateFailed,
+	return rule.ExecuteResult{
+		Status: rule.StatusFailed,
 		Message: "SafeStack is NOT enabled",
 	}
 }

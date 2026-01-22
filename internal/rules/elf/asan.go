@@ -27,7 +27,7 @@ func (r ASANRule) Applicability() rule.Applicability {
 	}
 }
 
-func (r ASANRule) Execute(f *elf.File, info *binary.Parsed) rule.Result {
+func (r ASANRule) Execute(f *elf.File, info *binary.Parsed) rule.ExecuteResult {
 
 	hasASan := false
 
@@ -58,13 +58,13 @@ func (r ASANRule) Execute(f *elf.File, info *binary.Parsed) rule.Result {
 	}
 
 	if hasASan {
-		return rule.Result{
-			State:   rule.CheckStatePassed,
+		return rule.ExecuteResult{
+			Status: rule.StatusPassed,
 			Message: "AddressSanitizer is enabled",
 		}
 	}
-	return rule.Result{
-		State:   rule.CheckStateFailed,
+	return rule.ExecuteResult{
+		Status: rule.StatusFailed,
 		Message: "AddressSanitizer is NOT enabled",
 	}
 }

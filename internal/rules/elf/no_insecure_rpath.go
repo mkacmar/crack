@@ -27,24 +27,24 @@ func (r NoInsecureRPATHRule) Applicability() rule.Applicability {
 	}
 }
 
-func (r NoInsecureRPATHRule) Execute(f *elf.File, info *binary.Parsed) rule.Result {
+func (r NoInsecureRPATHRule) Execute(f *elf.File, info *binary.Parsed) rule.ExecuteResult {
 	rpath := GetDynString(f, elf.DT_RPATH)
 	if rpath == "" {
-		return rule.Result{
-			State:   rule.CheckStatePassed,
+		return rule.ExecuteResult{
+			Status: rule.StatusPassed,
 			Message: "No RPATH set",
 		}
 	}
 
 	if insecure := findInsecurePaths(rpath); len(insecure) > 0 {
-		return rule.Result{
-			State:   rule.CheckStateFailed,
+		return rule.ExecuteResult{
+			Status: rule.StatusFailed,
 			Message: fmt.Sprintf("Insecure RPATH: %s", strings.Join(insecure, ", ")),
 		}
 	}
 
-	return rule.Result{
-		State:   rule.CheckStatePassed,
+	return rule.ExecuteResult{
+		Status: rule.StatusPassed,
 		Message: "RPATH is secure",
 	}
 }

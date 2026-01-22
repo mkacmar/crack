@@ -25,7 +25,7 @@ func (r ARMMTERule) Applicability() rule.Applicability {
 	}
 }
 
-func (r ARMMTERule) Execute(f *elf.File, info *binary.Parsed) rule.Result {
+func (r ARMMTERule) Execute(f *elf.File, info *binary.Parsed) rule.ExecuteResult {
 	hasMTE := false
 	for _, sec := range f.Sections {
 		if sec.Name == ".note.memtag" {
@@ -35,13 +35,13 @@ func (r ARMMTERule) Execute(f *elf.File, info *binary.Parsed) rule.Result {
 	}
 
 	if hasMTE {
-		return rule.Result{
-			State:   rule.CheckStatePassed,
+		return rule.ExecuteResult{
+			Status: rule.StatusPassed,
 			Message: "ARM MTE (Memory Tagging Extension) is enabled",
 		}
 	}
-	return rule.Result{
-		State:   rule.CheckStateFailed,
+	return rule.ExecuteResult{
+		Status: rule.StatusFailed,
 		Message: "ARM MTE is NOT enabled (requires ARMv8.5+ hardware)",
 	}
 }

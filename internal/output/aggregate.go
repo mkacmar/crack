@@ -41,12 +41,12 @@ func processFileScanResult(agg *AggregatedReport, result result.FileScanResult) 
 		return
 	}
 
-	var failedChecks []rule.Result
+	var failedResults []rule.ProcessedResult
 	allPassed := true
 
-	for _, check := range result.Results {
-		if check.State == rule.CheckStateFailed {
-			failedChecks = append(failedChecks, check)
+	for _, res := range result.Results {
+		if res.Status == rule.StatusFailed {
+			failedResults = append(failedResults, res)
 			allPassed = false
 		}
 	}
@@ -56,18 +56,18 @@ func processFileScanResult(agg *AggregatedReport, result result.FileScanResult) 
 		return
 	}
 
-	for _, check := range failedChecks {
-		processFailedCheck(agg, check, result.Path, result.Toolchain.Compiler)
+	for _, res := range failedResults {
+		processFailedResult(agg, res, result.Path, result.Toolchain.Compiler)
 	}
 }
 
-func processFailedCheck(agg *AggregatedReport, check rule.Result, path string, detectedCompiler toolchain.Compiler) {
-	rule := elf.GetRuleByID(check.RuleID)
-	if rule == nil {
+func processFailedResult(agg *AggregatedReport, res rule.ProcessedResult, path string, detectedCompiler toolchain.Compiler) {
+	r := elf.GetRuleByID(res.RuleID)
+	if r == nil {
 		return
 	}
 
-	applicability := rule.Applicability()
+	applicability := r.Applicability()
 
 	for compiler, req := range applicability.Compilers {
 		processRequirement(agg, compiler, req, path, detectedCompiler)
