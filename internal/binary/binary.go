@@ -67,9 +67,6 @@ func (a Architecture) String() string {
 }
 
 func (a Architecture) Matches(target Architecture) bool {
-	if target == ArchAll {
-		return true
-	}
 	return a&target != 0
 }
 
