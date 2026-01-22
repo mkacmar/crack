@@ -10,7 +10,6 @@ import (
 	"log/slog"
 	"os"
 	"path/filepath"
-	"time"
 
 	"golang.org/x/sync/errgroup"
 
@@ -30,32 +29,12 @@ type Scanner struct {
 }
 
 type Options struct {
-	Logger            *slog.Logger
-	Workers           int
-	UseDebuginfod     bool
-	DebuginfodURLs    []string
-	DebuginfodCache   string
-	DebuginfodTimeout time.Duration
-	DebuginfodRetries int
+	Logger           *slog.Logger
+	Workers          int
+	DebuginfodClient *debuginfo.Client
 }
 
 func NewScanner(ruleEngine *rules.Engine, opts Options) *Scanner {
-	var debuginfodClient *debuginfo.Client
-	if opts.UseDebuginfod {
-		client, err := debuginfo.NewClient(debuginfo.Options{
-			ServerURLs: opts.DebuginfodURLs,
-			CacheDir:   opts.DebuginfodCache,
-			Timeout:    opts.DebuginfodTimeout,
-			MaxRetries: opts.DebuginfodRetries,
-			Logger:     opts.Logger,
-		})
-		if err != nil {
-			opts.Logger.Warn("failed to initialize debuginfod client", slog.Any("error", err))
-		} else {
-			debuginfodClient = client
-		}
-	}
-
 	return &Scanner{
 		parsers: []binary.Parser{
 			elfparser.NewParser(),
@@ -63,7 +42,7 @@ func NewScanner(ruleEngine *rules.Engine, opts Options) *Scanner {
 		ruleEngine:       ruleEngine,
 		logger:           opts.Logger.With(slog.String("component", "scanner")),
 		workers:          opts.Workers,
-		debuginfodClient: debuginfodClient,
+		debuginfodClient: opts.DebuginfodClient,
 	}
 }
 

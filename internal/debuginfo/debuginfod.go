@@ -22,6 +22,11 @@ const (
 	DefaultRetries   = 3
 )
 
+func DefaultCacheDir() string {
+	cacheDir, _ := os.UserCacheDir()
+	return filepath.Join(cacheDir, "crack", "debuginfo")
+}
+
 func userAgent() string {
 	return "crack/" + version.Version + " (Compiler Hardening Checker; +https://github.com/mkacmar/crack)"
 }
@@ -47,27 +52,28 @@ func NewClient(opts Options) (*Client, error) {
 		return nil, fmt.Errorf("no debuginfod servers configured")
 	}
 
-	if opts.CacheDir == "" {
-		return nil, fmt.Errorf("cache directory not configured")
+	cacheDir := opts.CacheDir
+	if cacheDir == "" {
+		cacheDir = DefaultCacheDir()
 	}
 
-	if err := os.MkdirAll(opts.CacheDir, 0755); err != nil {
+	if err := os.MkdirAll(cacheDir, 0755); err != nil {
 		return nil, fmt.Errorf("failed to create cache directory: %w", err)
 	}
 
 	timeout := opts.Timeout
 	if timeout == 0 {
-		timeout = 30 * time.Second
+		timeout = DefaultTimeout
 	}
 
 	maxRetries := opts.MaxRetries
 	if maxRetries < 1 {
-		maxRetries = 3
+		maxRetries = DefaultRetries
 	}
 
 	client := &Client{
 		serverURLs: opts.ServerURLs,
-		cacheDir:   opts.CacheDir,
+		cacheDir:   cacheDir,
 		httpClient: &http.Client{Timeout: timeout},
 		logger:     opts.Logger.With(slog.String("component", "debuginfod")),
 		maxRetries: maxRetries,
@@ -75,7 +81,7 @@ func NewClient(opts Options) (*Client, error) {
 
 	opts.Logger.Debug("debuginfod client initialized",
 		slog.Any("servers", opts.ServerURLs),
-		slog.String("cache", opts.CacheDir))
+		slog.String("cache", cacheDir))
 
 	return client, nil
 }

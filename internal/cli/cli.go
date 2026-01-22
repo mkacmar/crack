@@ -90,7 +90,7 @@ func (a *App) printAnalyzeUsage(prog string) {
 	fmt.Fprintf(os.Stderr, "\nDebuginfod options:\n")
 	fmt.Fprintf(os.Stderr, "  -d, --debuginfod            Fetch debug symbols from debuginfod servers\n")
 	fmt.Fprintf(os.Stderr, "      --debuginfod-urls       Debuginfod server URLs (default %q)\n", debuginfo.DefaultServerURL)
-	fmt.Fprintf(os.Stderr, "      --debuginfod-cache      Debuginfod cache directory (default \"%s\")\n", getDefaultCacheDir())
+	fmt.Fprintf(os.Stderr, "      --debuginfod-cache      Debuginfod cache directory (default \"%s\")\n", debuginfo.DefaultCacheDir())
 	fmt.Fprintf(os.Stderr, "      --debuginfod-timeout    Debuginfod HTTP timeout (default %v)\n", debuginfo.DefaultTimeout)
 	fmt.Fprintf(os.Stderr, "      --debuginfod-retries    Debuginfod max retries per server (default %d)\n", debuginfo.DefaultRetries)
 	fmt.Fprintf(os.Stderr, "\nPresets:\n")
@@ -272,19 +272,26 @@ func (a *App) runAnalyze(prog string, args []string) int {
 	a.logger.Debug("loading preset", slog.String("preset", presetName))
 	ruleEngine.LoadPreset(p)
 
-	cache := debuginfodCache
-	if cache == "" {
-		cache = getDefaultCacheDir()
+	var debuginfodClient *debuginfo.Client
+	if useDebuginfod {
+		client, err := debuginfo.NewClient(debuginfo.Options{
+			ServerURLs: parseURLList(debuginfodURLs),
+			CacheDir:   debuginfodCache,
+			Timeout:    debuginfodTimeout,
+			MaxRetries: debuginfodRetries,
+			Logger:     a.logger,
+		})
+		if err != nil {
+			fmt.Fprintf(os.Stderr, "Error: failed to initialize debuginfod client: %v\n", err)
+			return 1
+		}
+		debuginfodClient = client
 	}
 
 	scannerOpts := scanner.Options{
-		Logger:            a.logger,
-		Workers:           parallel,
-		UseDebuginfod:     useDebuginfod,
-		DebuginfodURLs:    parseURLList(debuginfodURLs),
-		DebuginfodCache:   cache,
-		DebuginfodTimeout: debuginfodTimeout,
-		DebuginfodRetries: debuginfodRetries,
+		Logger:           a.logger,
+		Workers:          parallel,
+		DebuginfodClient: debuginfodClient,
 	}
 	scan := scanner.NewScanner(ruleEngine, scannerOpts)
 
@@ -396,11 +403,6 @@ func setupLogger(level string) (*slog.Logger, bool) {
 
 	handler := slog.NewTextHandler(os.Stderr, opts)
 	return slog.New(handler), valid
-}
-
-func getDefaultCacheDir() string {
-	cacheDir, _ := os.UserCacheDir()
-	return filepath.Join(cacheDir, "crack", "debuginfo")
 }
 
 func parseURLList(s string) []string {
