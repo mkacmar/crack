@@ -14,7 +14,6 @@ type NoInsecureRPATHRule struct{}
 
 func (r NoInsecureRPATHRule) ID() string                 { return "no-insecure-rpath" }
 func (r NoInsecureRPATHRule) Name() string               { return "Secure RPATH" }
-func (r NoInsecureRPATHRule) Format() model.BinaryFormat { return model.FormatELF }
 
 func (r NoInsecureRPATHRule) Applicability() model.Applicability {
 	return model.Applicability{

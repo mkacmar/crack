@@ -12,7 +12,6 @@ type RELRORule struct{}
 
 func (r RELRORule) ID() string                 { return "relro" }
 func (r RELRORule) Name() string               { return "Partial RELRO" }
-func (r RELRORule) Format() model.BinaryFormat { return model.FormatELF }
 
 func (r RELRORule) Applicability() model.Applicability {
 	return model.Applicability{

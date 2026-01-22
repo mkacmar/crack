@@ -17,7 +17,6 @@ type NoDLOpenRule struct{}
 
 func (r NoDLOpenRule) ID() string                 { return "no-dlopen" }
 func (r NoDLOpenRule) Name() string               { return "Disallow dlopen" }
-func (r NoDLOpenRule) Format() model.BinaryFormat { return model.FormatELF }
 
 func (r NoDLOpenRule) Applicability() model.Applicability {
 	return model.Applicability{

@@ -14,7 +14,6 @@ type ASANRule struct{}
 
 func (r ASANRule) ID() string                 { return "asan" }
 func (r ASANRule) Name() string               { return "Address Sanitizer" }
-func (r ASANRule) Format() model.BinaryFormat { return model.FormatELF }
 
 func (r ASANRule) Applicability() model.Applicability {
 	return model.Applicability{

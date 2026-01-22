@@ -12,7 +12,6 @@ type ASLRRule struct{}
 
 func (r ASLRRule) ID() string                 { return "aslr" }
 func (r ASLRRule) Name() string               { return "ASLR Compatibility" }
-func (r ASLRRule) Format() model.BinaryFormat { return model.FormatELF }
 
 func (r ASLRRule) Applicability() model.Applicability {
 	return model.Applicability{

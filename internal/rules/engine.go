@@ -2,7 +2,6 @@ package rules
 
 import (
 	"log/slog"
-	"slices"
 
 	"github.com/mkacmar/crack/internal/model"
 	"github.com/mkacmar/crack/internal/preset"
@@ -23,17 +22,11 @@ func NewEngine(logger *slog.Logger) *Engine {
 
 func (e *Engine) LoadPreset(p preset.Preset) {
 	e.rules = make([]model.Rule, 0)
-	loaded := make(map[string]bool)
-
-	for _, rule := range elf.AllRules {
-		if slices.Contains(p.Rules, rule.ID()) {
-			e.rules = append(e.rules, rule)
-			loaded[rule.ID()] = true
-		}
-	}
 
 	for _, id := range p.Rules {
-		if !loaded[id] {
+		if rule, ok := elf.AllRules[id]; ok {
+			e.rules = append(e.rules, rule)
+		} else {
 			e.logger.Warn("unknown rule ID in preset, skipping", slog.String("rule_id", id))
 		}
 	}
@@ -48,16 +41,22 @@ func (e *Engine) ExecuteRules(info *model.ParsedBinary) []model.RuleResult {
 	results := make([]model.RuleResult, 0, len(e.rules))
 
 	for _, rule := range e.rules {
-		if rule.Format() != info.Format {
-			continue
-		}
-
 		applicability := rule.Applicability()
 		if !info.Architecture.Matches(applicability.Arch) {
 			continue
 		}
 
-		result := rule.Execute(info.ELFFile, info)
+		var result model.RuleResult
+		switch r := rule.(type) {
+		case model.ELFRule:
+			if info.Format != model.FormatELF {
+				continue
+			}
+			result = r.Execute(info.ELFFile, info)
+		default:
+			continue
+		}
+
 		result.RuleID = rule.ID()
 		result.Name = rule.Name()
 

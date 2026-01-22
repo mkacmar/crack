@@ -15,7 +15,6 @@ type PIERule struct{}
 
 func (r PIERule) ID() string                 { return "pie" }
 func (r PIERule) Name() string               { return "Position Independent Executable" }
-func (r PIERule) Format() model.BinaryFormat { return model.FormatELF }
 
 func (r PIERule) Applicability() model.Applicability {
 	return model.Applicability{

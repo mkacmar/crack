@@ -41,7 +41,6 @@ type FortifySourceRule struct{}
 
 func (r FortifySourceRule) ID() string                 { return "fortify-source" }
 func (r FortifySourceRule) Name() string               { return "FORTIFY_SOURCE" }
-func (r FortifySourceRule) Format() model.BinaryFormat { return model.FormatELF }
 
 func (r FortifySourceRule) Applicability() model.Applicability {
 	return model.Applicability{

@@ -14,7 +14,6 @@ type NoDumpRule struct{}
 
 func (r NoDumpRule) ID() string                 { return "no-dump" }
 func (r NoDumpRule) Name() string               { return "Core Dump Protection" }
-func (r NoDumpRule) Format() model.BinaryFormat { return model.FormatELF }
 
 func (r NoDumpRule) Applicability() model.Applicability {
 	return model.Applicability{

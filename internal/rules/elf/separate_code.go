@@ -12,7 +12,6 @@ type SeparateCodeRule struct{}
 
 func (r SeparateCodeRule) ID() string                 { return "separate-code" }
 func (r SeparateCodeRule) Name() string               { return "Separate Code Segments" }
-func (r SeparateCodeRule) Format() model.BinaryFormat { return model.FormatELF }
 
 func (r SeparateCodeRule) Applicability() model.Applicability {
 	return model.Applicability{

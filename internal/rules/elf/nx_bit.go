@@ -12,7 +12,6 @@ type NXBitRule struct{}
 
 func (r NXBitRule) ID() string                 { return "nx-bit" }
 func (r NXBitRule) Name() string               { return "Non-Executable Stack" }
-func (r NXBitRule) Format() model.BinaryFormat { return model.FormatELF }
 
 func (r NXBitRule) Applicability() model.Applicability {
 	return model.Applicability{

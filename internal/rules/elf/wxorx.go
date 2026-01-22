@@ -13,7 +13,6 @@ type WXorXRule struct{}
 
 func (r WXorXRule) ID() string                 { return "wxorx" }
 func (r WXorXRule) Name() string               { return "W^X (Write XOR Execute)" }
-func (r WXorXRule) Format() model.BinaryFormat { return model.FormatELF }
 
 func (r WXorXRule) Applicability() model.Applicability {
 	return model.Applicability{

@@ -23,7 +23,6 @@ type CFIRule struct{}
 
 func (r CFIRule) ID() string                 { return "cfi" }
 func (r CFIRule) Name() string               { return "Control Flow Integrity" }
-func (r CFIRule) Format() model.BinaryFormat { return model.FormatELF }
 
 func (r CFIRule) Applicability() model.Applicability {
 	return model.Applicability{

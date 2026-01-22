@@ -15,7 +15,6 @@ type NoPLTRule struct{}
 
 func (r NoPLTRule) ID() string                 { return "no-plt" }
 func (r NoPLTRule) Name() string               { return "No PLT" }
-func (r NoPLTRule) Format() model.BinaryFormat { return model.FormatELF }
 
 func (r NoPLTRule) Applicability() model.Applicability {
 	return model.Applicability{

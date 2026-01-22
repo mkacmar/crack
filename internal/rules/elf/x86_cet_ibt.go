@@ -12,7 +12,6 @@ type X86CETIBTRule struct{}
 
 func (r X86CETIBTRule) ID() string                 { return "x86-cet-ibt" }
 func (r X86CETIBTRule) Name() string               { return "x86 CET - Indirect Branch Tracking" }
-func (r X86CETIBTRule) Format() model.BinaryFormat { return model.FormatELF }
 
 func (r X86CETIBTRule) Applicability() model.Applicability {
 	return model.Applicability{

@@ -14,7 +14,6 @@ type SafeStackRule struct{}
 
 func (r SafeStackRule) ID() string                 { return "safe-stack" }
 func (r SafeStackRule) Name() string               { return "SafeStack" }
-func (r SafeStackRule) Format() model.BinaryFormat { return model.FormatELF }
 
 func (r SafeStackRule) Applicability() model.Applicability {
 	return model.Applicability{

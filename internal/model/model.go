@@ -206,8 +206,11 @@ type RuleResult struct {
 type Rule interface {
 	ID() string
 	Name() string
-	Format() BinaryFormat
 	Applicability() Applicability
+}
+
+type ELFRule interface {
+	Rule
 	Execute(f *elf.File, info *ParsedBinary) RuleResult
 }
 
