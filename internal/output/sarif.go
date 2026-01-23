@@ -83,7 +83,7 @@ type SARIFLocation struct {
 }
 
 type SARIFPhysicalLocation struct {
-	ArtifactLocation SARIFArtifactLocation `json:"artifactLocation"`
+	ArtifactIndex int `json:"artifactIndex"`
 }
 
 type SARIFArtifactLocation struct {
@@ -125,8 +125,8 @@ func (f *SARIFFormatter) Format(report *result.ScanResults, w io.Writer) error {
 
 func (f *SARIFFormatter) convertToSARIF(report *result.ScanResults) SARIFReport {
 	rules, ruleIndex := f.buildRules(report)
-	results, artifactHashes, notifications := f.buildResults(report, ruleIndex)
-	artifacts := f.buildArtifacts(artifactHashes)
+	artifacts, artifactIndex := f.buildArtifacts(report)
+	results, notifications := f.buildResults(report, ruleIndex, artifactIndex)
 
 	run := SARIFRun{
 		Tool: SARIFTool{
@@ -192,14 +192,12 @@ func (f *SARIFFormatter) buildRules(report *result.ScanResults) ([]SARIFRule, ma
 	return rules, ruleIndex
 }
 
-func (f *SARIFFormatter) buildResults(report *result.ScanResults, ruleIndex map[string]int) ([]SARIFResult, map[string]string, []SARIFNotification) {
+func (f *SARIFFormatter) buildResults(report *result.ScanResults, ruleIndex, artifactIndex map[string]int) ([]SARIFResult, []SARIFNotification) {
 	sarifResults := make([]SARIFResult, 0)
-	artifactHashes := make(map[string]string)
 	notifications := make([]SARIFNotification, 0)
 
 	for _, res := range report.Results {
 		fileURI := toFileURI(res.Path)
-		artifactHashes[fileURI] = res.SHA256
 
 		if res.Error != nil {
 			notifications = append(notifications, SARIFNotification{
@@ -209,7 +207,7 @@ func (f *SARIFFormatter) buildResults(report *result.ScanResults, ruleIndex map[
 				},
 				Locations: []SARIFLocation{
 					{PhysicalLocation: SARIFPhysicalLocation{
-						ArtifactLocation: SARIFArtifactLocation{URI: fileURI},
+						ArtifactIndex: artifactIndex[fileURI],
 					}},
 				},
 			})
@@ -242,7 +240,7 @@ func (f *SARIFFormatter) buildResults(report *result.ScanResults, ruleIndex map[
 				Message:   SARIFMessage{Text: check.Message},
 				Locations: []SARIFLocation{
 					{PhysicalLocation: SARIFPhysicalLocation{
-						ArtifactLocation: SARIFArtifactLocation{URI: fileURI},
+						ArtifactIndex: artifactIndex[fileURI],
 					}},
 				},
 			}
@@ -257,10 +255,16 @@ func (f *SARIFFormatter) buildResults(report *result.ScanResults, ruleIndex map[
 		}
 	}
 
-	return sarifResults, artifactHashes, notifications
+	return sarifResults, notifications
 }
 
-func (f *SARIFFormatter) buildArtifacts(artifactHashes map[string]string) []SARIFArtifact {
+func (f *SARIFFormatter) buildArtifacts(report *result.ScanResults) ([]SARIFArtifact, map[string]int) {
+	artifactHashes := make(map[string]string)
+	for _, res := range report.Results {
+		fileURI := toFileURI(res.Path)
+		artifactHashes[fileURI] = res.SHA256
+	}
+
 	uris := make([]string, 0, len(artifactHashes))
 	for uri := range artifactHashes {
 		uris = append(uris, uri)
@@ -268,7 +272,9 @@ func (f *SARIFFormatter) buildArtifacts(artifactHashes map[string]string) []SARI
 	slices.Sort(uris)
 
 	artifacts := make([]SARIFArtifact, 0, len(artifactHashes))
-	for _, uri := range uris {
+	artifactIndex := make(map[string]int)
+	for i, uri := range uris {
+		artifactIndex[uri] = i
 		artifact := SARIFArtifact{
 			Location: SARIFArtifactLocation{URI: uri},
 		}
@@ -277,7 +283,7 @@ func (f *SARIFFormatter) buildArtifacts(artifactHashes map[string]string) []SARI
 		}
 		artifacts = append(artifacts, artifact)
 	}
-	return artifacts
+	return artifacts, artifactIndex
 }
 
 func (f *SARIFFormatter) buildInvocation(notifications []SARIFNotification) SARIFInvocation {
