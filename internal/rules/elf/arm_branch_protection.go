@@ -39,11 +39,12 @@ func (r ARMBranchProtectionRule) Execute(f *elf.File, info *binary.Parsed) rule.
 		}
 	}
 
-	message := "ARM branch protection is NOT enabled (requires ARMv8.3+ hardware)"
+	// PAC property requires all linked objects (including libc) to have PAC support
+	message := "ARM branch protection is NOT enabled (libc must also be compiled with PAC+BTI)"
 	if hasPAC && !hasBTI {
-		message = "ARM branch protection is partial (PAC enabled, BTI missing, requires ARMv8.3+ hardware)"
+		message = "ARM branch protection is partial (PAC enabled, BTI missing)"
 	} else if !hasPAC && hasBTI {
-		message = "ARM branch protection is partial (BTI enabled, PAC missing, requires ARMv8.3+ hardware)"
+		message = "ARM branch protection is partial (BTI enabled, PAC missing; libc may lack PAC support)"
 	}
 
 	return rule.ExecuteResult{
