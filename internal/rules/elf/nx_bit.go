@@ -17,7 +17,7 @@ func (r NXBitRule) Name() string { return "Non-Executable Stack" }
 
 func (r NXBitRule) Applicability() rule.Applicability {
 	return rule.Applicability{
-		Arch: binary.ArchAll,
+		Platform: binary.PlatformAll,
 		Compilers: map[toolchain.Compiler]rule.CompilerRequirement{
 			toolchain.CompilerGCC:   {MinVersion: toolchain.Version{Major: 3, Minor: 0}, DefaultVersion: toolchain.Version{Major: 3, Minor: 0}, Flag: "-z noexecstack"},
 			toolchain.CompilerClang: {MinVersion: toolchain.Version{Major: 3, Minor: 0}, DefaultVersion: toolchain.Version{Major: 3, Minor: 0}, Flag: "-z noexecstack"},
@@ -30,12 +30,12 @@ func (r NXBitRule) Execute(f *elf.File, info *binary.Parsed) rule.ExecuteResult 
 		if prog.Type == elf.PT_GNU_STACK {
 			if (prog.Flags & elf.PF_X) == 0 {
 				return rule.ExecuteResult{
-					Status: rule.StatusPassed,
+					Status:  rule.StatusPassed,
 					Message: "Stack is marked as non-executable (NX bit enabled)",
 				}
 			}
 			return rule.ExecuteResult{
-				Status: rule.StatusFailed,
+				Status:  rule.StatusFailed,
 				Message: "Stack is EXECUTABLE (NX bit NOT enabled)",
 			}
 		}
@@ -43,7 +43,7 @@ func (r NXBitRule) Execute(f *elf.File, info *binary.Parsed) rule.ExecuteResult 
 
 	// PT_GNU_STACK missing - this typically means executable stack on older systems.
 	return rule.ExecuteResult{
-		Status: rule.StatusFailed,
+		Status:  rule.StatusFailed,
 		Message: "PT_GNU_STACK segment missing (stack executability depends on system defaults)",
 	}
 }

@@ -18,7 +18,7 @@ func (r StackLimitRule) Name() string { return "Explicit Stack Size Limit" }
 
 func (r StackLimitRule) Applicability() rule.Applicability {
 	return rule.Applicability{
-		Arch: binary.ArchAll,
+		Platform: binary.PlatformAll,
 		Compilers: map[toolchain.Compiler]rule.CompilerRequirement{
 			toolchain.CompilerGCC:   {MinVersion: toolchain.Version{Major: 3, Minor: 0}, Flag: "-Wl,-z,stack-size=8388608"},
 			toolchain.CompilerClang: {MinVersion: toolchain.Version{Major: 3, Minor: 0}, Flag: "-Wl,-z,stack-size=8388608"},
@@ -42,7 +42,7 @@ func (r StackLimitRule) Execute(f *elf.File, info *binary.Parsed) rule.ExecuteRe
 
 	if hasExplicitStackLimit {
 		return rule.ExecuteResult{
-			Status: rule.StatusPassed,
+			Status:  rule.StatusPassed,
 			Message: fmt.Sprintf("Stack has explicit size limit: %d bytes", stackSize),
 		}
 	}
@@ -52,7 +52,7 @@ func (r StackLimitRule) Execute(f *elf.File, info *binary.Parsed) rule.ExecuteRe
 		msg = "Stack uses system default size (no explicit limit set)"
 	}
 	return rule.ExecuteResult{
-		Status: rule.StatusFailed,
+		Status:  rule.StatusFailed,
 		Message: msg,
 	}
 }

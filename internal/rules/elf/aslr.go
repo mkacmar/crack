@@ -17,7 +17,7 @@ func (r ASLRRule) Name() string { return "ASLR Compatibility" }
 
 func (r ASLRRule) Applicability() rule.Applicability {
 	return rule.Applicability{
-		Arch: binary.ArchAll,
+		Platform: binary.PlatformAll,
 		Compilers: map[toolchain.Compiler]rule.CompilerRequirement{
 			toolchain.CompilerGCC:   {MinVersion: toolchain.Version{Major: 6, Minor: 0}, DefaultVersion: toolchain.Version{Major: 6, Minor: 0}, Flag: "-fPIE -pie -z noexecstack"},
 			toolchain.CompilerClang: {MinVersion: toolchain.Version{Major: 3, Minor: 0}, DefaultVersion: toolchain.Version{Major: 6, Minor: 0}, Flag: "-fPIE -pie -z noexecstack"},
@@ -28,14 +28,14 @@ func (r ASLRRule) Applicability() rule.Applicability {
 func (r ASLRRule) Execute(f *elf.File, info *binary.Parsed) rule.ExecuteResult {
 	if f.Type == elf.ET_EXEC {
 		return rule.ExecuteResult{
-			Status: rule.StatusFailed,
+			Status:  rule.StatusFailed,
 			Message: "Binary is NOT ASLR compatible (not compiled as PIE)",
 		}
 	}
 
 	if f.Type != elf.ET_DYN {
 		return rule.ExecuteResult{
-			Status: rule.StatusSkipped,
+			Status:  rule.StatusSkipped,
 			Message: "Unknown binary type",
 		}
 	}
@@ -54,7 +54,7 @@ func (r ASLRRule) Execute(f *elf.File, info *binary.Parsed) rule.ExecuteResult {
 
 	if !isPIE {
 		return rule.ExecuteResult{
-			Status: rule.StatusSkipped,
+			Status:  rule.StatusSkipped,
 			Message: "Shared library (ASLR check not applicable)",
 		}
 	}
@@ -69,7 +69,7 @@ func (r ASLRRule) Execute(f *elf.File, info *binary.Parsed) rule.ExecuteResult {
 
 	if !hasNXStack {
 		return rule.ExecuteResult{
-			Status: rule.StatusFailed,
+			Status:  rule.StatusFailed,
 			Message: "Binary is NOT fully ASLR compatible (executable stack)",
 		}
 	}
@@ -77,13 +77,13 @@ func (r ASLRRule) Execute(f *elf.File, info *binary.Parsed) rule.ExecuteResult {
 	// Check for text relocations (breaks ASLR)
 	if HasDynTag(f, elf.DT_TEXTREL) {
 		return rule.ExecuteResult{
-			Status: rule.StatusFailed,
+			Status:  rule.StatusFailed,
 			Message: "Binary is NOT ASLR compatible (has text relocations)",
 		}
 	}
 
 	return rule.ExecuteResult{
-		Status: rule.StatusPassed,
+		Status:  rule.StatusPassed,
 		Message: "Binary is fully ASLR compatible (PIE + NX stack + no text relocations)",
 	}
 }

@@ -19,7 +19,7 @@ func (r NoDumpRule) Name() string { return "Core Dump Protection" }
 
 func (r NoDumpRule) Applicability() rule.Applicability {
 	return rule.Applicability{
-		Arch: binary.ArchAll,
+		Platform: binary.PlatformAll,
 		Compilers: map[toolchain.Compiler]rule.CompilerRequirement{
 			toolchain.CompilerGCC:   {MinVersion: toolchain.Version{Major: 3, Minor: 0}, Flag: "-Wl,-z,nodump"},
 			toolchain.CompilerClang: {MinVersion: toolchain.Version{Major: 3, Minor: 0}, Flag: "-Wl,-z,nodump"},
@@ -74,12 +74,12 @@ func (r NoDumpRule) Execute(f *elf.File, info *binary.Parsed) rule.ExecuteResult
 
 	if hasNoDump {
 		return rule.ExecuteResult{
-			Status: rule.StatusPassed,
+			Status:  rule.StatusPassed,
 			Message: "Core dumps are disabled (DF_1_NODUMP set)",
 		}
 	}
 	return rule.ExecuteResult{
-		Status: rule.StatusFailed,
+		Status:  rule.StatusFailed,
 		Message: "Core dumps are NOT explicitly disabled",
 	}
 }

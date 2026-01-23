@@ -19,7 +19,7 @@ func (r SafeStackRule) Name() string { return "SafeStack" }
 
 func (r SafeStackRule) Applicability() rule.Applicability {
 	return rule.Applicability{
-		Arch: binary.ArchAll,
+		Platform: binary.PlatformAll,
 		Compilers: map[toolchain.Compiler]rule.CompilerRequirement{
 			toolchain.CompilerClang: {MinVersion: toolchain.Version{Major: 3, Minor: 8}, Flag: "-fsanitize=safe-stack"},
 		},
@@ -34,7 +34,7 @@ func (r SafeStackRule) Execute(f *elf.File, info *binary.Parsed) rule.ExecuteRes
 	for _, sym := range symbols {
 		if strings.HasPrefix(sym.Name, "__safestack_") {
 			return rule.ExecuteResult{
-				Status: rule.StatusPassed,
+				Status:  rule.StatusPassed,
 				Message: "SafeStack is enabled",
 			}
 		}
@@ -43,14 +43,14 @@ func (r SafeStackRule) Execute(f *elf.File, info *binary.Parsed) rule.ExecuteRes
 	for _, sym := range dynsyms {
 		if strings.HasPrefix(sym.Name, "__safestack_") {
 			return rule.ExecuteResult{
-				Status: rule.StatusPassed,
+				Status:  rule.StatusPassed,
 				Message: "SafeStack is enabled",
 			}
 		}
 	}
 
 	return rule.ExecuteResult{
-		Status: rule.StatusFailed,
+		Status:  rule.StatusFailed,
 		Message: "SafeStack is NOT enabled",
 	}
 }

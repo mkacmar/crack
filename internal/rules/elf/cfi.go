@@ -28,7 +28,7 @@ func (r CFIRule) Name() string { return "Control Flow Integrity" }
 
 func (r CFIRule) Applicability() rule.Applicability {
 	return rule.Applicability{
-		Arch: binary.ArchAll,
+		Platform: binary.PlatformAll,
 		Compilers: map[toolchain.Compiler]rule.CompilerRequirement{
 			toolchain.CompilerClang: {MinVersion: toolchain.Version{Major: 3, Minor: 7}, Flag: "-fsanitize=cfi -flto -fvisibility=hidden"},
 		},
@@ -60,12 +60,12 @@ func (r CFIRule) Execute(f *elf.File, info *binary.Parsed) rule.ExecuteResult {
 
 	if len(foundSymbols) > 0 {
 		return rule.ExecuteResult{
-			Status: rule.StatusPassed,
+			Status:  rule.StatusPassed,
 			Message: fmt.Sprintf("Clang CFI is enabled, found: %v", foundSymbols),
 		}
 	}
 	return rule.ExecuteResult{
-		Status: rule.StatusFailed,
+		Status:  rule.StatusFailed,
 		Message: "Clang CFI is NOT enabled",
 	}
 }

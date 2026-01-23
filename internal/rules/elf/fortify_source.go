@@ -46,7 +46,7 @@ func (r FortifySourceRule) Name() string { return "FORTIFY_SOURCE" }
 
 func (r FortifySourceRule) Applicability() rule.Applicability {
 	return rule.Applicability{
-		Arch: binary.ArchAll,
+		Platform: binary.PlatformAll,
 		Compilers: map[toolchain.Compiler]rule.CompilerRequirement{
 			toolchain.CompilerGCC:   {MinVersion: toolchain.Version{Major: 12, Minor: 0}, Flag: "-D_FORTIFY_SOURCE=3 -O1"},
 			toolchain.CompilerClang: {MinVersion: toolchain.Version{Major: 12, Minor: 0}, Flag: "-D_FORTIFY_SOURCE=3 -O1"},
@@ -59,7 +59,7 @@ func (r FortifySourceRule) Execute(f *elf.File, info *binary.Parsed) rule.Execut
 	// https://wiki.musl-libc.org/future-ideas#fortify-source
 	if info != nil && info.LibC == toolchain.LibCMusl {
 		return rule.ExecuteResult{
-			Status: rule.StatusSkipped,
+			Status:  rule.StatusSkipped,
 			Message: "musl libc does not support FORTIFY_SOURCE",
 		}
 	}
@@ -96,7 +96,7 @@ func (r FortifySourceRule) Execute(f *elf.File, info *binary.Parsed) rule.Execut
 			msg += fmt.Sprintf(", %d left unfortified %v", len(unfortifiedFuncs), unfortifiedFuncs)
 		}
 		return rule.ExecuteResult{
-			Status: rule.StatusPassed,
+			Status:  rule.StatusPassed,
 			Message: msg,
 		}
 	}
@@ -105,13 +105,13 @@ func (r FortifySourceRule) Execute(f *elf.File, info *binary.Parsed) rule.Execut
 	// While the compiler might optimize them away if it can prove safety, real-world binaries typically have some unprovable buffer sizes.
 	if len(unfortifiedFuncs) > 0 {
 		return rule.ExecuteResult{
-			Status: rule.StatusFailed,
+			Status:  rule.StatusFailed,
 			Message: fmt.Sprintf("FORTIFY_SOURCE is NOT enabled, unfortified: %v", unfortifiedFuncs),
 		}
 	}
 
 	return rule.ExecuteResult{
-		Status: rule.StatusSkipped,
+		Status:  rule.StatusSkipped,
 		Message: "No fortifiable functions detected",
 	}
 }

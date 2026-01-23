@@ -19,7 +19,7 @@ func (r NoInsecureRUNPATHRule) Name() string { return "Secure RUNPATH" }
 
 func (r NoInsecureRUNPATHRule) Applicability() rule.Applicability {
 	return rule.Applicability{
-		Arch: binary.ArchAll,
+		Platform: binary.PlatformAll,
 		Compilers: map[toolchain.Compiler]rule.CompilerRequirement{
 			toolchain.CompilerGCC:   {MinVersion: toolchain.Version{Major: 3, Minor: 0}, Flag: "-Wl,--enable-new-dtags -Wl,-rpath,/absolute/path"},
 			toolchain.CompilerClang: {MinVersion: toolchain.Version{Major: 3, Minor: 0}, Flag: "-Wl,--enable-new-dtags -Wl,-rpath,/absolute/path"},
@@ -31,20 +31,20 @@ func (r NoInsecureRUNPATHRule) Execute(f *elf.File, info *binary.Parsed) rule.Ex
 	runpath := GetDynString(f, elf.DT_RUNPATH)
 	if runpath == "" {
 		return rule.ExecuteResult{
-			Status: rule.StatusPassed,
+			Status:  rule.StatusPassed,
 			Message: "No RUNPATH set",
 		}
 	}
 
 	if insecure := findInsecurePaths(runpath); len(insecure) > 0 {
 		return rule.ExecuteResult{
-			Status: rule.StatusFailed,
+			Status:  rule.StatusFailed,
 			Message: fmt.Sprintf("Insecure RUNPATH: %s", strings.Join(insecure, ", ")),
 		}
 	}
 
 	return rule.ExecuteResult{
-		Status: rule.StatusPassed,
+		Status:  rule.StatusPassed,
 		Message: "RUNPATH is secure",
 	}
 }

@@ -16,7 +16,7 @@ func (r ARMBTIRule) Name() string { return "ARM Branch Target Identification" }
 
 func (r ARMBTIRule) Applicability() rule.Applicability {
 	return rule.Applicability{
-		Arch: binary.ArchARM64,
+		Platform: binary.PlatformARM64v8_5,
 		Compilers: map[toolchain.Compiler]rule.CompilerRequirement{
 			toolchain.CompilerGCC:   {MinVersion: toolchain.Version{Major: 9, Minor: 1}, Flag: "-mbranch-protection=bti"},
 			toolchain.CompilerClang: {MinVersion: toolchain.Version{Major: 8, Minor: 0}, Flag: "-mbranch-protection=bti"},
@@ -29,12 +29,12 @@ func (r ARMBTIRule) Execute(f *elf.File, info *binary.Parsed) rule.ExecuteResult
 
 	if hasBTI {
 		return rule.ExecuteResult{
-			Status: rule.StatusPassed,
+			Status:  rule.StatusPassed,
 			Message: "ARM BTI (Branch Target Identification) is enabled",
 		}
 	}
 	return rule.ExecuteResult{
-		Status: rule.StatusFailed,
+		Status:  rule.StatusFailed,
 		Message: "ARM BTI is NOT enabled (requires ARMv8.5+ hardware)",
 	}
 }

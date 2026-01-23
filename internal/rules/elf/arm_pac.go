@@ -19,7 +19,7 @@ func (r ARMPACRule) Name() string { return "ARM Pointer Authentication" }
 
 func (r ARMPACRule) Applicability() rule.Applicability {
 	return rule.Applicability{
-		Arch: binary.ArchARM64,
+		Platform: binary.PlatformARM64v8_3,
 		Compilers: map[toolchain.Compiler]rule.CompilerRequirement{
 			toolchain.CompilerGCC:   {MinVersion: toolchain.Version{Major: 9, Minor: 1}, Flag: "-mbranch-protection=pac-ret"},
 			toolchain.CompilerClang: {MinVersion: toolchain.Version{Major: 8, Minor: 0}, Flag: "-mbranch-protection=pac-ret"},
@@ -32,12 +32,12 @@ func (r ARMPACRule) Execute(f *elf.File, info *binary.Parsed) rule.ExecuteResult
 
 	if hasPAC {
 		return rule.ExecuteResult{
-			Status: rule.StatusPassed,
+			Status:  rule.StatusPassed,
 			Message: "ARM PAC (Pointer Authentication Code) is enabled",
 		}
 	}
 	return rule.ExecuteResult{
-		Status: rule.StatusFailed,
+		Status:  rule.StatusFailed,
 		Message: "ARM PAC is NOT enabled (requires ARMv8.3+ hardware)",
 	}
 }

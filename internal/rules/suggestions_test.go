@@ -21,7 +21,7 @@ func TestBuildSuggestion(t *testing.T) {
 			name:      "unknown compiler shows both options",
 			toolchain: toolchain.Toolchain{Compiler: toolchain.CompilerUnknown},
 			applicability: rule.Applicability{
-				Arch: binary.ArchAll,
+				Platform: binary.PlatformAll,
 				Compilers: map[toolchain.Compiler]rule.CompilerRequirement{
 					toolchain.CompilerGCC:   {MinVersion: toolchain.Version{Major: 4, Minor: 9}, Flag: "-fstack-protector-strong"},
 					toolchain.CompilerClang: {MinVersion: toolchain.Version{Major: 3, Minor: 5}, Flag: "-fstack-protector-strong"},
@@ -36,7 +36,7 @@ func TestBuildSuggestion(t *testing.T) {
 				Version:  toolchain.Version{Major: 4, Minor: 8},
 			},
 			applicability: rule.Applicability{
-				Arch: binary.ArchAll,
+				Platform: binary.PlatformAll,
 				Compilers: map[toolchain.Compiler]rule.CompilerRequirement{
 					toolchain.CompilerGCC: {MinVersion: toolchain.Version{Major: 4, Minor: 9}, Flag: "-fstack-protector-strong"},
 				},
@@ -50,7 +50,7 @@ func TestBuildSuggestion(t *testing.T) {
 				Version:  toolchain.Version{Major: 10, Minor: 0},
 			},
 			applicability: rule.Applicability{
-				Arch: binary.ArchAll,
+				Platform: binary.PlatformAll,
 				Compilers: map[toolchain.Compiler]rule.CompilerRequirement{
 					toolchain.CompilerGCC: {
 						MinVersion:     toolchain.Version{Major: 8, Minor: 0},
@@ -68,7 +68,7 @@ func TestBuildSuggestion(t *testing.T) {
 				Version:  toolchain.Version{Major: 15, Minor: 0},
 			},
 			applicability: rule.Applicability{
-				Arch: binary.ArchAll,
+				Platform: binary.PlatformAll,
 				Compilers: map[toolchain.Compiler]rule.CompilerRequirement{
 					toolchain.CompilerClang: {MinVersion: toolchain.Version{Major: 7, Minor: 0}, Flag: "-fsanitize=safe-stack"},
 				},
@@ -82,7 +82,7 @@ func TestBuildSuggestion(t *testing.T) {
 				Version:  toolchain.Version{Major: 12, Minor: 0},
 			},
 			applicability: rule.Applicability{
-				Arch: binary.ArchAll,
+				Platform: binary.PlatformAll,
 				Compilers: map[toolchain.Compiler]rule.CompilerRequirement{
 					toolchain.CompilerClang: {MinVersion: toolchain.Version{Major: 3, Minor: 7}, Flag: "-fsanitize=cfi"},
 				},
@@ -96,7 +96,7 @@ func TestBuildSuggestion(t *testing.T) {
 				Version:  toolchain.Version{Major: 14, Minor: 0},
 			},
 			applicability: rule.Applicability{
-				Arch: binary.ArchAll,
+				Platform: binary.PlatformAll,
 				Compilers: map[toolchain.Compiler]rule.CompilerRequirement{
 					toolchain.CompilerGCC: {
 						MinVersion:     toolchain.Version{Major: 8, Minor: 0},
@@ -110,7 +110,7 @@ func TestBuildSuggestion(t *testing.T) {
 		{
 			name:          "empty requirements",
 			toolchain:     toolchain.Toolchain{Compiler: toolchain.CompilerGCC, Version: toolchain.Version{Major: 12, Minor: 0}},
-			applicability: rule.Applicability{Arch: binary.ArchAll, Compilers: nil},
+			applicability: rule.Applicability{Platform: binary.PlatformAll, Compilers: nil},
 			wantExact:     "Feature not supported by detected compilers.",
 		},
 	}
@@ -145,7 +145,7 @@ func TestBuildGenericSuggestion(t *testing.T) {
 		{
 			name: "only GCC requirement",
 			applicability: rule.Applicability{
-				Arch: binary.ArchAll,
+				Platform: binary.PlatformAll,
 				Compilers: map[toolchain.Compiler]rule.CompilerRequirement{
 					toolchain.CompilerGCC: {MinVersion: toolchain.Version{Major: 7, Minor: 0}, Flag: "-mindirect-branch=thunk"},
 				},
@@ -156,7 +156,7 @@ func TestBuildGenericSuggestion(t *testing.T) {
 		{
 			name: "only Clang requirement",
 			applicability: rule.Applicability{
-				Arch: binary.ArchAll,
+				Platform: binary.PlatformAll,
 				Compilers: map[toolchain.Compiler]rule.CompilerRequirement{
 					toolchain.CompilerClang: {MinVersion: toolchain.Version{Major: 3, Minor: 7}, Flag: "-fsanitize=cfi"},
 				},
@@ -167,7 +167,7 @@ func TestBuildGenericSuggestion(t *testing.T) {
 		{
 			name: "both compilers",
 			applicability: rule.Applicability{
-				Arch: binary.ArchAll,
+				Platform: binary.PlatformAll,
 				Compilers: map[toolchain.Compiler]rule.CompilerRequirement{
 					toolchain.CompilerGCC:   {MinVersion: toolchain.Version{Major: 4, Minor: 9}, Flag: "-fPIE"},
 					toolchain.CompilerClang: {MinVersion: toolchain.Version{Major: 3, Minor: 0}, Flag: "-fPIE"},

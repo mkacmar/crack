@@ -20,7 +20,7 @@ func (r PIERule) Name() string { return "Position Independent Executable" }
 
 func (r PIERule) Applicability() rule.Applicability {
 	return rule.Applicability{
-		Arch: binary.ArchAll,
+		Platform: binary.PlatformAll,
 		Compilers: map[toolchain.Compiler]rule.CompilerRequirement{
 			toolchain.CompilerGCC:   {MinVersion: toolchain.Version{Major: 6, Minor: 0}, DefaultVersion: toolchain.Version{Major: 6, Minor: 0}, Flag: "-fPIE -pie"},
 			toolchain.CompilerClang: {MinVersion: toolchain.Version{Major: 3, Minor: 0}, DefaultVersion: toolchain.Version{Major: 6, Minor: 0}, Flag: "-fPIE -pie"},
@@ -31,14 +31,14 @@ func (r PIERule) Applicability() rule.Applicability {
 func (r PIERule) Execute(f *elf.File, info *binary.Parsed) rule.ExecuteResult {
 	if f.Type == elf.ET_EXEC {
 		return rule.ExecuteResult{
-			Status: rule.StatusFailed,
+			Status:  rule.StatusFailed,
 			Message: "Binary is NOT compiled as PIE (ASLR not possible)",
 		}
 	}
 
 	if f.Type != elf.ET_DYN {
 		return rule.ExecuteResult{
-			Status: rule.StatusSkipped,
+			Status:  rule.StatusSkipped,
 			Message: "Not an executable or shared library",
 		}
 	}
@@ -49,7 +49,7 @@ func (r PIERule) Execute(f *elf.File, info *binary.Parsed) rule.ExecuteResult {
 	// static-pie binaries (-static-pie) have DF_1_PIE but no PT_INTERP, so the DF_1_PIE check must come first.
 	if HasDynFlag(f, elf.DT_FLAGS_1, DF_1_PIE) {
 		return rule.ExecuteResult{
-			Status: rule.StatusPassed,
+			Status:  rule.StatusPassed,
 			Message: "Binary is compiled as PIE (enables ASLR when system supports it)",
 		}
 	}
@@ -57,14 +57,14 @@ func (r PIERule) Execute(f *elf.File, info *binary.Parsed) rule.ExecuteResult {
 	for _, prog := range f.Progs {
 		if prog.Type == elf.PT_INTERP {
 			return rule.ExecuteResult{
-				Status: rule.StatusPassed,
+				Status:  rule.StatusPassed,
 				Message: "Binary is compiled as PIE (enables ASLR when system supports it)",
 			}
 		}
 	}
 
 	return rule.ExecuteResult{
-		Status: rule.StatusSkipped,
+		Status:  rule.StatusSkipped,
 		Message: "Shared library (PIE check not applicable)",
 	}
 }

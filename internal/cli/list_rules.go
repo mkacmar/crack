@@ -61,7 +61,7 @@ func (a *App) runListRules(prog string, args []string) int {
 			general = append(general, ruleID)
 			continue
 		}
-		arch := rule.Applicability().Arch
+		arch := rule.Applicability().Platform.Architecture
 		if arch.Matches(binary.ArchAllX86) && !arch.Matches(binary.ArchAllARM) {
 			x86 = append(x86, ruleID)
 		} else if arch.Matches(binary.ArchAllARM) && !arch.Matches(binary.ArchAllX86) {

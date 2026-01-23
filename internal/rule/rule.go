@@ -47,7 +47,7 @@ type CompilerRequirement struct {
 }
 
 type Applicability struct {
-	Arch      binary.Architecture
+	Platform  binary.Platform
 	Compilers map[toolchain.Compiler]CompilerRequirement
 }
 

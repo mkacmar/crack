@@ -19,7 +19,7 @@ func (r ASANRule) Name() string { return "Address Sanitizer" }
 
 func (r ASANRule) Applicability() rule.Applicability {
 	return rule.Applicability{
-		Arch: binary.ArchAll,
+		Platform: binary.PlatformAll,
 		Compilers: map[toolchain.Compiler]rule.CompilerRequirement{
 			toolchain.CompilerGCC:   {MinVersion: toolchain.Version{Major: 4, Minor: 8}, Flag: "-fsanitize=address"},
 			toolchain.CompilerClang: {MinVersion: toolchain.Version{Major: 3, Minor: 1}, Flag: "-fsanitize=address"},
@@ -59,12 +59,12 @@ func (r ASANRule) Execute(f *elf.File, info *binary.Parsed) rule.ExecuteResult {
 
 	if hasASan {
 		return rule.ExecuteResult{
-			Status: rule.StatusPassed,
+			Status:  rule.StatusPassed,
 			Message: "AddressSanitizer is enabled",
 		}
 	}
 	return rule.ExecuteResult{
-		Status: rule.StatusFailed,
+		Status:  rule.StatusFailed,
 		Message: "AddressSanitizer is NOT enabled",
 	}
 }

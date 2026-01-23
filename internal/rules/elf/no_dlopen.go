@@ -22,7 +22,7 @@ func (r NoDLOpenRule) Name() string { return "Disallow dlopen" }
 
 func (r NoDLOpenRule) Applicability() rule.Applicability {
 	return rule.Applicability{
-		Arch: binary.ArchAll,
+		Platform: binary.PlatformAll,
 		Compilers: map[toolchain.Compiler]rule.CompilerRequirement{
 			toolchain.CompilerGCC:   {MinVersion: toolchain.Version{Major: 3, Minor: 0}, Flag: "-Wl,-z,nodlopen"},
 			toolchain.CompilerClang: {MinVersion: toolchain.Version{Major: 3, Minor: 0}, Flag: "-Wl,-z,nodlopen"},
@@ -77,12 +77,12 @@ func (r NoDLOpenRule) Execute(f *elf.File, info *binary.Parsed) rule.ExecuteResu
 
 	if hasNoDLOpen {
 		return rule.ExecuteResult{
-			Status: rule.StatusPassed,
+			Status:  rule.StatusPassed,
 			Message: "dlopen is disabled via linker flags",
 		}
 	}
 	return rule.ExecuteResult{
-		Status: rule.StatusFailed,
+		Status:  rule.StatusFailed,
 		Message: "dlopen is NOT disabled (binary can load libraries dynamically)",
 	}
 }

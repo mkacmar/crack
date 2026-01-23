@@ -43,7 +43,7 @@ func (e *Engine) ExecuteRules(info *binary.Parsed) []rule.ProcessedResult {
 
 	for _, r := range e.rules {
 		applicability := r.Applicability()
-		if !info.Architecture.Matches(applicability.Arch) {
+		if !info.Architecture.Matches(applicability.Platform.Architecture) {
 			continue
 		}
 

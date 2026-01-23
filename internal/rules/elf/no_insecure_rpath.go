@@ -19,7 +19,7 @@ func (r NoInsecureRPATHRule) Name() string { return "Secure RPATH" }
 
 func (r NoInsecureRPATHRule) Applicability() rule.Applicability {
 	return rule.Applicability{
-		Arch: binary.ArchAll,
+		Platform: binary.PlatformAll,
 		Compilers: map[toolchain.Compiler]rule.CompilerRequirement{
 			toolchain.CompilerGCC:   {MinVersion: toolchain.Version{Major: 3, Minor: 0}, Flag: "-Wl,-rpath,/absolute/path"},
 			toolchain.CompilerClang: {MinVersion: toolchain.Version{Major: 3, Minor: 0}, Flag: "-Wl,-rpath,/absolute/path"},
@@ -31,20 +31,20 @@ func (r NoInsecureRPATHRule) Execute(f *elf.File, info *binary.Parsed) rule.Exec
 	rpath := GetDynString(f, elf.DT_RPATH)
 	if rpath == "" {
 		return rule.ExecuteResult{
-			Status: rule.StatusPassed,
+			Status:  rule.StatusPassed,
 			Message: "No RPATH set",
 		}
 	}
 
 	if insecure := findInsecurePaths(rpath); len(insecure) > 0 {
 		return rule.ExecuteResult{
-			Status: rule.StatusFailed,
+			Status:  rule.StatusFailed,
 			Message: fmt.Sprintf("Insecure RPATH: %s", strings.Join(insecure, ", ")),
 		}
 	}
 
 	return rule.ExecuteResult{
-		Status: rule.StatusPassed,
+		Status:  rule.StatusPassed,
 		Message: "RPATH is secure",
 	}
 }

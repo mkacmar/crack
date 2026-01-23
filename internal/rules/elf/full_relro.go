@@ -22,7 +22,7 @@ func (r FullRELRORule) Name() string { return "Full RELRO" }
 
 func (r FullRELRORule) Applicability() rule.Applicability {
 	return rule.Applicability{
-		Arch: binary.ArchAll,
+		Platform: binary.PlatformAll,
 		Compilers: map[toolchain.Compiler]rule.CompilerRequirement{
 			toolchain.CompilerGCC:   {MinVersion: toolchain.Version{Major: 3, Minor: 0}, Flag: "-Wl,-z,relro,-z,now"},
 			toolchain.CompilerClang: {MinVersion: toolchain.Version{Major: 3, Minor: 0}, Flag: "-Wl,-z,relro,-z,now"},
@@ -41,7 +41,7 @@ func (r FullRELRORule) Execute(f *elf.File, info *binary.Parsed) rule.ExecuteRes
 
 	if !hasRELRO {
 		return rule.ExecuteResult{
-			Status: rule.StatusFailed,
+			Status:  rule.StatusFailed,
 			Message: "Full RELRO is NOT enabled (no PT_GNU_RELRO segment)",
 		}
 	}
@@ -52,13 +52,13 @@ func (r FullRELRORule) Execute(f *elf.File, info *binary.Parsed) rule.ExecuteRes
 		HasDynFlag(f, elf.DT_FLAGS, DF_BIND_NOW) ||
 		HasDynFlag(f, elf.DT_FLAGS_1, DF_1_NOW) {
 		return rule.ExecuteResult{
-			Status: rule.StatusPassed,
+			Status:  rule.StatusPassed,
 			Message: "Full RELRO is enabled (GOT read-only, lazy binding disabled)",
 		}
 	}
 
 	return rule.ExecuteResult{
-		Status: rule.StatusFailed,
+		Status:  rule.StatusFailed,
 		Message: "Full RELRO is NOT enabled (GOT may be writable)",
 	}
 }

@@ -20,7 +20,7 @@ func (r NoPLTRule) Name() string { return "No PLT" }
 
 func (r NoPLTRule) Applicability() rule.Applicability {
 	return rule.Applicability{
-		Arch: binary.ArchAll,
+		Platform: binary.PlatformAll,
 		Compilers: map[toolchain.Compiler]rule.CompilerRequirement{
 			toolchain.CompilerGCC:   {MinVersion: toolchain.Version{Major: 6, Minor: 0}, Flag: "-fno-plt"},
 			toolchain.CompilerClang: {MinVersion: toolchain.Version{Major: 3, Minor: 9}, Flag: "-fno-plt"},
@@ -32,7 +32,7 @@ func (r NoPLTRule) Execute(f *elf.File, info *binary.Parsed) rule.ExecuteResult 
 	// Skip for static binaries - PLT only applies to dynamically linked binaries
 	if f.Section(".dynamic") == nil {
 		return rule.ExecuteResult{
-			Status: rule.StatusSkipped,
+			Status:  rule.StatusSkipped,
 			Message: "Static binary (PLT not applicable)",
 		}
 	}
@@ -43,7 +43,7 @@ func (r NoPLTRule) Execute(f *elf.File, info *binary.Parsed) rule.ExecuteResult 
 	// No PLT section at all - definitely compiled with -fno-plt
 	if pltSection == nil {
 		return rule.ExecuteResult{
-			Status: rule.StatusPassed,
+			Status:  rule.StatusPassed,
 			Message: "No PLT section (direct GOT access)",
 		}
 	}
@@ -52,13 +52,13 @@ func (r NoPLTRule) Execute(f *elf.File, info *binary.Parsed) rule.ExecuteResult 
 	// but in a hardened way, so we consider this acceptable
 	if pltSecSection != nil {
 		return rule.ExecuteResult{
-			Status: rule.StatusPassed,
+			Status:  rule.StatusPassed,
 			Message: "Using secure PLT (.plt.sec for CET compatibility)",
 		}
 	}
 
 	return rule.ExecuteResult{
-		Status: rule.StatusFailed,
+		Status:  rule.StatusFailed,
 		Message: "PLT is used",
 	}
 }

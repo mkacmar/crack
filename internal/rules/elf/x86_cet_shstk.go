@@ -17,7 +17,7 @@ func (r X86CETShadowStackRule) Name() string { return "x86 CET - Shadow Stack" }
 
 func (r X86CETShadowStackRule) Applicability() rule.Applicability {
 	return rule.Applicability{
-		Arch: binary.ArchAllX86,
+		Platform: binary.PlatformAllX86,
 		Compilers: map[toolchain.Compiler]rule.CompilerRequirement{
 			toolchain.CompilerGCC:   {MinVersion: toolchain.Version{Major: 8, Minor: 1}, Flag: "-fcf-protection=full"},
 			toolchain.CompilerClang: {MinVersion: toolchain.Version{Major: 7, Minor: 0}, Flag: "-fcf-protection=full"},
@@ -30,12 +30,12 @@ func (r X86CETShadowStackRule) Execute(f *elf.File, info *binary.Parsed) rule.Ex
 
 	if hasShadowStack {
 		return rule.ExecuteResult{
-			Status: rule.StatusPassed,
+			Status:  rule.StatusPassed,
 			Message: "CET Shadow Stack is enabled",
 		}
 	}
 	return rule.ExecuteResult{
-		Status: rule.StatusFailed,
+		Status:  rule.StatusFailed,
 		Message: "CET Shadow Stack is NOT enabled",
 	}
 }

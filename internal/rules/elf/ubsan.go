@@ -46,7 +46,7 @@ func (r UBSanRule) Name() string { return "Undefined Behavior Sanitizer" }
 
 func (r UBSanRule) Applicability() rule.Applicability {
 	return rule.Applicability{
-		Arch: binary.ArchAll,
+		Platform: binary.PlatformAll,
 		Compilers: map[toolchain.Compiler]rule.CompilerRequirement{
 			toolchain.CompilerGCC:   {MinVersion: toolchain.Version{Major: 4, Minor: 9}, Flag: "-fsanitize=undefined"},
 			toolchain.CompilerClang: {MinVersion: toolchain.Version{Major: 3, Minor: 3}, Flag: "-fsanitize=undefined"},
@@ -79,12 +79,12 @@ func (r UBSanRule) Execute(f *elf.File, info *binary.Parsed) rule.ExecuteResult 
 
 	if len(foundHandlers) > 0 {
 		return rule.ExecuteResult{
-			Status: rule.StatusPassed,
+			Status:  rule.StatusPassed,
 			Message: fmt.Sprintf("UBSan is enabled, found: %v", foundHandlers),
 		}
 	}
 	return rule.ExecuteResult{
-		Status: rule.StatusFailed,
+		Status:  rule.StatusFailed,
 		Message: "UBSan is NOT enabled",
 	}
 }

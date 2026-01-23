@@ -17,7 +17,7 @@ func (r SeparateCodeRule) Name() string { return "Separate Code Segments" }
 
 func (r SeparateCodeRule) Applicability() rule.Applicability {
 	return rule.Applicability{
-		Arch: binary.ArchAll,
+		Platform: binary.PlatformAll,
 		Compilers: map[toolchain.Compiler]rule.CompilerRequirement{
 			toolchain.CompilerGCC:   {MinVersion: toolchain.Version{Major: 3, Minor: 0}, Flag: "-Wl,-z,separate-code"},
 			toolchain.CompilerClang: {MinVersion: toolchain.Version{Major: 3, Minor: 0}, Flag: "-Wl,-z,separate-code"},
@@ -49,7 +49,7 @@ func (r SeparateCodeRule) Execute(f *elf.File, info *binary.Parsed) rule.Execute
 
 	if len(codePages) == 0 {
 		return rule.ExecuteResult{
-			Status: rule.StatusSkipped,
+			Status:  rule.StatusSkipped,
 			Message: "No code segments found",
 		}
 	}
@@ -59,7 +59,7 @@ func (r SeparateCodeRule) Execute(f *elf.File, info *binary.Parsed) rule.Execute
 		for _, data := range dataPages {
 			if code[0] < data[1] && code[1] > data[0] {
 				return rule.ExecuteResult{
-					Status: rule.StatusFailed,
+					Status:  rule.StatusFailed,
 					Message: "Code and data segments share page boundary",
 				}
 			}
@@ -67,7 +67,7 @@ func (r SeparateCodeRule) Execute(f *elf.File, info *binary.Parsed) rule.Execute
 	}
 
 	return rule.ExecuteResult{
-		Status: rule.StatusPassed,
+		Status:  rule.StatusPassed,
 		Message: "Code and data are in separate pages",
 	}
 }

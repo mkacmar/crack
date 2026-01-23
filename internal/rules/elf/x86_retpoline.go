@@ -19,7 +19,7 @@ func (r X86RetpolineRule) Name() string { return "x86 Retpoline (Spectre v2)" }
 
 func (r X86RetpolineRule) Applicability() rule.Applicability {
 	return rule.Applicability{
-		Arch: binary.ArchAllX86,
+		Platform: binary.PlatformAllX86,
 		Compilers: map[toolchain.Compiler]rule.CompilerRequirement{
 			toolchain.CompilerGCC:   {MinVersion: toolchain.Version{Major: 7, Minor: 3}, Flag: "-mindirect-branch=thunk -mfunction-return=thunk"},
 			toolchain.CompilerClang: {MinVersion: toolchain.Version{Major: 5, Minor: 0}, Flag: "-mretpoline"},
@@ -34,7 +34,7 @@ func (r X86RetpolineRule) Execute(f *elf.File, info *binary.Parsed) rule.Execute
 	hasCETIBT := parseGNUProperty(f, GNU_PROPERTY_X86_FEATURE_1_AND, GNU_PROPERTY_X86_FEATURE_1_IBT)
 	if hasCETIBT {
 		return rule.ExecuteResult{
-			Status: rule.StatusSkipped,
+			Status:  rule.StatusSkipped,
 			Message: "CET-IBT enabled (hardware mitigation supersedes retpoline)",
 		}
 	}
@@ -50,7 +50,7 @@ func (r X86RetpolineRule) Execute(f *elf.File, info *binary.Parsed) rule.Execute
 	}
 	if !hasSymtab {
 		return rule.ExecuteResult{
-			Status: rule.StatusSkipped,
+			Status:  rule.StatusSkipped,
 			Message: "Stripped binary (retpoline symbols not available)",
 		}
 	}
@@ -78,12 +78,12 @@ func (r X86RetpolineRule) Execute(f *elf.File, info *binary.Parsed) rule.Execute
 			msg = "Retpoline enabled (LLVM)"
 		}
 		return rule.ExecuteResult{
-			Status: rule.StatusPassed,
+			Status:  rule.StatusPassed,
 			Message: msg,
 		}
 	}
 	return rule.ExecuteResult{
-		Status: rule.StatusFailed,
+		Status:  rule.StatusFailed,
 		Message: "Retpoline is NOT enabled (x86 Spectre v2 mitigation missing)",
 	}
 }

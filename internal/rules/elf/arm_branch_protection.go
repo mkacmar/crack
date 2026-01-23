@@ -19,7 +19,7 @@ func (r ARMBranchProtectionRule) Name() string { return "ARM Branch Protection" 
 
 func (r ARMBranchProtectionRule) Applicability() rule.Applicability {
 	return rule.Applicability{
-		Arch: binary.ArchARM64,
+		Platform: binary.PlatformARM64v8_5,
 		Compilers: map[toolchain.Compiler]rule.CompilerRequirement{
 			toolchain.CompilerGCC:   {MinVersion: toolchain.Version{Major: 9, Minor: 1}, Flag: "-mbranch-protection=standard"},
 			toolchain.CompilerClang: {MinVersion: toolchain.Version{Major: 8, Minor: 0}, Flag: "-mbranch-protection=standard"},
@@ -34,7 +34,7 @@ func (r ARMBranchProtectionRule) Execute(f *elf.File, info *binary.Parsed) rule.
 
 	if hasBranchProt {
 		return rule.ExecuteResult{
-			Status: rule.StatusPassed,
+			Status:  rule.StatusPassed,
 			Message: "ARM branch protection (PAC+BTI) is fully enabled",
 		}
 	}
@@ -47,7 +47,7 @@ func (r ARMBranchProtectionRule) Execute(f *elf.File, info *binary.Parsed) rule.
 	}
 
 	return rule.ExecuteResult{
-		Status: rule.StatusFailed,
+		Status:  rule.StatusFailed,
 		Message: message,
 	}
 }

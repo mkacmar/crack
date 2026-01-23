@@ -18,7 +18,7 @@ func (r StrippedRule) Name() string { return "Stripped Binary" }
 
 func (r StrippedRule) Applicability() rule.Applicability {
 	return rule.Applicability{
-		Arch: binary.ArchAll,
+		Platform: binary.PlatformAll,
 		Compilers: map[toolchain.Compiler]rule.CompilerRequirement{
 			toolchain.CompilerGCC:   {MinVersion: toolchain.Version{Major: 3, Minor: 0}, Flag: "-s"},
 			toolchain.CompilerClang: {MinVersion: toolchain.Version{Major: 3, Minor: 0}, Flag: "-s"},
@@ -45,27 +45,27 @@ func (r StrippedRule) Execute(f *elf.File, info *binary.Parsed) rule.ExecuteResu
 
 	if !hasSymbolTable && !hasDebugSections {
 		return rule.ExecuteResult{
-			Status: rule.StatusPassed,
+			Status:  rule.StatusPassed,
 			Message: "Binary is fully stripped (no symbol table or debug sections)",
 		}
 	}
 
 	if hasSymbolTable && hasDebugSections {
 		return rule.ExecuteResult{
-			Status: rule.StatusFailed,
+			Status:  rule.StatusFailed,
 			Message: "Binary is NOT stripped (contains symbol table and debug sections)",
 		}
 	}
 
 	if hasSymbolTable {
 		return rule.ExecuteResult{
-			Status: rule.StatusFailed,
+			Status:  rule.StatusFailed,
 			Message: "Binary is NOT stripped (contains symbol table)",
 		}
 	}
 
 	return rule.ExecuteResult{
-		Status: rule.StatusFailed,
+		Status:  rule.StatusFailed,
 		Message: "Binary is partially stripped (no symbol table, but has debug sections)",
 	}
 }

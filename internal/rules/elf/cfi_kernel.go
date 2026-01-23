@@ -19,7 +19,7 @@ func (r KernelCFIRule) Name() string { return "Kernel CFI (kCFI)" }
 
 func (r KernelCFIRule) Applicability() rule.Applicability {
 	return rule.Applicability{
-		Arch: binary.ArchAll,
+		Platform: binary.PlatformAll,
 		Compilers: map[toolchain.Compiler]rule.CompilerRequirement{
 			toolchain.CompilerClang: {MinVersion: toolchain.Version{Major: 12, Minor: 0}, Flag: "-fsanitize=kcfi"},
 		},
@@ -48,12 +48,12 @@ func (r KernelCFIRule) Execute(f *elf.File, info *binary.Parsed) rule.ExecuteRes
 
 	if hasKCFI {
 		return rule.ExecuteResult{
-			Status: rule.StatusPassed,
+			Status:  rule.StatusPassed,
 			Message: "Kernel CFI (kCFI) is enabled",
 		}
 	}
 	return rule.ExecuteResult{
-		Status: rule.StatusFailed,
+		Status:  rule.StatusFailed,
 		Message: "Kernel CFI is NOT enabled",
 	}
 }

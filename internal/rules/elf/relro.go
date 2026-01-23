@@ -17,7 +17,7 @@ func (r RELRORule) Name() string { return "Partial RELRO" }
 
 func (r RELRORule) Applicability() rule.Applicability {
 	return rule.Applicability{
-		Arch: binary.ArchAll,
+		Platform: binary.PlatformAll,
 		Compilers: map[toolchain.Compiler]rule.CompilerRequirement{
 			toolchain.CompilerGCC:   {MinVersion: toolchain.Version{Major: 3, Minor: 0}, DefaultVersion: toolchain.Version{Major: 3, Minor: 0}, Flag: "-Wl,-z,relro"},
 			toolchain.CompilerClang: {MinVersion: toolchain.Version{Major: 3, Minor: 0}, DefaultVersion: toolchain.Version{Major: 3, Minor: 0}, Flag: "-Wl,-z,relro"},
@@ -36,12 +36,12 @@ func (r RELRORule) Execute(f *elf.File, info *binary.Parsed) rule.ExecuteResult 
 
 	if hasRELRO {
 		return rule.ExecuteResult{
-			Status: rule.StatusPassed,
+			Status:  rule.StatusPassed,
 			Message: "Partial RELRO is enabled (some ELF sections read-only after load)",
 		}
 	}
 	return rule.ExecuteResult{
-		Status: rule.StatusFailed,
+		Status:  rule.StatusFailed,
 		Message: "Partial RELRO is NOT enabled (ELF sections remain writable)",
 	}
 }

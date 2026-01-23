@@ -18,7 +18,7 @@ func (r ARMMTERule) Name() string { return "ARM Memory Tagging Extension" }
 
 func (r ARMMTERule) Applicability() rule.Applicability {
 	return rule.Applicability{
-		Arch: binary.ArchARM64,
+		Platform: binary.PlatformARM64v8_5,
 		Compilers: map[toolchain.Compiler]rule.CompilerRequirement{
 			toolchain.CompilerClang: {MinVersion: toolchain.Version{Major: 11, Minor: 0}, Flag: "-march=armv8.5-a+memtag -fsanitize=memtag"},
 		},
@@ -36,12 +36,12 @@ func (r ARMMTERule) Execute(f *elf.File, info *binary.Parsed) rule.ExecuteResult
 
 	if hasMTE {
 		return rule.ExecuteResult{
-			Status: rule.StatusPassed,
+			Status:  rule.StatusPassed,
 			Message: "ARM MTE (Memory Tagging Extension) is enabled",
 		}
 	}
 	return rule.ExecuteResult{
-		Status: rule.StatusFailed,
+		Status:  rule.StatusFailed,
 		Message: "ARM MTE is NOT enabled (requires ARMv8.5+ hardware)",
 	}
 }
