@@ -70,14 +70,10 @@ func getRuleState(t *testing.T, sarifPath, rule string) string {
 	}
 
 	run := report.Runs[0]
-
-	ruleIDByIndex := make(map[int]string)
-	for i, r := range run.Tool.Driver.Rules {
-		ruleIDByIndex[i] = r.ID
-	}
+	rules := run.Tool.Driver.Rules
 
 	for _, r := range run.Results {
-		if ruleIDByIndex[r.RuleIndex] == rule {
+		if r.RuleIndex >= 0 && r.RuleIndex < len(rules) && rules[r.RuleIndex].ID == rule {
 			return r.Kind
 		}
 	}
