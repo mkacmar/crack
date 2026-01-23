@@ -56,7 +56,6 @@ type SARIFDriver struct {
 type SARIFRule struct {
 	ID                   string             `json:"id"`
 	Name                 string             `json:"name"`
-	ShortDescription     SARIFMessage       `json:"shortDescription"`
 	FullDescription      SARIFMessage       `json:"fullDescription,omitempty"`
 	DefaultConfiguration SARIFConfiguration `json:"defaultConfiguration"`
 }
@@ -75,7 +74,6 @@ type SARIFResult struct {
 	Level     string          `json:"level,omitempty"`
 	Message   SARIFMessage    `json:"message"`
 	Locations []SARIFLocation `json:"locations,omitempty"`
-	Fixes     []SARIFFix      `json:"fixes,omitempty"`
 }
 
 type SARIFLocation struct {
@@ -93,10 +91,6 @@ type SARIFArtifactLocation struct {
 type SARIFArtifact struct {
 	Location SARIFArtifactLocation `json:"location"`
 	Hashes   map[string]string     `json:"hashes,omitempty"`
-}
-
-type SARIFFix struct {
-	Description SARIFMessage `json:"description"`
 }
 
 type InvocationInfo struct {
@@ -176,9 +170,6 @@ func (f *SARIFFormatter) buildRules(report *result.ScanResults) ([]SARIFRule, ma
 		r := SARIFRule{
 			ID:   check.RuleID,
 			Name: check.Name,
-			ShortDescription: SARIFMessage{
-				Text: check.Name,
-			},
 			DefaultConfiguration: SARIFConfiguration{
 				Level: "warning",
 			},
@@ -233,22 +224,21 @@ func (f *SARIFFormatter) buildResults(report *result.ScanResults, ruleIndex, art
 				level = "warning"
 			}
 
+			message := check.Message
+			if check.Suggestion != "" {
+				message = message + " " + check.Suggestion
+			}
+
 			sarifResult := SARIFResult{
 				RuleIndex: ruleIndex[check.RuleID],
 				Kind:      kind,
 				Level:     level,
-				Message:   SARIFMessage{Text: check.Message},
+				Message:   SARIFMessage{Text: message},
 				Locations: []SARIFLocation{
 					{PhysicalLocation: SARIFPhysicalLocation{
 						ArtifactIndex: artifactIndex[fileURI],
 					}},
 				},
-			}
-
-			if check.Suggestion != "" {
-				sarifResult.Fixes = []SARIFFix{
-					{Description: SARIFMessage{Text: check.Suggestion}},
-				}
 			}
 
 			sarifResults = append(sarifResults, sarifResult)
