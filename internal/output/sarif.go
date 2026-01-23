@@ -27,12 +27,19 @@ type SARIFRun struct {
 }
 
 type SARIFInvocation struct {
-	CommandLine         string                 `json:"commandLine,omitempty"`
-	Arguments           []string               `json:"arguments,omitempty"`
-	ExecutionSuccessful bool                   `json:"executionSuccessful"`
-	StartTimeUtc        string                 `json:"startTimeUtc,omitempty"`
-	EndTimeUtc          string                 `json:"endTimeUtc,omitempty"`
-	WorkingDirectory    *SARIFArtifactLocation `json:"workingDirectory,omitempty"`
+	CommandLine                string                 `json:"commandLine,omitempty"`
+	Arguments                  []string               `json:"arguments,omitempty"`
+	ExecutionSuccessful        bool                   `json:"executionSuccessful"`
+	StartTimeUtc               string                 `json:"startTimeUtc,omitempty"`
+	EndTimeUtc                 string                 `json:"endTimeUtc,omitempty"`
+	WorkingDirectory           *SARIFArtifactLocation `json:"workingDirectory,omitempty"`
+	ToolExecutionNotifications []SARIFNotification    `json:"toolExecutionNotifications,omitempty"`
+}
+
+type SARIFNotification struct {
+	Level     string          `json:"level"`
+	Message   SARIFMessage    `json:"message"`
+	Locations []SARIFLocation `json:"locations,omitempty"`
 }
 
 type SARIFTool struct {
@@ -118,7 +125,7 @@ func (f *SARIFFormatter) Format(report *result.ScanResults, w io.Writer) error {
 
 func (f *SARIFFormatter) convertToSARIF(report *result.ScanResults) SARIFReport {
 	rules, ruleIndex := f.buildRules(report)
-	results, artifactHashes := f.buildResults(report, ruleIndex)
+	results, artifactHashes, notifications := f.buildResults(report, ruleIndex)
 	artifacts := f.buildArtifacts(artifactHashes)
 
 	run := SARIFRun{
@@ -134,8 +141,8 @@ func (f *SARIFFormatter) convertToSARIF(report *result.ScanResults) SARIFReport 
 		Artifacts: artifacts,
 	}
 
-	if f.Invocation != nil {
-		run.Invocations = []SARIFInvocation{f.buildInvocation()}
+	if f.Invocation != nil || len(notifications) > 0 {
+		run.Invocations = []SARIFInvocation{f.buildInvocation(notifications)}
 	}
 
 	return SARIFReport{
@@ -185,19 +192,18 @@ func (f *SARIFFormatter) buildRules(report *result.ScanResults) ([]SARIFRule, ma
 	return rules, ruleIndex
 }
 
-func (f *SARIFFormatter) buildResults(report *result.ScanResults, ruleIndex map[string]int) ([]SARIFResult, map[string]string) {
+func (f *SARIFFormatter) buildResults(report *result.ScanResults, ruleIndex map[string]int) ([]SARIFResult, map[string]string, []SARIFNotification) {
 	sarifResults := make([]SARIFResult, 0)
 	artifactHashes := make(map[string]string)
+	notifications := make([]SARIFNotification, 0)
 
 	for _, res := range report.Results {
 		fileURI := toFileURI(res.Path)
 		artifactHashes[fileURI] = res.SHA256
 
 		if res.Error != nil {
-			sarifResults = append(sarifResults, SARIFResult{
-				RuleIndex: -1,
-				Kind:      "fail",
-				Level:     "error",
+			notifications = append(notifications, SARIFNotification{
+				Level: "error",
 				Message: SARIFMessage{
 					Text: fmt.Sprintf("Scan error: %v", res.Error),
 				},
@@ -251,7 +257,7 @@ func (f *SARIFFormatter) buildResults(report *result.ScanResults, ruleIndex map[
 		}
 	}
 
-	return sarifResults, artifactHashes
+	return sarifResults, artifactHashes, notifications
 }
 
 func (f *SARIFFormatter) buildArtifacts(artifactHashes map[string]string) []SARIFArtifact {
@@ -274,21 +280,28 @@ func (f *SARIFFormatter) buildArtifacts(artifactHashes map[string]string) []SARI
 	return artifacts
 }
 
-func (f *SARIFFormatter) buildInvocation() SARIFInvocation {
-	inv := SARIFInvocation{
-		CommandLine:         f.Invocation.CommandLine,
-		Arguments:           f.Invocation.Arguments,
-		ExecutionSuccessful: f.Invocation.Successful,
+func (f *SARIFFormatter) buildInvocation(notifications []SARIFNotification) SARIFInvocation {
+	var inv SARIFInvocation
+
+	if f.Invocation != nil {
+		inv.CommandLine = f.Invocation.CommandLine
+		inv.Arguments = f.Invocation.Arguments
+		inv.ExecutionSuccessful = f.Invocation.Successful
+		if !f.Invocation.StartTime.IsZero() {
+			inv.StartTimeUtc = f.Invocation.StartTime.UTC().Format(time.RFC3339)
+		}
+		if !f.Invocation.EndTime.IsZero() {
+			inv.EndTimeUtc = f.Invocation.EndTime.UTC().Format(time.RFC3339)
+		}
+		if f.Invocation.WorkingDir != "" {
+			inv.WorkingDirectory = &SARIFArtifactLocation{URI: toFileURI(f.Invocation.WorkingDir)}
+		}
 	}
-	if !f.Invocation.StartTime.IsZero() {
-		inv.StartTimeUtc = f.Invocation.StartTime.UTC().Format(time.RFC3339)
+
+	if len(notifications) > 0 {
+		inv.ToolExecutionNotifications = notifications
 	}
-	if !f.Invocation.EndTime.IsZero() {
-		inv.EndTimeUtc = f.Invocation.EndTime.UTC().Format(time.RFC3339)
-	}
-	if f.Invocation.WorkingDir != "" {
-		inv.WorkingDirectory = &SARIFArtifactLocation{URI: toFileURI(f.Invocation.WorkingDir)}
-	}
+
 	return inv
 }
 
