@@ -59,7 +59,9 @@ var formatters = map[string]func(FormatterOptions) Formatter{
 	"": func(opts FormatterOptions) Formatter {
 		return &TextFormatter{ShowPassed: opts.ShowPassed, ShowSkipped: opts.ShowSkipped}
 	},
-	"sarif": func(opts FormatterOptions) Formatter { return &SARIFFormatter{IncludePassed: opts.ShowPassed} },
+	"sarif": func(opts FormatterOptions) Formatter {
+		return &SARIFFormatter{IncludePassed: opts.ShowPassed, IncludeSkipped: opts.ShowSkipped}
+	},
 }
 
 func GetFormatter(format string, opts FormatterOptions) (Formatter, error) {

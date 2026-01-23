@@ -54,7 +54,7 @@ type SARIFMessage struct {
 type SARIFResult struct {
 	RuleID    string          `json:"ruleId"`
 	Kind      string          `json:"kind,omitempty"`
-	Level     string          `json:"level"`
+	Level     string          `json:"level,omitempty"`
 	Message   SARIFMessage    `json:"message"`
 	Locations []SARIFLocation `json:"locations,omitempty"`
 	Fixes     []SARIFFix      `json:"fixes,omitempty"`
@@ -82,7 +82,8 @@ type SARIFFix struct {
 }
 
 type SARIFFormatter struct {
-	IncludePassed bool
+	IncludePassed  bool
+	IncludeSkipped bool
 }
 
 func (f *SARIFFormatter) Format(report *result.ScanResults, w io.Writer) error {
@@ -150,15 +151,19 @@ func (f *SARIFFormatter) convertToSARIF(report *result.ScanResults) SARIFReport 
 			if check.Status == rule.StatusPassed && !f.IncludePassed {
 				continue
 			}
-			if check.Status == rule.StatusSkipped {
+			if check.Status == rule.StatusSkipped && !f.IncludeSkipped {
 				continue
 			}
 
-			kind := "fail"
-			level := "warning"
-			if check.Status == rule.StatusPassed {
+			var kind, level string
+			switch check.Status {
+			case rule.StatusPassed:
 				kind = "pass"
-				level = "note"
+			case rule.StatusSkipped:
+				kind = "notApplicable"
+			default:
+				kind = "fail"
+				level = "warning"
 			}
 
 			sarifResult := SARIFResult{
