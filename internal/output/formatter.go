@@ -50,6 +50,7 @@ func (f *TextFormatter) Format(report *result.ScanResults, w io.Writer) error {
 type FormatterOptions struct {
 	ShowPassed  bool
 	ShowSkipped bool
+	Invocation  *InvocationInfo
 }
 
 var formatters = map[string]func(FormatterOptions) Formatter{
@@ -60,7 +61,11 @@ var formatters = map[string]func(FormatterOptions) Formatter{
 		return &TextFormatter{ShowPassed: opts.ShowPassed, ShowSkipped: opts.ShowSkipped}
 	},
 	"sarif": func(opts FormatterOptions) Formatter {
-		return &SARIFFormatter{IncludePassed: opts.ShowPassed, IncludeSkipped: opts.ShowSkipped}
+		return &SARIFFormatter{
+			IncludePassed:  opts.ShowPassed,
+			IncludeSkipped: opts.ShowSkipped,
+			Invocation:     opts.Invocation,
+		}
 	},
 }
 

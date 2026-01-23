@@ -55,6 +55,9 @@ Presets:
 }
 
 func (a *App) runAnalyze(prog string, args []string) int {
+	startTime := time.Now()
+	workingDir, _ := os.Getwd()
+
 	fs := flag.NewFlagSet("analyze", flag.ExitOnError)
 
 	var (
@@ -188,13 +191,20 @@ func (a *App) runAnalyze(prog string, args []string) int {
 
 	needsFullReport := aggregate || sarifOutput != ""
 
+	invocation := &output.InvocationInfo{
+		CommandLine: strings.Join(append([]string{prog}, args...), " "),
+		Arguments:   args,
+		StartTime:   startTime,
+		WorkingDir:  workingDir,
+	}
+
 	if needsFullReport {
-		return a.processFullReport(resultsChan, aggregate, showPassed, showSkipped, sarifOutput)
+		return a.processFullReport(resultsChan, aggregate, showPassed, showSkipped, sarifOutput, invocation)
 	}
 	return a.processStreaming(resultsChan, showPassed, showSkipped)
 }
 
-func (a *App) processFullReport(resultsChan <-chan result.FileScanResult, aggregate, showPassed, showSkipped bool, sarifOutput string) int {
+func (a *App) processFullReport(resultsChan <-chan result.FileScanResult, aggregate, showPassed, showSkipped bool, sarifOutput string, invocation *output.InvocationInfo) int {
 	var results []result.FileScanResult
 	var totalFailed int
 
@@ -220,7 +230,13 @@ func (a *App) processFullReport(resultsChan <-chan result.FileScanResult, aggreg
 	}
 
 	if sarifOutput != "" {
-		sarifFormatter, _ := output.GetFormatter("sarif", output.FormatterOptions{ShowPassed: true})
+		invocation.EndTime = time.Now()
+		invocation.Successful = totalFailed == 0
+
+		sarifFormatter, _ := output.GetFormatter("sarif", output.FormatterOptions{
+			ShowPassed: true,
+			Invocation: invocation,
+		})
 		f, err := os.Create(sarifOutput)
 		if err != nil {
 			a.logger.Error("failed to create SARIF file", slog.String("path", sarifOutput), slog.Any("error", err))

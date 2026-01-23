@@ -1,11 +1,12 @@
+
 package output
 
 import (
 	"encoding/json"
 	"fmt"
 	"io"
-	"net/url"
 	"strings"
+	"time"
 
 	"github.com/mkacmar/crack/internal/result"
 	"github.com/mkacmar/crack/internal/rule"
@@ -18,9 +19,19 @@ type SARIFReport struct {
 }
 
 type SARIFRun struct {
-	Tool      SARIFTool       `json:"tool"`
-	Results   []SARIFResult   `json:"results"`
-	Artifacts []SARIFArtifact `json:"artifacts,omitempty"`
+	Tool        SARIFTool         `json:"tool"`
+	Invocations []SARIFInvocation `json:"invocations,omitempty"`
+	Results     []SARIFResult     `json:"results"`
+	Artifacts   []SARIFArtifact   `json:"artifacts,omitempty"`
+}
+
+type SARIFInvocation struct {
+	CommandLine         string                 `json:"commandLine,omitempty"`
+	Arguments           []string               `json:"arguments,omitempty"`
+	ExecutionSuccessful bool                   `json:"executionSuccessful"`
+	StartTimeUtc        string                 `json:"startTimeUtc,omitempty"`
+	EndTimeUtc          string                 `json:"endTimeUtc,omitempty"`
+	WorkingDirectory    *SARIFArtifactLocation `json:"workingDirectory,omitempty"`
 }
 
 type SARIFTool struct {
@@ -81,9 +92,19 @@ type SARIFFix struct {
 	Description SARIFMessage `json:"description"`
 }
 
+type InvocationInfo struct {
+	CommandLine string
+	Arguments   []string
+	StartTime   time.Time
+	EndTime     time.Time
+	WorkingDir  string
+	Successful  bool
+}
+
 type SARIFFormatter struct {
 	IncludePassed  bool
 	IncludeSkipped bool
+	Invocation     *InvocationInfo
 }
 
 func (f *SARIFFormatter) Format(report *result.ScanResults, w io.Writer) error {
@@ -199,28 +220,46 @@ func (f *SARIFFormatter) convertToSARIF(report *result.ScanResults) SARIFReport 
 		artifactList = append(artifactList, artifact)
 	}
 
+	run := SARIFRun{
+		Tool: SARIFTool{
+			Driver: SARIFDriver{
+				Name:           "crack",
+				InformationUri: "https://github.com/mkacmar/crack",
+				Rules:          rules,
+			},
+		},
+		Results:   sarifResults,
+		Artifacts: artifactList,
+	}
+
+	if f.Invocation != nil {
+		inv := SARIFInvocation{
+			CommandLine:         f.Invocation.CommandLine,
+			Arguments:           f.Invocation.Arguments,
+			ExecutionSuccessful: f.Invocation.Successful,
+		}
+		if !f.Invocation.StartTime.IsZero() {
+			inv.StartTimeUtc = f.Invocation.StartTime.UTC().Format(time.RFC3339)
+		}
+		if !f.Invocation.EndTime.IsZero() {
+			inv.EndTimeUtc = f.Invocation.EndTime.UTC().Format(time.RFC3339)
+		}
+		if f.Invocation.WorkingDir != "" {
+			inv.WorkingDirectory = &SARIFArtifactLocation{URI: toFileURI(f.Invocation.WorkingDir)}
+		}
+		run.Invocations = []SARIFInvocation{inv}
+	}
+
 	return SARIFReport{
 		Version: "2.1.0",
 		Schema:  "https://raw.githubusercontent.com/oasis-tcs/sarif-spec/master/Schemata/sarif-schema-2.1.0.json",
-		Runs: []SARIFRun{
-			{
-				Tool: SARIFTool{
-					Driver: SARIFDriver{
-						Name:           "crack",
-						InformationUri: "https://github.com/mkacmar/crack",
-						Rules:          rules,
-					},
-				},
-				Results:   sarifResults,
-				Artifacts: artifactList,
-			},
-		},
+		Runs:    []SARIFRun{run},
 	}
 }
 
 func toFileURI(path string) string {
 	if strings.HasPrefix(path, "/") {
-		return "file://" + url.PathEscape(path)
+		return "file://" + path
 	}
 	return path
 }
