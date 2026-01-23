@@ -1,4 +1,3 @@
-
 package output
 
 import (
@@ -10,6 +9,7 @@ import (
 
 	"github.com/mkacmar/crack/internal/result"
 	"github.com/mkacmar/crack/internal/rule"
+	"github.com/mkacmar/crack/internal/version"
 )
 
 type SARIFReport struct {
@@ -224,6 +224,7 @@ func (f *SARIFFormatter) convertToSARIF(report *result.ScanResults) SARIFReport 
 		Tool: SARIFTool{
 			Driver: SARIFDriver{
 				Name:           "crack",
+				Version:        version.Version,
 				InformationUri: "https://github.com/mkacmar/crack",
 				Rules:          rules,
 			},
