@@ -6,7 +6,6 @@ import (
 	"os/exec"
 	"path/filepath"
 	"runtime"
-	"strings"
 	"testing"
 
 	"github.com/mkacmar/crack/internal/output"
@@ -70,22 +69,18 @@ func getRuleState(t *testing.T, sarifPath, rule string) string {
 		t.Fatal("no runs in SARIF output")
 	}
 
-	for _, r := range report.Runs[0].Results {
-		if r.RuleID == rule {
-			return levelToState(r.Level)
+	run := report.Runs[0]
+
+	ruleIDByIndex := make(map[int]string)
+	for i, r := range run.Tool.Driver.Rules {
+		ruleIDByIndex[i] = r.ID
+	}
+
+	for _, r := range run.Results {
+		if ruleIDByIndex[r.RuleIndex] == rule {
+			return r.Kind
 		}
 	}
 
 	return "skip"
-}
-
-func levelToState(level string) string {
-	switch strings.ToLower(level) {
-	case "warning", "error":
-		return "fail"
-	case "note", "none":
-		return "pass"
-	default:
-		return level
-	}
 }

@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
+	"slices"
 	"strings"
 	"time"
 
@@ -63,7 +64,7 @@ type SARIFMessage struct {
 }
 
 type SARIFResult struct {
-	RuleID    string          `json:"ruleId"`
+	RuleIndex int             `json:"ruleIndex"`
 	Kind      string          `json:"kind,omitempty"`
 	Level     string          `json:"level,omitempty"`
 	Message   SARIFMessage    `json:"message"`
@@ -126,9 +127,19 @@ func (f *SARIFFormatter) convertToSARIF(report *result.ScanResults) SARIFReport 
 		}
 	}
 
+	// Deterministic output
+	ruleIDs := make([]string, 0, len(ruleMap))
+	for id := range ruleMap {
+		ruleIDs = append(ruleIDs, id)
+	}
+	slices.Sort(ruleIDs)
+
 	rules := make([]SARIFRule, 0, len(ruleMap))
-	for _, check := range ruleMap {
-		rule := SARIFRule{
+	ruleIndex := make(map[string]int)
+	for i, id := range ruleIDs {
+		check := ruleMap[id]
+		ruleIndex[id] = i
+		r := SARIFRule{
 			ID:   check.RuleID,
 			Name: check.Name,
 			ShortDescription: SARIFMessage{
@@ -139,9 +150,9 @@ func (f *SARIFFormatter) convertToSARIF(report *result.ScanResults) SARIFReport 
 			},
 		}
 		if check.Message != "" && check.Message != check.Name {
-			rule.FullDescription = SARIFMessage{Text: check.Message}
+			r.FullDescription = SARIFMessage{Text: check.Message}
 		}
-		rules = append(rules, rule)
+		rules = append(rules, r)
 	}
 
 	sarifResults := make([]SARIFResult, 0)
@@ -153,9 +164,9 @@ func (f *SARIFFormatter) convertToSARIF(report *result.ScanResults) SARIFReport 
 
 		if res.Error != nil {
 			sarifResults = append(sarifResults, SARIFResult{
-				RuleID: "scan-error",
-				Kind:   "fail",
-				Level:  "error",
+				RuleIndex: -1,
+				Kind:      "fail",
+				Level:     "error",
 				Message: SARIFMessage{
 					Text: fmt.Sprintf("Scan error: %v", res.Error),
 				},
@@ -188,10 +199,10 @@ func (f *SARIFFormatter) convertToSARIF(report *result.ScanResults) SARIFReport 
 			}
 
 			sarifResult := SARIFResult{
-				RuleID:  check.RuleID,
-				Kind:    kind,
-				Level:   level,
-				Message: SARIFMessage{Text: check.Message},
+				RuleIndex: ruleIndex[check.RuleID],
+				Kind:      kind,
+				Level:     level,
+				Message:   SARIFMessage{Text: check.Message},
 				Locations: []SARIFLocation{
 					{PhysicalLocation: SARIFPhysicalLocation{
 						ArtifactLocation: SARIFArtifactLocation{URI: fileURI},

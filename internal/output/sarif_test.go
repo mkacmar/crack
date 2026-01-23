@@ -64,6 +64,9 @@ func TestSARIFResultKind(t *testing.T) {
 			if len(results) != 1 {
 				t.Fatalf("expected 1 result, got %d", len(results))
 			}
+			if results[0].RuleIndex != 0 {
+				t.Errorf("RuleIndex = %d, want 0", results[0].RuleIndex)
+			}
 			if results[0].Kind != tt.wantKind {
 				t.Errorf("Kind = %q, want %q", results[0].Kind, tt.wantKind)
 			}
