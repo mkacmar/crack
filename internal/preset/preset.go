@@ -7,6 +7,16 @@ import (
 	"github.com/mkacmar/crack/internal/rules/elf"
 )
 
+const (
+	NameMinimal     = "minimal"
+	NameRecommended = "recommended"
+	NameHardened    = "hardened"
+	NameBuildTest   = "build-test"
+	NameKernel      = "kernel"
+
+	Default = NameRecommended
+)
+
 type Preset struct {
 	Rules []string
 }
@@ -90,11 +100,11 @@ var Kernel = Preset{
 }
 
 var All = map[string]Preset{
-	"minimal":     Minimal,
-	"recommended": Recommended,
-	"hardened":    Hardened,
-	"build-test":  BuildTest,
-	"kernel":      Kernel,
+	NameMinimal:     Minimal,
+	NameRecommended: Recommended,
+	NameHardened:    Hardened,
+	NameBuildTest:   BuildTest,
+	NameKernel:      Kernel,
 }
 
 func Get(name string) (Preset, bool) {
