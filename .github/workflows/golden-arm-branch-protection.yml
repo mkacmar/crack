@@ -1,0 +1,23 @@
+name: "Golden: ARM Branch Protection"
+
+on:
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-24.04-arm
+    container:
+      image: fedora:latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install build tools
+        run: dnf install -y gcc clang binutils
+
+      - name: Build binaries
+        run: sh test/e2e/arm-branch-protection/build.sh
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: arm-branch-protection-binaries
+          path: binaries/
