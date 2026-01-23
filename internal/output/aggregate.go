@@ -28,8 +28,8 @@ func NewAggregatedReport() *AggregatedReport {
 func AggregateFindings(report *result.ScanResults) *AggregatedReport {
 	agg := NewAggregatedReport()
 
-	for _, result := range report.Results {
-		processFileScanResult(agg, result)
+	for _, res := range report.Results {
+		processFileScanResult(agg, res)
 	}
 
 	slices.Sort(agg.PassedAll)
