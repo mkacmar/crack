@@ -1,0 +1,50 @@
+name: "Golden: ARM BTI"
+
+on:
+  workflow_dispatch:
+
+jobs:
+  build-ubuntu:
+    runs-on: ubuntu-24.04-arm
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Build binaries
+        run: sh test/e2e/arm-bti/build.sh glibc
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: ubuntu-binaries
+          path: binaries/
+
+  build-alpine:
+    runs-on: ubuntu-24.04-arm
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Build binaries in Alpine container
+        run: |
+          docker run --rm -v "$PWD:/workspace" -w /workspace alpine:latest sh -c '
+            apk add --no-cache gcc clang musl-dev binutils
+            sh test/e2e/arm-bti/build.sh musl
+          '
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: alpine-binaries
+          path: binaries/
+
+  merge:
+    runs-on: ubuntu-latest
+    needs: [build-ubuntu, build-alpine]
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          path: all-binaries
+          pattern: "*-binaries"
+          merge-multiple: true
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: arm-bti-binaries
+          path: all-binaries/
