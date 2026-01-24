@@ -17,5 +17,6 @@ clang -Wl,-z,separate-code -o binaries/${ARCH}-clang-separate-code $SRC
 clang -Wl,-z,separate-code -o binaries/${ARCH}-clang-separate-code-stripped $SRC
 strip binaries/${ARCH}-clang-separate-code-stripped
 
-ls -la binaries/
+gcc -c -o binaries/${ARCH}-gcc-object-file $SRC
 
+ls -la binaries/

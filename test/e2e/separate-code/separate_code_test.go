@@ -13,6 +13,7 @@ func TestSeparateCodeRule(t *testing.T) {
 		{Binary: "x86_64-gcc-separate-code-stripped", Expect: e2e.Pass},
 		{Binary: "x86_64-gcc-separate-code-static", Expect: e2e.Pass},
 		{Binary: "x86_64-gcc-separate-code-shared", Expect: e2e.Pass},
+		{Binary: "x86_64-gcc-object-file", Expect: e2e.Skip},
 
 		// x86_64 Clang
 		{Binary: "x86_64-clang-separate-code", Expect: e2e.Pass},
