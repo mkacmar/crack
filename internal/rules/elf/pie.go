@@ -29,14 +29,14 @@ func (r PIERule) Applicability() rule.Applicability {
 }
 
 func (r PIERule) Execute(f *elf.File, info *binary.Parsed) rule.ExecuteResult {
-	if f.Type == elf.ET_EXEC {
+	switch f.Type {
+	case elf.ET_EXEC:
 		return rule.ExecuteResult{
 			Status:  rule.StatusFailed,
 			Message: "Binary is NOT compiled as PIE (ASLR not possible)",
 		}
-	}
-
-	if f.Type != elf.ET_DYN {
+	case elf.ET_DYN:
+	default:
 		return rule.ExecuteResult{
 			Status:  rule.StatusSkipped,
 			Message: "Not an executable or shared library",

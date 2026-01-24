@@ -15,11 +15,14 @@ func TestPIERule(t *testing.T) {
 		{Binary: "x86_64-gcc-shared", Expect: e2e.Skip},
 		{Binary: "x86_64-gcc-pie-stripped", Expect: e2e.Pass},
 		{Binary: "x86_64-gcc-pie-strip-debug", Expect: e2e.Pass},
+		{Binary: "x86_64-gcc-object-file", Expect: e2e.Skip},
 
 		// x86_64 Clang
 		{Binary: "x86_64-clang-pie-explicit", Expect: e2e.Pass},
 		{Binary: "x86_64-clang-no-pie", Expect: e2e.Fail},
 		{Binary: "x86_64-clang-pie-stripped", Expect: e2e.Pass},
+
+		{Binary: "x86_64-gcc-old-pie", Expect: e2e.Pass},
 
 		// aarch64 GCC
 		{Binary: "aarch64-gcc-pie-explicit", Expect: e2e.Pass},

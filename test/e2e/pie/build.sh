@@ -22,4 +22,6 @@ clang -fno-pie -no-pie -o binaries/${ARCH}-clang-no-pie $SRC
 clang -fPIE -pie -o binaries/${ARCH}-clang-pie-stripped $SRC
 strip binaries/${ARCH}-clang-pie-stripped
 
+gcc -c -o binaries/${ARCH}-gcc-object-file $SRC
+
 ls -la binaries/
