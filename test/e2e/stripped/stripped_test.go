@@ -14,6 +14,7 @@ func TestStrippedRule(t *testing.T) {
 		{Binary: "x86_64-gcc-strip-debug", Expect: e2e.Fail},
 		{Binary: "x86_64-gcc-strip-symbols", Expect: e2e.Pass},
 		{Binary: "x86_64-gcc-link-stripped", Expect: e2e.Pass},
+		{Binary: "x86_64-gcc-partial-stripped", Expect: e2e.Fail},
 
 		// x86_64 Clang
 		{Binary: "x86_64-clang-not-stripped", Expect: e2e.Fail},
