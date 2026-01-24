@@ -8,17 +8,17 @@ import (
 
 func TestARMBTIRule(t *testing.T) {
 	e2e.RunRuleTests(t, "arm-bti", []e2e.TestCase{
-		{Binary: "gcc-bti-enabled", Expect: "pass"},
-		{Binary: "gcc-bti-disabled", Expect: "fail"},
-		{Binary: "gcc-bti-stripped", Expect: "pass"},
-		{Binary: "clang-bti-enabled", Expect: "pass"},
-		{Binary: "clang-bti-disabled", Expect: "fail"},
-		{Binary: "clang-bti-stripped", Expect: "pass"},
-		{Binary: "musl-gcc-bti-enabled", Expect: "pass"},
-		{Binary: "musl-gcc-bti-disabled", Expect: "fail"},
-		{Binary: "musl-gcc-bti-stripped", Expect: "pass"},
-		{Binary: "musl-clang-bti-enabled", Expect: "pass"},
-		{Binary: "musl-clang-bti-disabled", Expect: "fail"},
-		{Binary: "musl-clang-bti-stripped", Expect: "pass"},
+		{Binary: "gcc-bti-enabled", Expect: e2e.Pass},
+		{Binary: "gcc-bti-disabled", Expect: e2e.Fail},
+		{Binary: "gcc-bti-stripped", Expect: e2e.Pass},
+		{Binary: "clang-bti-enabled", Expect: e2e.Pass},
+		{Binary: "clang-bti-disabled", Expect: e2e.Fail},
+		{Binary: "clang-bti-stripped", Expect: e2e.Pass},
+		{Binary: "musl-gcc-bti-enabled", Expect: e2e.Pass},
+		{Binary: "musl-gcc-bti-disabled", Expect: e2e.Fail},
+		{Binary: "musl-gcc-bti-stripped", Expect: e2e.Pass},
+		{Binary: "musl-clang-bti-enabled", Expect: e2e.Pass},
+		{Binary: "musl-clang-bti-disabled", Expect: e2e.Fail},
+		{Binary: "musl-clang-bti-stripped", Expect: e2e.Pass},
 	})
 }

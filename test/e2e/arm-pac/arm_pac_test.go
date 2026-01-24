@@ -8,11 +8,11 @@ import (
 
 func TestARMPACRule(t *testing.T) {
 	e2e.RunRuleTests(t, "arm-pac", []e2e.TestCase{
-		{Binary: "gcc-pac-enabled", Expect: "pass"},
-		{Binary: "gcc-pac-disabled", Expect: "fail"},
-		{Binary: "gcc-pac-stripped", Expect: "pass"},
-		{Binary: "clang-pac-enabled", Expect: "pass"},
-		{Binary: "clang-pac-disabled", Expect: "fail"},
-		{Binary: "clang-pac-stripped", Expect: "pass"},
+		{Binary: "gcc-pac-enabled", Expect: e2e.Pass},
+		{Binary: "gcc-pac-disabled", Expect: e2e.Fail},
+		{Binary: "gcc-pac-stripped", Expect: e2e.Pass},
+		{Binary: "clang-pac-enabled", Expect: e2e.Pass},
+		{Binary: "clang-pac-disabled", Expect: e2e.Fail},
+		{Binary: "clang-pac-stripped", Expect: e2e.Pass},
 	})
 }

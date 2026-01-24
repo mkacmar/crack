@@ -234,8 +234,9 @@ func (a *App) processFullReport(resultsChan <-chan result.FileScanResult, aggreg
 		invocation.Successful = totalFailed == 0
 
 		sarifFormatter, _ := output.GetFormatter("sarif", output.FormatterOptions{
-			ShowPassed: true,
-			Invocation: invocation,
+			ShowPassed:  showPassed,
+			ShowSkipped: showSkipped,
+			Invocation:  invocation,
 		})
 		f, err := os.Create(sarifOutput)
 		if err != nil {

@@ -11,9 +11,17 @@ import (
 	"github.com/mkacmar/crack/internal/output"
 )
 
+const (
+	Pass Expectation = "pass"
+	Fail Expectation = "fail"
+	Skip Expectation = "notApplicable"
+)
+
+type Expectation string
+
 type TestCase struct {
 	Binary string
-	Expect string // "pass", "fail", "skip"
+	Expect Expectation
 }
 
 func RunRuleTests(t *testing.T, rule string, cases []TestCase) {
@@ -41,7 +49,15 @@ func RunRuleTests(t *testing.T, rule string, cases []TestCase) {
 			}
 
 			sarifPath := filepath.Join(t.TempDir(), "result.sarif")
-			cmd := exec.Command(crackBin, "analyze", "--rules="+rule, "--sarif="+sarifPath, binaryPath)
+			cmd := exec.Command(
+				crackBin,
+				"analyze",
+				"--rules="+rule,
+				"--show-passed",
+				"--show-skipped",
+				"--sarif="+sarifPath,
+				binaryPath,
+			)
 			cmd.Run()
 
 			state := getRuleState(t, sarifPath, rule)
@@ -52,7 +68,7 @@ func RunRuleTests(t *testing.T, rule string, cases []TestCase) {
 	}
 }
 
-func getRuleState(t *testing.T, sarifPath, rule string) string {
+func getRuleState(t *testing.T, sarifPath, rule string) Expectation {
 	t.Helper()
 
 	data, err := os.ReadFile(sarifPath)
@@ -74,9 +90,10 @@ func getRuleState(t *testing.T, sarifPath, rule string) string {
 
 	for _, r := range run.Results {
 		if r.RuleIndex >= 0 && r.RuleIndex < len(rules) && rules[r.RuleIndex].ID == rule {
-			return r.Kind
+			return Expectation(r.Kind)
 		}
 	}
 
-	return "skip"
+	t.Fatalf("no result found for rule %q in SARIF output", rule)
+	return ""
 }
