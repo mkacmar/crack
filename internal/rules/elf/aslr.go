@@ -26,17 +26,18 @@ func (r ASLRRule) Applicability() rule.Applicability {
 }
 
 func (r ASLRRule) Execute(f *elf.File, info *binary.Parsed) rule.ExecuteResult {
-	if f.Type == elf.ET_EXEC {
+	switch f.Type {
+	case elf.ET_EXEC:
 		return rule.ExecuteResult{
 			Status:  rule.StatusFailed,
 			Message: "Binary is NOT ASLR compatible (not compiled as PIE)",
 		}
-	}
-
-	if f.Type != elf.ET_DYN {
+	case elf.ET_DYN:
+		// Continue with analysis below
+	default:
 		return rule.ExecuteResult{
 			Status:  rule.StatusSkipped,
-			Message: "Unknown binary type",
+			Message: "Not an executable or shared library",
 		}
 	}
 

@@ -17,6 +17,7 @@ func TestASLRRule(t *testing.T) {
 		{Binary: "x86_64-gcc-aslr-stripped", Expect: "pass"},
 		{Binary: "x86_64-gcc-static-no-pie", Expect: "fail"},
 		{Binary: "x86_64-gcc-textrel-patched", Expect: "fail"},
+		{Binary: "x86_64-gcc-object-file", Expect: "skip"},
 
 		// x86_64 Clang
 		{Binary: "x86_64-clang-aslr-full", Expect: "pass"},

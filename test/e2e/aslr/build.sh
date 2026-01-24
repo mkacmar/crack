@@ -25,6 +25,8 @@ clang -static -fno-pie -no-pie -o binaries/${ARCH}-clang-static-no-pie $SRC
 gcc -fPIE -pie -Wl,-z,noexecstack -o binaries/${ARCH}-gcc-textrel-patched $SRC
 go run test/e2e/aslr/add-textrel.go binaries/${ARCH}-gcc-textrel-patched
 
+gcc -c -o binaries/${ARCH}-gcc-object-file $SRC
+
 ls -la binaries/
 
 
