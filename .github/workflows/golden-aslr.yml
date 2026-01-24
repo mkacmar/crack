@@ -38,7 +38,7 @@ jobs:
           docker run --rm --platform linux/arm/v7 \
             -v ${{ github.workspace }}:/workspace \
             -w /workspace \
-            alpine:latest sh -c 'apk add --no-cache gcc clang musl-dev binutils && sh test/e2e/aslr/build.sh armv7'
+            alpine:latest sh -c 'apk add --no-cache gcc clang musl-dev binutils go && sh test/e2e/aslr/build.sh armv7'
       - uses: actions/upload-artifact@v4
         with:
           name: binaries-armv7

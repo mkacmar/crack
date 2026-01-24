@@ -21,6 +21,10 @@ clang -fno-pie -no-pie -o binaries/${ARCH}-clang-no-pie $SRC
 clang -fPIE -pie -Wl,-z,execstack -o binaries/${ARCH}-clang-execstack $SRC
 clang -static -fno-pie -no-pie -o binaries/${ARCH}-clang-static-no-pie $SRC
 
+# Text relocations binary (patch DT_DEBUG -> DT_TEXTREL)
+gcc -fPIE -pie -Wl,-z,noexecstack -o binaries/${ARCH}-gcc-textrel-patched $SRC
+go run test/e2e/aslr/add-textrel.go binaries/${ARCH}-gcc-textrel-patched
+
 ls -la binaries/
 
 

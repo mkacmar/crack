@@ -16,6 +16,7 @@ func TestASLRRule(t *testing.T) {
 		{Binary: "x86_64-gcc-static-pie", Expect: "pass"},
 		{Binary: "x86_64-gcc-aslr-stripped", Expect: "pass"},
 		{Binary: "x86_64-gcc-static-no-pie", Expect: "fail"},
+		{Binary: "x86_64-gcc-textrel-patched", Expect: "fail"},
 
 		// x86_64 Clang
 		{Binary: "x86_64-clang-aslr-full", Expect: "pass"},
@@ -23,7 +24,7 @@ func TestASLRRule(t *testing.T) {
 		{Binary: "x86_64-clang-execstack", Expect: "fail"},
 		{Binary: "x86_64-clang-static-no-pie", Expect: "fail"},
 
-		// x86_64 GCC old toolchain (Debian Jessie, binutils 2.25 - before DF_1_PIE)
+		// x86_64 GCC old toolchain
 		{Binary: "x86_64-gcc-old-pie", Expect: "pass"},
 
 		// aarch64 GCC
@@ -34,6 +35,7 @@ func TestASLRRule(t *testing.T) {
 		{Binary: "aarch64-gcc-static-pie", Expect: "pass"},
 		{Binary: "aarch64-gcc-aslr-stripped", Expect: "pass"},
 		{Binary: "aarch64-gcc-static-no-pie", Expect: "fail"},
+		{Binary: "aarch64-gcc-textrel-patched", Expect: "fail"},
 
 		// aarch64 Clang
 		{Binary: "aarch64-clang-aslr-full", Expect: "pass"},
@@ -49,6 +51,7 @@ func TestASLRRule(t *testing.T) {
 		{Binary: "armv7-gcc-static-pie", Expect: "pass"},
 		{Binary: "armv7-gcc-aslr-stripped", Expect: "pass"},
 		{Binary: "armv7-gcc-static-no-pie", Expect: "fail"},
+		{Binary: "armv7-gcc-textrel-patched", Expect: "fail"},
 
 		// armv7 Clang
 		{Binary: "armv7-clang-aslr-full", Expect: "pass"},
