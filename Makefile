@@ -1,8 +1,9 @@
-.PHONY: build build-release test test-unit test-e2e clean lint fmt install-tools
+.PHONY: build build-release test test-unit test-e2e test-e2e-coverage clean lint fmt install-tools
 
 BINARY = crack
 ENTRYPOINT = ./cmd/crack
 DIST_DIR = dist
+COVERAGE_DIR = coverage
 
 VERSION ?= $(shell git describe --tags --always --dirty 2>/dev/null || echo "dev")
 COMMIT ?= $(shell git rev-parse --short HEAD 2>/dev/null || echo "unknown")
@@ -35,9 +36,18 @@ test-unit:
 test-e2e: build
 	go test -v ./test/e2e/...
 
+test-e2e-coverage:
+	@mkdir -p $(COVERAGE_DIR)/raw
+	go build -cover -ldflags "$(LDFLAGS)" -o $(BINARY) $(ENTRYPOINT)
+	GOCOVERDIR=$(shell pwd)/$(COVERAGE_DIR)/raw go test -v ./test/e2e/...
+	go tool covdata textfmt -i=$(COVERAGE_DIR)/raw -o=$(COVERAGE_DIR)/e2e.out
+	go tool cover -html=$(COVERAGE_DIR)/e2e.out -o $(COVERAGE_DIR)/e2e.html
+	xdg-open $(COVERAGE_DIR)/e2e.html
+
 clean:
 	rm -f $(BINARY)
 	rm -rf $(DIST_DIR)
+	rm -rf $(COVERAGE_DIR)
 
 lint:
 	go vet ./...

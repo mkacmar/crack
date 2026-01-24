@@ -1,5 +1,6 @@
 /crack
 dist/
+coverage/
 *.exe
 *.exe~
 *.dll
