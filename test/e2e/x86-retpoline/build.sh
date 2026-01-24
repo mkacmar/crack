@@ -21,5 +21,6 @@ strip binaries/gcc-retpoline-stripped
 clang -mretpoline -fcf-protection=none -o binaries/clang-retpoline $SRC
 clang -fcf-protection=none -o binaries/clang-no-retpoline $SRC
 
-ls -la binaries/
+gcc -fcf-protection=branch -o binaries/gcc-cet-ibt $SRC
 
+ls -la binaries/
