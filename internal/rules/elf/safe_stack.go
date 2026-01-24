@@ -27,20 +27,10 @@ func (r SafeStackRule) Applicability() rule.Applicability {
 }
 
 func (r SafeStackRule) Execute(f *elf.File, info *binary.Parsed) rule.ExecuteResult {
-
 	symbols, _ := f.Symbols()
 	dynsyms, _ := f.DynamicSymbols()
 
-	for _, sym := range symbols {
-		if strings.HasPrefix(sym.Name, "__safestack_") {
-			return rule.ExecuteResult{
-				Status:  rule.StatusPassed,
-				Message: "SafeStack is enabled",
-			}
-		}
-	}
-
-	for _, sym := range dynsyms {
+	for _, sym := range append(symbols, dynsyms...) {
 		if strings.HasPrefix(sym.Name, "__safestack_") {
 			return rule.ExecuteResult{
 				Status:  rule.StatusPassed,
