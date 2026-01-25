@@ -1,7 +1,6 @@
 package elf
 
 import (
-	"debug/elf"
 	"strings"
 
 	"github.com/mkacmar/crack/internal/binary"
@@ -9,12 +8,14 @@ import (
 	"github.com/mkacmar/crack/internal/toolchain"
 )
 
+const StackCanaryRuleID = "stack-canary"
+
 // StackCanaryRule checks for stack canary protection
 // GCC: https://gcc.gnu.org/onlinedocs/gcc/Instrumentation-Options.html#index-fstack-protector
 // Clang: https://clang.llvm.org/docs/ClangCommandLineReference.html#cmdoption-clang-fstack-protector-strong
 type StackCanaryRule struct{}
 
-func (r StackCanaryRule) ID() string   { return "stack-canary" }
+func (r StackCanaryRule) ID() string   { return StackCanaryRuleID }
 func (r StackCanaryRule) Name() string { return "Stack Canary Protection" }
 
 func (r StackCanaryRule) Applicability() rule.Applicability {
@@ -27,16 +28,13 @@ func (r StackCanaryRule) Applicability() rule.Applicability {
 	}
 }
 
-func (r StackCanaryRule) Execute(f *elf.File, info *binary.Parsed) rule.ExecuteResult {
-	symbols, _ := f.Symbols()
-	dynsyms, _ := f.DynamicSymbols()
-
+func (r StackCanaryRule) Execute(bin *binary.ELFBinary) rule.ExecuteResult {
 	// Check both static and dynamic symbol tables for stack protection symbols.
 	// Different compilers/platforms use different symbols:
 	// - __stack_chk_fail: GCC/Clang on Linux
 	// - __stack_smash_handler: older GCC
 	// - __intel_security_cookie: Intel compiler
-	for _, sym := range append(symbols, dynsyms...) {
+	for _, sym := range append(bin.Symbols, bin.DynSymbols...) {
 		if strings.Contains(sym.Name, "__stack_chk_fail") ||
 			strings.Contains(sym.Name, "__stack_smash_handler") ||
 			strings.Contains(sym.Name, "__intel_security_cookie") {

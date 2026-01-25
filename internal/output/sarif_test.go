@@ -6,7 +6,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/mkacmar/crack/internal/result"
+	"github.com/mkacmar/crack/internal/analyzer"
 	"github.com/mkacmar/crack/internal/rule"
 	"github.com/mkacmar/crack/internal/toolchain"
 )
@@ -30,8 +30,8 @@ func TestSARIFResultKind(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			report := &result.ScanResults{
-				Results: []result.FileScanResult{{
+			report := &analyzer.Results{
+				Results: []analyzer.Result{{
 					Path:      "/usr/bin/test",
 					Toolchain: toolchain.Toolchain{},
 					Results: []rule.ProcessedResult{{
@@ -81,8 +81,8 @@ func TestSARIFInvocation(t *testing.T) {
 	startTime := time.Date(2026, 1, 23, 10, 0, 0, 0, time.UTC)
 	endTime := time.Date(2026, 1, 23, 10, 5, 0, 0, time.UTC)
 
-	report := &result.ScanResults{
-		Results: []result.FileScanResult{{
+	report := &analyzer.Results{
+		Results: []analyzer.Result{{
 			Path:      "/usr/bin/test",
 			Toolchain: toolchain.Toolchain{},
 			Results: []rule.ProcessedResult{{

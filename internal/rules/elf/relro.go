@@ -8,11 +8,13 @@ import (
 	"github.com/mkacmar/crack/internal/toolchain"
 )
 
+const RELRORuleID = "relro"
+
 // RELRORule checks for partial RELRO
 // ld: https://sourceware.org/binutils/docs/ld/Options.html
 type RELRORule struct{}
 
-func (r RELRORule) ID() string   { return "relro" }
+func (r RELRORule) ID() string   { return RELRORuleID }
 func (r RELRORule) Name() string { return "Partial RELRO" }
 
 func (r RELRORule) Applicability() rule.Applicability {
@@ -25,9 +27,9 @@ func (r RELRORule) Applicability() rule.Applicability {
 	}
 }
 
-func (r RELRORule) Execute(f *elf.File, info *binary.Parsed) rule.ExecuteResult {
+func (r RELRORule) Execute(bin *binary.ELFBinary) rule.ExecuteResult {
 	hasRELRO := false
-	for _, prog := range f.Progs {
+	for _, prog := range bin.File.Progs {
 		if prog.Type == elf.PT_GNU_RELRO {
 			hasRELRO = true
 			break

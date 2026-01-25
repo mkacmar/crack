@@ -4,9 +4,7 @@ import (
 	"log/slog"
 
 	"github.com/mkacmar/crack/internal/binary"
-	"github.com/mkacmar/crack/internal/preset"
 	"github.com/mkacmar/crack/internal/rule"
-	"github.com/mkacmar/crack/internal/rules/elf"
 )
 
 type Engine struct {
@@ -17,25 +15,26 @@ type Engine struct {
 func NewEngine(logger *slog.Logger) *Engine {
 	return &Engine{
 		rules:  make([]rule.Rule, 0),
-		logger: logger.With(slog.String("component", "rules")),
+		logger: logger.With(slog.String("component", "rules-engine")),
 	}
 }
 
-func (e *Engine) LoadPreset(p preset.Preset) {
+func (e *Engine) LoadRules(ruleIDs []string) {
 	e.rules = make([]rule.Rule, 0)
 
-	for _, id := range p.Rules {
-		if r, ok := elf.AllRules[id]; ok {
-			e.rules = append(e.rules, r)
-		} else {
-			e.logger.Warn("unknown rule ID in preset, skipping", slog.String("rule_id", id))
+	for _, id := range ruleIDs {
+		r := rule.Get(id)
+		if r == nil {
+			e.logger.Warn("unknown rule ID, skipping", slog.String("rule_id", id))
+			continue
 		}
+		e.rules = append(e.rules, r)
 	}
 }
 
-func (e *Engine) ExecuteRules(info *binary.Parsed) []rule.ProcessedResult {
+func (e *Engine) ExecuteRules(bin *binary.ELFBinary) []rule.ProcessedResult {
 	if len(e.rules) == 0 {
-		e.logger.Warn("no rules loaded, call LoadPreset() first")
+		e.logger.Warn("no rules loaded, call LoadRules() first")
 		return nil
 	}
 
@@ -43,17 +42,18 @@ func (e *Engine) ExecuteRules(info *binary.Parsed) []rule.ProcessedResult {
 
 	for _, r := range e.rules {
 		applicability := r.Applicability()
-		if !info.Architecture.Matches(applicability.Platform.Architecture) {
+		if !bin.Architecture.Matches(applicability.Platform.Architecture) {
 			continue
 		}
 
 		var result rule.ExecuteResult
-		switch elfRule := r.(type) {
+
+		switch typedRule := r.(type) {
 		case rule.ELFRule:
-			if info.Format != binary.FormatELF {
+			if bin.Format != binary.FormatELF {
 				continue
 			}
-			result = elfRule.Execute(info.ELF, info)
+			result = typedRule.Execute(bin)
 		default:
 			continue
 		}
@@ -65,7 +65,7 @@ func (e *Engine) ExecuteRules(info *binary.Parsed) []rule.ProcessedResult {
 		}
 
 		if result.Status == rule.StatusFailed {
-			evaluated.Suggestion = buildSuggestion(info.Build.Toolchain, applicability)
+			evaluated.Suggestion = buildSuggestion(bin.Build.Toolchain, applicability)
 		}
 
 		results = append(results, evaluated)

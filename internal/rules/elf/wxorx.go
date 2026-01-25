@@ -9,11 +9,13 @@ import (
 	"github.com/mkacmar/crack/internal/toolchain"
 )
 
+const WXorXRuleID = "wxorx"
+
 // WXorXRule checks for W^X (Write XOR Execute) policy
 // GNU ld: https://sourceware.org/binutils/docs/ld/Options.html (-z noexecstack)
 type WXorXRule struct{}
 
-func (r WXorXRule) ID() string   { return "wxorx" }
+func (r WXorXRule) ID() string   { return WXorXRuleID }
 func (r WXorXRule) Name() string { return "W^X (Write XOR Execute)" }
 
 func (r WXorXRule) Applicability() rule.Applicability {
@@ -26,8 +28,8 @@ func (r WXorXRule) Applicability() rule.Applicability {
 	}
 }
 
-func (r WXorXRule) Execute(f *elf.File, info *binary.Parsed) rule.ExecuteResult {
-	for _, prog := range f.Progs {
+func (r WXorXRule) Execute(bin *binary.ELFBinary) rule.ExecuteResult {
+	for _, prog := range bin.File.Progs {
 		// Check PT_LOAD segments for W+X
 		if prog.Type == elf.PT_LOAD {
 			if (prog.Flags&elf.PF_W) != 0 && (prog.Flags&elf.PF_X) != 0 {

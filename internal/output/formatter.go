@@ -4,12 +4,12 @@ import (
 	"fmt"
 	"io"
 
-	"github.com/mkacmar/crack/internal/result"
+	"github.com/mkacmar/crack/internal/analyzer"
 	"github.com/mkacmar/crack/internal/rule"
 )
 
 type Formatter interface {
-	Format(report *result.ScanResults, w io.Writer) error
+	Format(report *analyzer.Results, w io.Writer) error
 }
 
 type TextFormatter struct {
@@ -17,7 +17,7 @@ type TextFormatter struct {
 	ShowSkipped bool
 }
 
-func (f *TextFormatter) Format(report *result.ScanResults, w io.Writer) error {
+func (f *TextFormatter) Format(report *analyzer.Results, w io.Writer) error {
 	for _, result := range report.Results {
 		if result.Error != nil {
 			fmt.Fprintf(w, "ERROR = %s: %v\n", result.Path, result.Error)

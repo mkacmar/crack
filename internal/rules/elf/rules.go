@@ -33,14 +33,8 @@ var allRules = []rule.ELFRule{
 	ARMMTERule{},
 }
 
-var AllRules = func() map[string]rule.ELFRule {
-	m := make(map[string]rule.ELFRule, len(allRules))
+func RegisterRules() {
 	for _, r := range allRules {
-		m[r.ID()] = r
+		rule.Register(r)
 	}
-	return m
-}()
-
-func GetRuleByID(id string) rule.ELFRule {
-	return AllRules[id]
 }

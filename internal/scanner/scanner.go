@@ -4,7 +4,6 @@ import (
 	"context"
 	"crypto/sha256"
 	"encoding/hex"
-	"errors"
 	"fmt"
 	"io"
 	"io/fs"
@@ -14,40 +13,29 @@ import (
 
 	"golang.org/x/sync/errgroup"
 
-	"github.com/mkacmar/crack/internal/binary"
-	"github.com/mkacmar/crack/internal/debuginfo"
-	elfparser "github.com/mkacmar/crack/internal/parser/elf"
-	"github.com/mkacmar/crack/internal/result"
-	"github.com/mkacmar/crack/internal/rules"
+	"github.com/mkacmar/crack/internal/analyzer"
 )
 
 type Scanner struct {
-	ruleEngine       *rules.Engine
-	parsers          []binary.Parser
-	logger           *slog.Logger
-	workers          int
-	debuginfodClient *debuginfo.Client
+	analyzer analyzer.FileAnalyzer
+	logger   *slog.Logger
+	workers  int
 }
 
 type Options struct {
-	Logger           *slog.Logger
-	Workers          int
-	DebuginfodClient *debuginfo.Client
+	Logger  *slog.Logger
+	Workers int
 }
 
-func NewScanner(ruleEngine *rules.Engine, opts Options) *Scanner {
+func NewScanner(fileAnalyzer analyzer.FileAnalyzer, opts Options) *Scanner {
 	return &Scanner{
-		parsers: []binary.Parser{
-			elfparser.NewParser(),
-		},
-		ruleEngine:       ruleEngine,
-		logger:           opts.Logger.With(slog.String("component", "scanner")),
-		workers:          opts.Workers,
-		debuginfodClient: opts.DebuginfodClient,
+		analyzer: fileAnalyzer,
+		logger:   opts.Logger.With(slog.String("component", "scanner")),
+		workers:  opts.Workers,
 	}
 }
 
-func (s *Scanner) ScanPaths(ctx context.Context, paths []string, recursive bool) <-chan result.FileScanResult {
+func (s *Scanner) ScanPaths(ctx context.Context, paths []string, recursive bool) <-chan analyzer.Result {
 	var filesToScan []string
 
 	for _, path := range paths {
@@ -64,8 +52,8 @@ func (s *Scanner) ScanPaths(ctx context.Context, paths []string, recursive bool)
 	return s.scanFilesParallel(ctx, filesToScan)
 }
 
-func (s *Scanner) scanFilesParallel(ctx context.Context, files []string) <-chan result.FileScanResult {
-	results := make(chan result.FileScanResult)
+func (s *Scanner) scanFilesParallel(ctx context.Context, files []string) <-chan analyzer.Result {
+	results := make(chan analyzer.Result)
 
 	if len(files) == 0 {
 		close(results)
@@ -100,68 +88,16 @@ func (s *Scanner) scanFilesParallel(ctx context.Context, files []string) <-chan 
 	return results
 }
 
-func (s *Scanner) scanFile(ctx context.Context, path string) result.FileScanResult {
-	res := result.FileScanResult{
-		Path: path,
-	}
-
+func (s *Scanner) scanFile(ctx context.Context, path string) analyzer.Result {
 	s.logger.Debug("scanning file", slog.String("path", path))
 
-	var info *binary.Parsed
-	var parseErr error
-	for _, p := range s.parsers {
-		info, parseErr = p.Parse(path)
-		if parseErr == nil {
-			break
-		}
-		if errors.Is(parseErr, binary.ErrUnsupportedFormat) {
-			continue
-		}
-		s.logger.Warn("failed to parse binary", slog.String("path", path), slog.Any("error", parseErr))
-		res.Error = parseErr
-		return res
-	}
+	res := s.analyzer.Analyze(ctx, path)
 
-	if info == nil {
-		s.logger.Debug("skipping non-binary file", slog.String("path", path))
-		res.Skipped = true
-		return res
-	}
-
-	if info.ELF != nil {
-		defer info.ELF.Close()
-	}
-
-	res.Format = info.Format
 	hash, err := computeSHA256(path)
 	if err != nil {
 		s.logger.Warn("failed to compute SHA256", slog.String("path", path), slog.Any("error", err))
 	}
 	res.SHA256 = hash
-	s.logger.Debug("parsed binary", slog.String("path", path), slog.String("format", info.Format.String()), slog.String("arch", info.Architecture.String()))
-
-	if s.debuginfodClient != nil && info.Build.BuildID != "" {
-		s.logger.Debug("fetching debug symbols", slog.String("path", path), slog.String("build_id", info.Build.BuildID))
-
-		debugPath, err := s.debuginfodClient.FetchDebugInfo(ctx, info.Build.BuildID)
-		if err != nil {
-			s.logger.Error("failed to fetch debug symbols", slog.String("path", path), slog.Any("error", err))
-		} else {
-			if err := debuginfo.EnhanceWithDebugInfo(info, debugPath, s.logger); err != nil {
-				s.logger.Error("failed to parse debug symbols", slog.String("path", path), slog.Any("error", err))
-			}
-		}
-	}
-
-	res.Toolchain = info.Build.Toolchain
-
-	checkResults := s.ruleEngine.ExecuteRules(info)
-	res.Results = checkResults
-
-	s.logger.Debug("scan complete",
-		slog.String("path", path),
-		slog.Int("passed", res.PassedRules()),
-		slog.Int("failed", res.FailedRules()))
 
 	return res
 }

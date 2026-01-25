@@ -1,12 +1,14 @@
-package result
+package analyzer
 
 import (
+	"context"
+
 	"github.com/mkacmar/crack/internal/binary"
 	"github.com/mkacmar/crack/internal/rule"
 	"github.com/mkacmar/crack/internal/toolchain"
 )
 
-type FileScanResult struct {
+type Result struct {
 	Path      string
 	Format    binary.Format
 	Toolchain toolchain.Toolchain
@@ -16,26 +18,30 @@ type FileScanResult struct {
 	Skipped   bool
 }
 
-func (sr *FileScanResult) PassedRules() int {
+func (r *Result) PassedRules() int {
 	count := 0
-	for _, r := range sr.Results {
-		if r.Status == rule.StatusPassed {
+	for _, res := range r.Results {
+		if res.Status == rule.StatusPassed {
 			count++
 		}
 	}
 	return count
 }
 
-func (sr *FileScanResult) FailedRules() int {
+func (r *Result) FailedRules() int {
 	count := 0
-	for _, r := range sr.Results {
-		if r.Status == rule.StatusFailed {
+	for _, res := range r.Results {
+		if res.Status == rule.StatusFailed {
 			count++
 		}
 	}
 	return count
 }
 
-type ScanResults struct {
-	Results []FileScanResult
+type Results struct {
+	Results []Result
+}
+
+type FileAnalyzer interface {
+	Analyze(ctx context.Context, path string) Result
 }

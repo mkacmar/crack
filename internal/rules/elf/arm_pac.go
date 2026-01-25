@@ -1,12 +1,12 @@
 package elf
 
 import (
-	"debug/elf"
-
 	"github.com/mkacmar/crack/internal/binary"
 	"github.com/mkacmar/crack/internal/rule"
 	"github.com/mkacmar/crack/internal/toolchain"
 )
+
+const ARMPACRuleID = "arm-pac"
 
 // ARMPACRule checks for ARM Pointer Authentication Code
 // ARM: https://developer.arm.com/documentation/ddi0487/latest
@@ -14,7 +14,7 @@ import (
 // Clang: https://clang.llvm.org/docs/ClangCommandLineReference.html#cmdoption-clang-mbranch-protection
 type ARMPACRule struct{}
 
-func (r ARMPACRule) ID() string   { return "arm-pac" }
+func (r ARMPACRule) ID() string   { return ARMPACRuleID }
 func (r ARMPACRule) Name() string { return "ARM Pointer Authentication" }
 
 func (r ARMPACRule) Applicability() rule.Applicability {
@@ -27,8 +27,8 @@ func (r ARMPACRule) Applicability() rule.Applicability {
 	}
 }
 
-func (r ARMPACRule) Execute(f *elf.File, info *binary.Parsed) rule.ExecuteResult {
-	hasPAC := parseGNUProperty(f, GNU_PROPERTY_AARCH64_FEATURE_1_AND, GNU_PROPERTY_AARCH64_FEATURE_1_PAC)
+func (r ARMPACRule) Execute(bin *binary.ELFBinary) rule.ExecuteResult {
+	hasPAC := parseGNUProperty(bin.File, GNU_PROPERTY_AARCH64_FEATURE_1_AND, GNU_PROPERTY_AARCH64_FEATURE_1_PAC)
 
 	if hasPAC {
 		return rule.ExecuteResult{

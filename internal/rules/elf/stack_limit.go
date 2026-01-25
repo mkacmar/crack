@@ -9,11 +9,13 @@ import (
 	"github.com/mkacmar/crack/internal/toolchain"
 )
 
+const StackLimitRuleID = "stack-limit"
+
 // StackLimitRule checks for explicit stack size limit
 // ld: https://sourceware.org/binutils/docs/ld/Options.html#index-z-keyword
 type StackLimitRule struct{}
 
-func (r StackLimitRule) ID() string   { return "stack-limit" }
+func (r StackLimitRule) ID() string   { return StackLimitRuleID }
 func (r StackLimitRule) Name() string { return "Explicit Stack Size Limit" }
 
 func (r StackLimitRule) Applicability() rule.Applicability {
@@ -26,12 +28,12 @@ func (r StackLimitRule) Applicability() rule.Applicability {
 	}
 }
 
-func (r StackLimitRule) Execute(f *elf.File, info *binary.Parsed) rule.ExecuteResult {
+func (r StackLimitRule) Execute(bin *binary.ELFBinary) rule.ExecuteResult {
 	hasExplicitStackLimit := false
 	stackSize := uint64(0)
 	foundGNUStack := false
 
-	for _, prog := range f.Progs {
+	for _, prog := range bin.File.Progs {
 		if prog.Type == elf.PT_GNU_STACK {
 			foundGNUStack = true
 			stackSize = prog.Memsz

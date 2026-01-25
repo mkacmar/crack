@@ -13,11 +13,13 @@ const (
 	DF_1_NOW    = 0x1
 )
 
+const FullRELRORuleID = "full-relro"
+
 // FullRELRORule checks for full RELRO protection
 // ld: https://sourceware.org/binutils/docs/ld/Options.html
 type FullRELRORule struct{}
 
-func (r FullRELRORule) ID() string   { return "full-relro" }
+func (r FullRELRORule) ID() string   { return FullRELRORuleID }
 func (r FullRELRORule) Name() string { return "Full RELRO" }
 
 func (r FullRELRORule) Applicability() rule.Applicability {
@@ -30,9 +32,9 @@ func (r FullRELRORule) Applicability() rule.Applicability {
 	}
 }
 
-func (r FullRELRORule) Execute(f *elf.File, info *binary.Parsed) rule.ExecuteResult {
+func (r FullRELRORule) Execute(bin *binary.ELFBinary) rule.ExecuteResult {
 	hasRELRO := false
-	for _, prog := range f.Progs {
+	for _, prog := range bin.File.Progs {
 		if prog.Type == elf.PT_GNU_RELRO {
 			hasRELRO = true
 			break
@@ -48,9 +50,9 @@ func (r FullRELRORule) Execute(f *elf.File, info *binary.Parsed) rule.ExecuteRes
 
 	// Check for BIND_NOW flag which makes RELRO "full" by disabling lazy binding.
 	// This can be indicated by DT_BIND_NOW, DT_FLAGS with DF_BIND_NOW, or DT_FLAGS_1 with DF_1_NOW.
-	if HasDynTag(f, elf.DT_BIND_NOW) ||
-		HasDynFlag(f, elf.DT_FLAGS, DF_BIND_NOW) ||
-		HasDynFlag(f, elf.DT_FLAGS_1, DF_1_NOW) {
+	if HasDynTag(bin.File, elf.DT_BIND_NOW) ||
+		HasDynFlag(bin.File, elf.DT_FLAGS, DF_BIND_NOW) ||
+		HasDynFlag(bin.File, elf.DT_FLAGS_1, DF_1_NOW) {
 		return rule.ExecuteResult{
 			Status:  rule.StatusPassed,
 			Message: "Full RELRO is enabled (GOT read-only, lazy binding disabled)",

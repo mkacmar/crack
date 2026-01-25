@@ -6,9 +6,8 @@ import (
 	"slices"
 	"strings"
 
-	"github.com/mkacmar/crack/internal/result"
+	"github.com/mkacmar/crack/internal/analyzer"
 	"github.com/mkacmar/crack/internal/rule"
-	"github.com/mkacmar/crack/internal/rules/elf"
 	"github.com/mkacmar/crack/internal/toolchain"
 )
 
@@ -25,18 +24,18 @@ func NewAggregatedReport() *AggregatedReport {
 	}
 }
 
-func AggregateFindings(report *result.ScanResults) *AggregatedReport {
+func AggregateFindings(report *analyzer.Results) *AggregatedReport {
 	agg := NewAggregatedReport()
 
 	for _, res := range report.Results {
-		processFileScanResult(agg, res)
+		processResult(agg, res)
 	}
 
 	slices.Sort(agg.PassedAll)
 	return agg
 }
 
-func processFileScanResult(agg *AggregatedReport, result result.FileScanResult) {
+func processResult(agg *AggregatedReport, result analyzer.Result) {
 	if result.Error != nil {
 		return
 	}
@@ -62,7 +61,7 @@ func processFileScanResult(agg *AggregatedReport, result result.FileScanResult) 
 }
 
 func processFailedResult(agg *AggregatedReport, res rule.ProcessedResult, path string, detectedCompiler toolchain.Compiler) {
-	r := elf.GetRuleByID(res.RuleID)
+	r := rule.Get(res.RuleID)
 	if r == nil {
 		return
 	}

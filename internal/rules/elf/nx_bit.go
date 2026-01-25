@@ -8,11 +8,13 @@ import (
 	"github.com/mkacmar/crack/internal/toolchain"
 )
 
+const NXBitRuleID = "nx-bit"
+
 // NXBitRule checks for non-executable stack
 // GCC: https://gcc.gnu.org/onlinedocs/gcc/Link-Options.html#index-z
 type NXBitRule struct{}
 
-func (r NXBitRule) ID() string   { return "nx-bit" }
+func (r NXBitRule) ID() string   { return NXBitRuleID }
 func (r NXBitRule) Name() string { return "Non-Executable Stack" }
 
 func (r NXBitRule) Applicability() rule.Applicability {
@@ -25,8 +27,8 @@ func (r NXBitRule) Applicability() rule.Applicability {
 	}
 }
 
-func (r NXBitRule) Execute(f *elf.File, info *binary.Parsed) rule.ExecuteResult {
-	for _, prog := range f.Progs {
+func (r NXBitRule) Execute(bin *binary.ELFBinary) rule.ExecuteResult {
+	for _, prog := range bin.File.Progs {
 		if prog.Type == elf.PT_GNU_STACK {
 			if (prog.Flags & elf.PF_X) == 0 {
 				return rule.ExecuteResult{

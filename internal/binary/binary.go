@@ -130,16 +130,29 @@ var (
 	PlatformARM64v8_5 = Platform{Architecture: ArchARM64, MinISA: ARM64v8_5} // BTI, MTE
 )
 
-type Parsed struct {
+type BitWidth uint8
+
+const (
+	Bits32 BitWidth = 32
+	Bits64 BitWidth = 64
+)
+
+func (b BitWidth) String() string {
+	return fmt.Sprintf("%d-bit", b)
+}
+
+type Binary struct {
 	Path         string
 	Format       Format
 	Architecture Architecture
-	Bits         int
-	ELF          *elf.File
+	Bits         BitWidth
 	Build        toolchain.CompilerInfo
 	LibC         toolchain.LibC
 }
 
-type Parser interface {
-	Parse(path string) (*Parsed, error)
+type ELFBinary struct {
+	Binary
+	File       *elf.File
+	Symbols    []elf.Symbol
+	DynSymbols []elf.Symbol
 }

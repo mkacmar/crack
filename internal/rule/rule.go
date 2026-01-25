@@ -1,8 +1,6 @@
 package rule
 
 import (
-	"debug/elf"
-
 	"github.com/mkacmar/crack/internal/binary"
 	"github.com/mkacmar/crack/internal/toolchain"
 )
@@ -59,5 +57,5 @@ type Rule interface {
 
 type ELFRule interface {
 	Rule
-	Execute(f *elf.File, info *binary.Parsed) ExecuteResult
+	Execute(bin *binary.ELFBinary) ExecuteResult
 }

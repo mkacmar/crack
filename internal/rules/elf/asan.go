@@ -1,7 +1,6 @@
 package elf
 
 import (
-	"debug/elf"
 	"strings"
 
 	"github.com/mkacmar/crack/internal/binary"
@@ -9,12 +8,14 @@ import (
 	"github.com/mkacmar/crack/internal/toolchain"
 )
 
+const ASANRuleID = "asan"
+
 // ASANRule checks for AddressSanitizer instrumentation
 // Clang: https://clang.llvm.org/docs/AddressSanitizer.html
 // GCC: https://gcc.gnu.org/onlinedocs/gcc/Instrumentation-Options.html#index-fsanitize=address
 type ASANRule struct{}
 
-func (r ASANRule) ID() string   { return "asan" }
+func (r ASANRule) ID() string   { return ASANRuleID }
 func (r ASANRule) Name() string { return "Address Sanitizer" }
 
 func (r ASANRule) Applicability() rule.Applicability {
@@ -27,42 +28,16 @@ func (r ASANRule) Applicability() rule.Applicability {
 	}
 }
 
-func (r ASANRule) Execute(f *elf.File, info *binary.Parsed) rule.ExecuteResult {
-
-	hasASan := false
-
-	symbols, err := f.Symbols()
-	if err != nil {
-		symbols = nil
-	}
-
-	dynsyms, err := f.DynamicSymbols()
-	if err != nil {
-		dynsyms = nil
-	}
-
-	for _, sym := range symbols {
+func (r ASANRule) Execute(bin *binary.ELFBinary) rule.ExecuteResult {
+	for _, sym := range append(bin.Symbols, bin.DynSymbols...) {
 		if strings.HasPrefix(sym.Name, "__asan_") {
-			hasASan = true
-			break
-		}
-	}
-
-	if !hasASan {
-		for _, sym := range dynsyms {
-			if strings.HasPrefix(sym.Name, "__asan_") {
-				hasASan = true
-				break
+			return rule.ExecuteResult{
+				Status:  rule.StatusPassed,
+				Message: "AddressSanitizer is enabled",
 			}
 		}
 	}
 
-	if hasASan {
-		return rule.ExecuteResult{
-			Status:  rule.StatusPassed,
-			Message: "AddressSanitizer is enabled",
-		}
-	}
 	return rule.ExecuteResult{
 		Status:  rule.StatusFailed,
 		Message: "AddressSanitizer is NOT enabled",

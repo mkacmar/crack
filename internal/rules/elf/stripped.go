@@ -9,11 +9,13 @@ import (
 	"github.com/mkacmar/crack/internal/toolchain"
 )
 
+const StrippedRuleID = "stripped"
+
 // StrippedRule checks if binary is fully stripped
 // ld: https://sourceware.org/binutils/docs/ld/Options.html#index-_002d_002dstrip_002dall
 type StrippedRule struct{}
 
-func (r StrippedRule) ID() string   { return "stripped" }
+func (r StrippedRule) ID() string   { return StrippedRuleID }
 func (r StrippedRule) Name() string { return "Stripped Binary" }
 
 func (r StrippedRule) Applicability() rule.Applicability {
@@ -26,11 +28,11 @@ func (r StrippedRule) Applicability() rule.Applicability {
 	}
 }
 
-func (r StrippedRule) Execute(f *elf.File, info *binary.Parsed) rule.ExecuteResult {
+func (r StrippedRule) Execute(bin *binary.ELFBinary) rule.ExecuteResult {
 	hasSymbolTable := false
 	hasDebugSections := false
 
-	for _, section := range f.Sections {
+	for _, section := range bin.File.Sections {
 		if section.Type == elf.SHT_SYMTAB {
 			hasSymbolTable = true
 		}

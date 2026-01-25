@@ -10,14 +10,19 @@ import (
 	"strings"
 	"time"
 
+	"github.com/mkacmar/crack/internal/analyzer"
+	elfanalyzer "github.com/mkacmar/crack/internal/analyzer/elf"
 	"github.com/mkacmar/crack/internal/debuginfo"
 	"github.com/mkacmar/crack/internal/output"
 	"github.com/mkacmar/crack/internal/preset"
-	"github.com/mkacmar/crack/internal/result"
-	"github.com/mkacmar/crack/internal/rules"
-	"github.com/mkacmar/crack/internal/rules/elf"
+	"github.com/mkacmar/crack/internal/rule"
+	elfrules "github.com/mkacmar/crack/internal/rules/elf"
 	"github.com/mkacmar/crack/internal/scanner"
 )
+
+func init() {
+	elfrules.RegisterRules()
+}
 
 func (a *App) printAnalyzeUsage(prog string) {
 	fmt.Fprintf(os.Stderr, `Usage: %s analyze [options] <binary|directory>...
@@ -119,7 +124,7 @@ func (a *App) runAnalyze(prog string, args []string) int {
 			ruleIDs[i] = strings.TrimSpace(id)
 		}
 		for _, id := range ruleIDs {
-			if elf.GetRuleByID(id) == nil {
+			if rule.Get(id) == nil {
 				fmt.Fprintf(os.Stderr, "Error: unknown rule %q\n", id)
 				fmt.Fprintf(os.Stderr, "Use 'crack list-rules' to see available rules.\n")
 				return 1
@@ -155,10 +160,6 @@ func (a *App) runAnalyze(prog string, args []string) int {
 		fmt.Fprintf(os.Stderr, "Warning: invalid log level %q, using \"error\"\n", logLevel)
 	}
 
-	ruleEngine := rules.NewEngine(a.logger)
-	a.logger.Debug("loading preset", slog.String("preset", presetName))
-	ruleEngine.LoadPreset(p)
-
 	var debuginfodClient *debuginfo.Client
 	if useDebuginfod {
 		client, err := debuginfo.NewClient(debuginfo.Options{
@@ -175,12 +176,17 @@ func (a *App) runAnalyze(prog string, args []string) int {
 		debuginfodClient = client
 	}
 
-	scannerOpts := scanner.Options{
-		Logger:           a.logger,
-		Workers:          parallel,
+	analyzer := elfanalyzer.NewAnalyzer(elfanalyzer.Options{
+		RuleIDs:          p.Rules,
 		DebuginfodClient: debuginfodClient,
+		Logger:           a.logger,
+	})
+
+	scannerOpts := scanner.Options{
+		Logger:  a.logger,
+		Workers: parallel,
 	}
-	scan := scanner.NewScanner(ruleEngine, scannerOpts)
+	scan := scanner.NewScanner(analyzer, scannerOpts)
 
 	ctx := context.Background()
 	paths := fs.Args()
@@ -204,8 +210,8 @@ func (a *App) runAnalyze(prog string, args []string) int {
 	return a.processStreaming(resultsChan, showPassed, showSkipped)
 }
 
-func (a *App) processFullReport(resultsChan <-chan result.FileScanResult, aggregate, showPassed, showSkipped bool, sarifOutput string, invocation *output.InvocationInfo) int {
-	var results []result.FileScanResult
+func (a *App) processFullReport(resultsChan <-chan analyzer.Result, aggregate, showPassed, showSkipped bool, sarifOutput string, invocation *output.InvocationInfo) int {
+	var results []analyzer.Result
 	var totalFailed int
 
 	for res := range resultsChan {
@@ -216,7 +222,7 @@ func (a *App) processFullReport(resultsChan <-chan result.FileScanResult, aggreg
 		totalFailed += res.FailedRules()
 	}
 
-	report := &result.ScanResults{Results: results}
+	report := &analyzer.Results{Results: results}
 
 	if aggregate {
 		agg := output.AggregateFindings(report)
@@ -257,7 +263,7 @@ func (a *App) processFullReport(resultsChan <-chan result.FileScanResult, aggreg
 	return 0
 }
 
-func (a *App) processStreaming(resultsChan <-chan result.FileScanResult, showPassed, showSkipped bool) int {
+func (a *App) processStreaming(resultsChan <-chan analyzer.Result, showPassed, showSkipped bool) int {
 	var totalFailed int
 	textFormatter, _ := output.GetFormatter("text", output.FormatterOptions{ShowPassed: showPassed, ShowSkipped: showSkipped})
 
@@ -266,7 +272,7 @@ func (a *App) processStreaming(resultsChan <-chan result.FileScanResult, showPas
 			continue
 		}
 		totalFailed += res.FailedRules()
-		singleReport := &result.ScanResults{Results: []result.FileScanResult{res}}
+		singleReport := &analyzer.Results{Results: []analyzer.Result{res}}
 		if err := textFormatter.Format(singleReport, os.Stdout); err != nil {
 			a.logger.Error("failed to format output", slog.Any("error", err))
 		}

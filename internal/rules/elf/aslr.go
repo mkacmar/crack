@@ -8,11 +8,13 @@ import (
 	"github.com/mkacmar/crack/internal/toolchain"
 )
 
+const ASLRRuleID = "aslr"
+
 // ASLRRule checks if binary is ASLR compatible
 // Linux Kernel: https://github.com/torvalds/linux/blob/master/Documentation/admin-guide/sysctl/kernel.rst
 type ASLRRule struct{}
 
-func (r ASLRRule) ID() string   { return "aslr" }
+func (r ASLRRule) ID() string   { return ASLRRuleID }
 func (r ASLRRule) Name() string { return "ASLR Compatibility" }
 
 func (r ASLRRule) Applicability() rule.Applicability {
@@ -25,8 +27,8 @@ func (r ASLRRule) Applicability() rule.Applicability {
 	}
 }
 
-func (r ASLRRule) Execute(f *elf.File, info *binary.Parsed) rule.ExecuteResult {
-	switch f.Type {
+func (r ASLRRule) Execute(bin *binary.ELFBinary) rule.ExecuteResult {
+	switch bin.File.Type {
 	case elf.ET_EXEC:
 		return rule.ExecuteResult{
 			Status:  rule.StatusFailed,
@@ -42,10 +44,10 @@ func (r ASLRRule) Execute(f *elf.File, info *binary.Parsed) rule.ExecuteResult {
 	}
 
 	// ET_DYN can be PIE executable or shared library
-	isPIE := HasDynFlag(f, elf.DT_FLAGS_1, DF_1_PIE)
+	isPIE := HasDynFlag(bin.File, elf.DT_FLAGS_1, DF_1_PIE)
 	if !isPIE {
 		// Check for PT_INTERP as fallback for older binaries
-		for _, prog := range f.Progs {
+		for _, prog := range bin.File.Progs {
 			if prog.Type == elf.PT_INTERP {
 				isPIE = true
 				break
@@ -61,7 +63,7 @@ func (r ASLRRule) Execute(f *elf.File, info *binary.Parsed) rule.ExecuteResult {
 	}
 
 	hasNXStack := false
-	for _, prog := range f.Progs {
+	for _, prog := range bin.File.Progs {
 		if prog.Type == elf.PT_GNU_STACK {
 			hasNXStack = (prog.Flags & elf.PF_X) == 0
 			break
@@ -76,7 +78,7 @@ func (r ASLRRule) Execute(f *elf.File, info *binary.Parsed) rule.ExecuteResult {
 	}
 
 	// Check for text relocations (breaks ASLR)
-	if HasDynTag(f, elf.DT_TEXTREL) {
+	if HasDynTag(bin.File, elf.DT_TEXTREL) {
 		return rule.ExecuteResult{
 			Status:  rule.StatusFailed,
 			Message: "Binary is NOT ASLR compatible (has text relocations)",

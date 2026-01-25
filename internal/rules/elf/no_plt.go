@@ -1,12 +1,12 @@
 package elf
 
 import (
-	"debug/elf"
-
 	"github.com/mkacmar/crack/internal/binary"
 	"github.com/mkacmar/crack/internal/rule"
 	"github.com/mkacmar/crack/internal/toolchain"
 )
+
+const NoPLTRuleID = "no-plt"
 
 // NoPLTRule checks if binary was compiled with -fno-plt
 // This avoids PLT indirection, reducing ROP gadgets and improving RELRO effectiveness
@@ -15,7 +15,7 @@ import (
 // Debian: https://wiki.debian.org/Hardening
 type NoPLTRule struct{}
 
-func (r NoPLTRule) ID() string   { return "no-plt" }
+func (r NoPLTRule) ID() string   { return NoPLTRuleID }
 func (r NoPLTRule) Name() string { return "No PLT" }
 
 func (r NoPLTRule) Applicability() rule.Applicability {
@@ -28,17 +28,17 @@ func (r NoPLTRule) Applicability() rule.Applicability {
 	}
 }
 
-func (r NoPLTRule) Execute(f *elf.File, info *binary.Parsed) rule.ExecuteResult {
+func (r NoPLTRule) Execute(bin *binary.ELFBinary) rule.ExecuteResult {
 	// Skip for static binaries - PLT only applies to dynamically linked binaries
-	if f.Section(".dynamic") == nil {
+	if bin.File.Section(".dynamic") == nil {
 		return rule.ExecuteResult{
 			Status:  rule.StatusSkipped,
 			Message: "Static binary (PLT not applicable)",
 		}
 	}
 
-	pltSection := f.Section(".plt")
-	pltSecSection := f.Section(".plt.sec")
+	pltSection := bin.File.Section(".plt")
+	pltSecSection := bin.File.Section(".plt.sec")
 
 	// No PLT section at all - definitely compiled with -fno-plt
 	if pltSection == nil {

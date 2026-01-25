@@ -1,18 +1,18 @@
 package elf
 
 import (
-	"debug/elf"
-
 	"github.com/mkacmar/crack/internal/binary"
 	"github.com/mkacmar/crack/internal/rule"
 	"github.com/mkacmar/crack/internal/toolchain"
 )
 
+const X86CETIBTRuleID = "x86-cet-ibt"
+
 // X86CETIBTRule checks for CET Indirect Branch Tracking (Intel/AMD)
 // GCC: https://gcc.gnu.org/onlinedocs/gcc/x86-Options.html#index-fcf-protection
 type X86CETIBTRule struct{}
 
-func (r X86CETIBTRule) ID() string   { return "x86-cet-ibt" }
+func (r X86CETIBTRule) ID() string   { return X86CETIBTRuleID }
 func (r X86CETIBTRule) Name() string { return "x86 CET - Indirect Branch Tracking" }
 
 func (r X86CETIBTRule) Applicability() rule.Applicability {
@@ -25,8 +25,8 @@ func (r X86CETIBTRule) Applicability() rule.Applicability {
 	}
 }
 
-func (r X86CETIBTRule) Execute(f *elf.File, info *binary.Parsed) rule.ExecuteResult {
-	hasIBT := parseGNUProperty(f, GNU_PROPERTY_X86_FEATURE_1_AND, GNU_PROPERTY_X86_FEATURE_1_IBT)
+func (r X86CETIBTRule) Execute(bin *binary.ELFBinary) rule.ExecuteResult {
+	hasIBT := parseGNUProperty(bin.File, GNU_PROPERTY_X86_FEATURE_1_AND, GNU_PROPERTY_X86_FEATURE_1_IBT)
 
 	if hasIBT {
 		return rule.ExecuteResult{

@@ -1,13 +1,14 @@
 package elf
 
 import (
-	"debug/elf"
 	"fmt"
 
 	"github.com/mkacmar/crack/internal/binary"
 	"github.com/mkacmar/crack/internal/rule"
 	"github.com/mkacmar/crack/internal/toolchain"
 )
+
+const FortifySourceRuleID = "fortify-source"
 
 var fortifiableFunctions = map[string]string{
 	"fgets":     "__fgets_chk",
@@ -41,7 +42,7 @@ var fortifiableFunctions = map[string]string{
 // GCC: https://gcc.gnu.org/onlinedocs/gcc/Instrumentation-Options.html#index-D_FORTIFY_SOURCE
 type FortifySourceRule struct{}
 
-func (r FortifySourceRule) ID() string   { return "fortify-source" }
+func (r FortifySourceRule) ID() string   { return FortifySourceRuleID }
 func (r FortifySourceRule) Name() string { return "FORTIFY_SOURCE" }
 
 func (r FortifySourceRule) Applicability() rule.Applicability {
@@ -54,24 +55,21 @@ func (r FortifySourceRule) Applicability() rule.Applicability {
 	}
 }
 
-func (r FortifySourceRule) Execute(f *elf.File, info *binary.Parsed) rule.ExecuteResult {
+func (r FortifySourceRule) Execute(bin *binary.ELFBinary) rule.ExecuteResult {
 	// FORTIFY_SOURCE is a glibc feature - musl libc does not implement it.
 	// https://wiki.musl-libc.org/future-ideas#fortify-source
-	if info != nil && info.LibC == toolchain.LibCMusl {
+	if bin.LibC == toolchain.LibCMusl {
 		return rule.ExecuteResult{
 			Status:  rule.StatusSkipped,
 			Message: "musl libc does not support FORTIFY_SOURCE",
 		}
 	}
 
-	symbols, _ := f.Symbols()
-	dynsyms, _ := f.DynamicSymbols()
-
 	allSymbols := make(map[string]struct{})
-	for _, sym := range symbols {
+	for _, sym := range bin.Symbols {
 		allSymbols[sym.Name] = struct{}{}
 	}
-	for _, sym := range dynsyms {
+	for _, sym := range bin.DynSymbols {
 		allSymbols[sym.Name] = struct{}{}
 	}
 

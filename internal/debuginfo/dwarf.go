@@ -11,7 +11,7 @@ import (
 	"github.com/mkacmar/crack/internal/toolchain"
 )
 
-func EnhanceWithDebugInfo(info *binary.Parsed, debugPath string, logger *slog.Logger) error {
+func EnhanceWithDebugInfo(bin *binary.ELFBinary, debugPath string, logger *slog.Logger) error {
 	logger = logger.With(slog.String("component", "dwarf"))
 
 	debugFile, err := elf.Open(debugPath)
@@ -20,8 +20,13 @@ func EnhanceWithDebugInfo(info *binary.Parsed, debugPath string, logger *slog.Lo
 	}
 	defer debugFile.Close()
 
+	if debugSymbols, err := debugFile.Symbols(); err == nil && len(debugSymbols) > 0 {
+		bin.Symbols = mergeSymbols(bin.Symbols, debugSymbols)
+		logger.Debug("merged symbols", slog.Int("total", len(bin.Symbols)))
+	}
+
 	if !hasDwarfSections(debugFile) {
-		return fmt.Errorf("debug file contains no DWARF data")
+		return nil
 	}
 
 	dwarfData, err := debugFile.DWARF()
@@ -36,12 +41,38 @@ func EnhanceWithDebugInfo(info *binary.Parsed, debugPath string, logger *slog.Lo
 	}
 
 	newToolchain := toolchain.ParseToolchain(compilerInfo)
-	if info.Build.Toolchain.Compiler == toolchain.CompilerUnknown && newToolchain.Compiler != toolchain.CompilerUnknown {
-		info.Build.Toolchain = newToolchain
+	if bin.Build.Toolchain.Compiler == toolchain.CompilerUnknown && newToolchain.Compiler != toolchain.CompilerUnknown {
+		bin.Build.Toolchain = newToolchain
 		logger.Debug("updated toolchain from DWARF", slog.String("compiler", newToolchain.Compiler.String()), slog.String("version", newToolchain.Version.String()))
 	}
 
 	return nil
+}
+
+func mergeSymbols(binarySymbols, debugSymbols []elf.Symbol) []elf.Symbol {
+	if len(binarySymbols) == 0 {
+		return debugSymbols
+	}
+	if len(debugSymbols) == 0 {
+		return binarySymbols
+	}
+
+	existing := make(map[string]struct{}, len(binarySymbols))
+	for _, sym := range binarySymbols {
+		existing[sym.Name] = struct{}{}
+	}
+
+	merged := make([]elf.Symbol, len(binarySymbols), len(binarySymbols)+len(debugSymbols))
+	copy(merged, binarySymbols)
+
+	for _, sym := range debugSymbols {
+		if _, exists := existing[sym.Name]; !exists {
+			merged = append(merged, sym)
+			existing[sym.Name] = struct{}{}
+		}
+	}
+
+	return merged
 }
 
 func hasDwarfSections(f *elf.File) bool {

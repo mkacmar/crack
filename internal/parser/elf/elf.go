@@ -16,7 +16,7 @@ func NewParser() *Parser {
 	return &Parser{}
 }
 
-func (p *Parser) Parse(path string) (*binary.Parsed, error) {
+func (p *Parser) Parse(path string) (*binary.ELFBinary, error) {
 	f, err := elf.Open(path)
 	if err != nil {
 		if isNotELFError(err) {
@@ -25,27 +25,36 @@ func (p *Parser) Parse(path string) (*binary.Parsed, error) {
 		return nil, fmt.Errorf("failed to open ELF file: %w", err)
 	}
 
-	info := &binary.Parsed{
-		Path:   path,
-		Format: binary.FormatELF,
-		ELF:    f,
+	bin := &binary.ELFBinary{
+		Binary: binary.Binary{
+			Path:   path,
+			Format: binary.FormatELF,
+		},
+		File: f,
 	}
 
-	info.Architecture = parseArchitecture(f.Machine)
+	bin.Architecture = parseArchitecture(f.Machine)
 	if f.Class == elf.ELFCLASS64 {
-		info.Bits = 64
+		bin.Bits = binary.Bits64
 	} else {
-		info.Bits = 32
+		bin.Bits = binary.Bits32
 	}
 
-	info.Build = toolchain.CompilerInfo{
+	bin.Build = toolchain.CompilerInfo{
 		BuildID:   p.extractBuildID(f),
 		Toolchain: p.detectToolchain(f),
 	}
 
-	info.LibC = p.detectLibC(f)
+	bin.LibC = p.detectLibC(f)
 
-	return info, nil
+	if syms, err := f.Symbols(); err == nil {
+		bin.Symbols = syms
+	}
+	if dynsyms, err := f.DynamicSymbols(); err == nil {
+		bin.DynSymbols = dynsyms
+	}
+
+	return bin, nil
 }
 
 func isNotELFError(err error) bool {

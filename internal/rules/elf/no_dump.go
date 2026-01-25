@@ -8,13 +8,15 @@ import (
 	"github.com/mkacmar/crack/internal/toolchain"
 )
 
+const NoDumpRuleID = "no-dump"
+
 const DF_1_NODUMP = 0x00001000
 
 // NoDumpRule checks if core dumps are disabled
 // ld: https://sourceware.org/binutils/docs/ld/Options.html#index-z-keyword
 type NoDumpRule struct{}
 
-func (r NoDumpRule) ID() string   { return "no-dump" }
+func (r NoDumpRule) ID() string   { return NoDumpRuleID }
 func (r NoDumpRule) Name() string { return "Core Dump Protection" }
 
 func (r NoDumpRule) Applicability() rule.Applicability {
@@ -27,21 +29,21 @@ func (r NoDumpRule) Applicability() rule.Applicability {
 	}
 }
 
-func (r NoDumpRule) Execute(f *elf.File, info *binary.Parsed) rule.ExecuteResult {
+func (r NoDumpRule) Execute(bin *binary.ELFBinary) rule.ExecuteResult {
 	hasNoDump := false
 
-	dynSec := f.Section(".dynamic")
+	dynSec := bin.File.Section(".dynamic")
 	if dynSec != nil {
 		data, err := dynSec.Data()
 		if err == nil {
 			var dynData []elf.Dyn64
-			if f.Class == elf.ELFCLASS64 {
+			if bin.File.Class == elf.ELFCLASS64 {
 				for i := 0; i < len(data); i += 16 {
 					if i+16 > len(data) {
 						break
 					}
-					tag := f.ByteOrder.Uint64(data[i : i+8])
-					val := f.ByteOrder.Uint64(data[i+8 : i+16])
+					tag := bin.File.ByteOrder.Uint64(data[i : i+8])
+					val := bin.File.ByteOrder.Uint64(data[i+8 : i+16])
 					dynData = append(dynData, elf.Dyn64{Tag: int64(tag), Val: val})
 					if int64(tag) == int64(elf.DT_NULL) {
 						break
@@ -52,8 +54,8 @@ func (r NoDumpRule) Execute(f *elf.File, info *binary.Parsed) rule.ExecuteResult
 					if i+8 > len(data) {
 						break
 					}
-					tag := f.ByteOrder.Uint32(data[i : i+4])
-					val := f.ByteOrder.Uint32(data[i+4 : i+8])
+					tag := bin.File.ByteOrder.Uint32(data[i : i+4])
+					val := bin.File.ByteOrder.Uint32(data[i+4 : i+8])
 					dynData = append(dynData, elf.Dyn64{Tag: int64(tag), Val: uint64(val)})
 					if int64(tag) == int64(elf.DT_NULL) {
 						break

@@ -10,12 +10,14 @@ import (
 
 const DF_1_PIE = 0x08000000
 
+const PIERuleID = "pie"
+
 // PIERule checks if binary is compiled as Position Independent Executable
 // GCC: https://gcc.gnu.org/onlinedocs/gcc/Code-Gen-Options.html#index-fPIE
 // Clang: https://clang.llvm.org/docs/ClangCommandLineReference.html#cmdoption-clang-fpie
 type PIERule struct{}
 
-func (r PIERule) ID() string   { return "pie" }
+func (r PIERule) ID() string   { return PIERuleID }
 func (r PIERule) Name() string { return "Position Independent Executable" }
 
 func (r PIERule) Applicability() rule.Applicability {
@@ -28,8 +30,8 @@ func (r PIERule) Applicability() rule.Applicability {
 	}
 }
 
-func (r PIERule) Execute(f *elf.File, info *binary.Parsed) rule.ExecuteResult {
-	switch f.Type {
+func (r PIERule) Execute(bin *binary.ELFBinary) rule.ExecuteResult {
+	switch bin.File.Type {
 	case elf.ET_EXEC:
 		return rule.ExecuteResult{
 			Status:  rule.StatusFailed,
@@ -47,14 +49,14 @@ func (r PIERule) Execute(f *elf.File, info *binary.Parsed) rule.ExecuteResult {
 	// 1. DF_1_PIE flag in .dynamic section - set by modern linkers for PIE executables (including static-pie).
 	// 2. PT_INTERP program header - present in dynamically linked executables but not in shared libraries.
 	// static-pie binaries (-static-pie) have DF_1_PIE but no PT_INTERP, so the DF_1_PIE check must come first.
-	if HasDynFlag(f, elf.DT_FLAGS_1, DF_1_PIE) {
+	if HasDynFlag(bin.File, elf.DT_FLAGS_1, DF_1_PIE) {
 		return rule.ExecuteResult{
 			Status:  rule.StatusPassed,
 			Message: "Binary is compiled as PIE (enables ASLR when system supports it)",
 		}
 	}
 
-	for _, prog := range f.Progs {
+	for _, prog := range bin.File.Progs {
 		if prog.Type == elf.PT_INTERP {
 			return rule.ExecuteResult{
 				Status:  rule.StatusPassed,

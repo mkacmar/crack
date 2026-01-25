@@ -10,11 +10,13 @@ import (
 	"github.com/mkacmar/crack/internal/toolchain"
 )
 
+const NoInsecureRPATHRuleID = "no-insecure-rpath"
+
 // NoInsecureRPATHRule checks for insecure RPATH values
 // ld: https://sourceware.org/binutils/docs/ld/Options.html
 type NoInsecureRPATHRule struct{}
 
-func (r NoInsecureRPATHRule) ID() string   { return "no-insecure-rpath" }
+func (r NoInsecureRPATHRule) ID() string   { return NoInsecureRPATHRuleID }
 func (r NoInsecureRPATHRule) Name() string { return "Secure RPATH" }
 
 func (r NoInsecureRPATHRule) Applicability() rule.Applicability {
@@ -27,8 +29,8 @@ func (r NoInsecureRPATHRule) Applicability() rule.Applicability {
 	}
 }
 
-func (r NoInsecureRPATHRule) Execute(f *elf.File, info *binary.Parsed) rule.ExecuteResult {
-	rpath := GetDynString(f, elf.DT_RPATH)
+func (r NoInsecureRPATHRule) Execute(bin *binary.ELFBinary) rule.ExecuteResult {
+	rpath := GetDynString(bin.File, elf.DT_RPATH)
 	if rpath == "" {
 		return rule.ExecuteResult{
 			Status:  rule.StatusPassed,

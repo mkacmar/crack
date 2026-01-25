@@ -1,12 +1,12 @@
 package elf
 
 import (
-	"debug/elf"
-
 	"github.com/mkacmar/crack/internal/binary"
 	"github.com/mkacmar/crack/internal/rule"
 	"github.com/mkacmar/crack/internal/toolchain"
 )
+
+const ARMBranchProtectionRuleID = "arm-branch-protection"
 
 // ARMBranchProtectionRule checks for ARM branch protection (PAC+BTI)
 // ARM: https://developer.arm.com/documentation/ddi0487/latest
@@ -14,7 +14,7 @@ import (
 // Clang: https://clang.llvm.org/docs/ClangCommandLineReference.html#cmdoption-clang-mbranch-protection
 type ARMBranchProtectionRule struct{}
 
-func (r ARMBranchProtectionRule) ID() string   { return "arm-branch-protection" }
+func (r ARMBranchProtectionRule) ID() string   { return ARMBranchProtectionRuleID }
 func (r ARMBranchProtectionRule) Name() string { return "ARM Branch Protection" }
 
 func (r ARMBranchProtectionRule) Applicability() rule.Applicability {
@@ -27,9 +27,9 @@ func (r ARMBranchProtectionRule) Applicability() rule.Applicability {
 	}
 }
 
-func (r ARMBranchProtectionRule) Execute(f *elf.File, info *binary.Parsed) rule.ExecuteResult {
-	hasPAC := parseGNUProperty(f, GNU_PROPERTY_AARCH64_FEATURE_1_AND, GNU_PROPERTY_AARCH64_FEATURE_1_PAC)
-	hasBTI := parseGNUProperty(f, GNU_PROPERTY_AARCH64_FEATURE_1_AND, GNU_PROPERTY_AARCH64_FEATURE_1_BTI)
+func (r ARMBranchProtectionRule) Execute(bin *binary.ELFBinary) rule.ExecuteResult {
+	hasPAC := parseGNUProperty(bin.File, GNU_PROPERTY_AARCH64_FEATURE_1_AND, GNU_PROPERTY_AARCH64_FEATURE_1_PAC)
+	hasBTI := parseGNUProperty(bin.File, GNU_PROPERTY_AARCH64_FEATURE_1_AND, GNU_PROPERTY_AARCH64_FEATURE_1_BTI)
 	hasBranchProt := hasPAC && hasBTI
 
 	if hasBranchProt {

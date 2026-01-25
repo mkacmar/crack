@@ -8,11 +8,13 @@ import (
 	"github.com/mkacmar/crack/internal/toolchain"
 )
 
+const SeparateCodeRuleID = "separate-code"
+
 // SeparateCodeRule checks if code and data are in separate pages
 // ld: https://sourceware.org/binutils/docs/ld/Options.html#index-z-keyword
 type SeparateCodeRule struct{}
 
-func (r SeparateCodeRule) ID() string   { return "separate-code" }
+func (r SeparateCodeRule) ID() string   { return SeparateCodeRuleID }
 func (r SeparateCodeRule) Name() string { return "Separate Code Segments" }
 
 func (r SeparateCodeRule) Applicability() rule.Applicability {
@@ -25,13 +27,13 @@ func (r SeparateCodeRule) Applicability() rule.Applicability {
 	}
 }
 
-func (r SeparateCodeRule) Execute(f *elf.File, info *binary.Parsed) rule.ExecuteResult {
+func (r SeparateCodeRule) Execute(bin *binary.ELFBinary) rule.ExecuteResult {
 	// Check file offsets at 4KB page granularity
 	const pageSize uint64 = 4096
 
 	var codePages, dataPages [][2]uint64 // [start, end) page ranges
 
-	for _, prog := range f.Progs {
+	for _, prog := range bin.File.Progs {
 		if prog.Type != elf.PT_LOAD {
 			continue
 		}

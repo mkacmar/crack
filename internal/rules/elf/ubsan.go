@@ -1,7 +1,6 @@
 package elf
 
 import (
-	"debug/elf"
 	"fmt"
 	"strings"
 
@@ -9,6 +8,8 @@ import (
 	"github.com/mkacmar/crack/internal/rule"
 	"github.com/mkacmar/crack/internal/toolchain"
 )
+
+const UBSanRuleID = "ubsan"
 
 var ubsanHandlers = []string{
 	"__ubsan_handle_add_overflow",
@@ -41,7 +42,7 @@ var ubsanHandlers = []string{
 // GCC: https://gcc.gnu.org/onlinedocs/gcc/Instrumentation-Options.html#index-fsanitize=undefined
 type UBSanRule struct{}
 
-func (r UBSanRule) ID() string   { return "ubsan" }
+func (r UBSanRule) ID() string   { return UBSanRuleID }
 func (r UBSanRule) Name() string { return "Undefined Behavior Sanitizer" }
 
 func (r UBSanRule) Applicability() rule.Applicability {
@@ -54,16 +55,12 @@ func (r UBSanRule) Applicability() rule.Applicability {
 	}
 }
 
-func (r UBSanRule) Execute(f *elf.File, info *binary.Parsed) rule.ExecuteResult {
-
-	symbols, _ := f.Symbols()
-	dynsyms, _ := f.DynamicSymbols()
-
+func (r UBSanRule) Execute(bin *binary.ELFBinary) rule.ExecuteResult {
 	allSymbols := make(map[string]struct{})
-	for _, sym := range symbols {
+	for _, sym := range bin.Symbols {
 		allSymbols[sym.Name] = struct{}{}
 	}
-	for _, sym := range dynsyms {
+	for _, sym := range bin.DynSymbols {
 		allSymbols[sym.Name] = struct{}{}
 	}
 

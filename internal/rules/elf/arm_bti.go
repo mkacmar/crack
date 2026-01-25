@@ -1,17 +1,17 @@
 package elf
 
 import (
-	"debug/elf"
-
 	"github.com/mkacmar/crack/internal/binary"
 	"github.com/mkacmar/crack/internal/rule"
 	"github.com/mkacmar/crack/internal/toolchain"
 )
 
+const ARMBTIRuleID = "arm-bti"
+
 // ARMBTIRule checks for ARM Branch Target Identification
 type ARMBTIRule struct{}
 
-func (r ARMBTIRule) ID() string   { return "arm-bti" }
+func (r ARMBTIRule) ID() string   { return ARMBTIRuleID }
 func (r ARMBTIRule) Name() string { return "ARM Branch Target Identification" }
 
 func (r ARMBTIRule) Applicability() rule.Applicability {
@@ -24,8 +24,8 @@ func (r ARMBTIRule) Applicability() rule.Applicability {
 	}
 }
 
-func (r ARMBTIRule) Execute(f *elf.File, info *binary.Parsed) rule.ExecuteResult {
-	hasBTI := parseGNUProperty(f, GNU_PROPERTY_AARCH64_FEATURE_1_AND, GNU_PROPERTY_AARCH64_FEATURE_1_BTI)
+func (r ARMBTIRule) Execute(bin *binary.ELFBinary) rule.ExecuteResult {
+	hasBTI := parseGNUProperty(bin.File, GNU_PROPERTY_AARCH64_FEATURE_1_AND, GNU_PROPERTY_AARCH64_FEATURE_1_BTI)
 
 	if hasBTI {
 		return rule.ExecuteResult{
