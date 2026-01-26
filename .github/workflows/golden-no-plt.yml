@@ -1,0 +1,10 @@
+name: "Golden: No PLT"
+
+on:
+  workflow_dispatch:
+
+jobs:
+  build:
+    uses: ./.github/workflows/golden-build.yml
+    with:
+      rule: no-plt

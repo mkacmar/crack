@@ -29,7 +29,6 @@ func (r NoPLTRule) Applicability() rule.Applicability {
 }
 
 func (r NoPLTRule) Execute(bin *binary.ELFBinary) rule.ExecuteResult {
-	// Skip for static binaries - PLT only applies to dynamically linked binaries
 	if bin.File.Section(".dynamic") == nil {
 		return rule.ExecuteResult{
 			Status:  rule.StatusSkipped,
@@ -37,23 +36,19 @@ func (r NoPLTRule) Execute(bin *binary.ELFBinary) rule.ExecuteResult {
 		}
 	}
 
-	pltSection := bin.File.Section(".plt")
-	pltSecSection := bin.File.Section(".plt.sec")
-
-	// No PLT section at all - definitely compiled with -fno-plt
-	if pltSection == nil {
-		return rule.ExecuteResult{
-			Status:  rule.StatusPassed,
-			Message: "No PLT section (direct GOT access)",
-		}
-	}
-
-	// .plt.sec is used by Intel CET - if present, PLT is being used
-	// but in a hardened way, so we consider this acceptable
-	if pltSecSection != nil {
+	// .plt.sec is used by Intel CET - secure PLT, acceptable
+	if bin.File.Section(".plt.sec") != nil {
 		return rule.ExecuteResult{
 			Status:  rule.StatusPassed,
 			Message: "Using secure PLT (.plt.sec for CET compatibility)",
+		}
+	}
+
+	// .rela.plt contains PLT relocations - if absent, -fno-plt was used
+	if bin.File.Section(".rela.plt") == nil {
+		return rule.ExecuteResult{
+			Status:  rule.StatusPassed,
+			Message: "No PLT relocations (compiled with -fno-plt)",
 		}
 	}
 
