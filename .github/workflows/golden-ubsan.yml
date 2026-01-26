@@ -1,0 +1,64 @@
+name: "Golden: UBSan"
+
+on:
+  workflow_dispatch:
+
+jobs:
+  build-x86_64:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - name: Build binaries
+        run: sh test/e2e/ubsan/build.sh x86_64
+      - uses: actions/upload-artifact@v4
+        with:
+          name: binaries-x86_64
+          path: binaries/
+
+  build-aarch64:
+    runs-on: ubuntu-24.04-arm
+    steps:
+      - uses: actions/checkout@v4
+      - name: Build binaries
+        run: sh test/e2e/ubsan/build.sh aarch64
+      - uses: actions/upload-artifact@v4
+        with:
+          name: binaries-aarch64
+          path: binaries/
+
+  build-armv7:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@v3
+        with:
+          platforms: arm
+      - name: Build binaries
+        run: |
+          docker run --rm --platform linux/arm/v7 \
+            -v ${{ github.workspace }}:/workspace \
+            -w /workspace \
+            debian:bookworm sh -c 'apt-get update && apt-get install -y gcc clang binutils && sh test/e2e/ubsan/build.sh armv7'
+      - uses: actions/upload-artifact@v4
+        with:
+          name: binaries-armv7
+          path: binaries/
+
+  merge:
+    runs-on: ubuntu-latest
+    needs: [build-x86_64, build-aarch64, build-armv7]
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          path: all-binaries
+          pattern: binaries-*
+          merge-multiple: true
+
+      - name: List all binaries
+        run: ls -la all-binaries/
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: ubsan-binaries
+          path: all-binaries/
