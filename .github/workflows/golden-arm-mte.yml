@@ -1,0 +1,23 @@
+name: "Golden: ARM MTE"
+
+on:
+  workflow_dispatch:
+
+env:
+  NDK_VERSION: r27
+
+jobs:
+  build:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - name: Download Android NDK
+        run: |
+          wget -q https://dl.google.com/android/repository/android-ndk-${NDK_VERSION}-linux.zip
+          unzip -q android-ndk-${NDK_VERSION}-linux.zip
+      - name: Build binaries
+        run: sh test/e2e/arm-mte/build.sh android-ndk-${NDK_VERSION}
+      - uses: actions/upload-artifact@v4
+        with:
+          name: arm-mte-binaries
+          path: binaries/

@@ -1,0 +1,26 @@
+#!/bin/sh
+set -ex
+
+NDK_DIR=$1
+if [ -z "$NDK_DIR" ] || [ ! -d "$NDK_DIR" ]; then
+    echo "Usage: $0 <ndk-dir>"
+    exit 1
+fi
+
+SRC=test/e2e/testdata/main.c
+mkdir -p binaries
+
+CLANG=${NDK_DIR}/toolchains/llvm/prebuilt/linux-x86_64/bin/clang
+STRIP=${NDK_DIR}/toolchains/llvm/prebuilt/linux-x86_64/bin/llvm-strip
+TARGET=aarch64-linux-android35
+
+
+$CLANG --version
+
+$CLANG --target=$TARGET -march=armv8.5-a+memtag -fsanitize=memtag-stack,memtag-heap -o binaries/clang-mte $SRC
+$CLANG --target=$TARGET -march=armv8.5-a+memtag -fsanitize=memtag-stack,memtag-heap -o binaries/clang-mte-stripped $SRC
+$STRIP binaries/clang-mte-stripped
+
+$CLANG --target=$TARGET -o binaries/clang-no-mte $SRC
+
+ls -la binaries/

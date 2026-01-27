@@ -10,7 +10,7 @@ const ARMMTERuleID = "arm-mte"
 
 // ARMMTERule checks for ARM Memory Tagging Extension
 // ARM: https://developer.arm.com/documentation/ddi0487/latest
-// Clang: https://clang.llvm.org/docs/MemTagSanitizer.html
+// LLVM: https://llvm.org/docs/MemTagSanitizer.html
 type ARMMTERule struct{}
 
 func (r ARMMTERule) ID() string   { return ARMMTERuleID }
@@ -28,7 +28,8 @@ func (r ARMMTERule) Applicability() rule.Applicability {
 func (r ARMMTERule) Execute(bin *binary.ELFBinary) rule.ExecuteResult {
 	hasMTE := false
 	for _, sec := range bin.File.Sections {
-		if sec.Name == ".note.memtag" {
+		// Currently Android NDK specific https://github.com/llvm/llvm-project/blob/main/lld/ELF/SyntheticSections.h
+		if sec.Name == ".note.android.memtag" {
 			hasMTE = true
 			break
 		}
