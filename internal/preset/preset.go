@@ -62,7 +62,6 @@ var Hardened = Preset{
 		elf.NoDumpRuleID,
 		elf.NoInsecureRPATHRuleID,
 		elf.NoInsecureRUNPATHRuleID,
-		elf.NoPLTRuleID,
 		elf.NXBitRuleID,
 		elf.PIERuleID,
 		elf.RELRORuleID,

@@ -20,7 +20,6 @@ var allRules = []rule.ELFRule{
 	NoInsecureRPATHRule{},
 	NoInsecureRUNPATHRule{},
 	NoDLOpenRule{},
-	NoPLTRule{},
 	SeparateCodeRule{},
 	NoDumpRule{},
 	StrippedRule{},
