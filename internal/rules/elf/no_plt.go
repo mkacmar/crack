@@ -1,6 +1,8 @@
 package elf
 
 import (
+	"debug/elf"
+
 	"github.com/mkacmar/crack/internal/binary"
 	"github.com/mkacmar/crack/internal/rule"
 	"github.com/mkacmar/crack/internal/toolchain"
@@ -20,7 +22,7 @@ func (r NoPLTRule) Name() string { return "No PLT" }
 
 func (r NoPLTRule) Applicability() rule.Applicability {
 	return rule.Applicability{
-		Platform: binary.PlatformAll,
+		Platform: binary.PlatformAllX86,
 		Compilers: map[toolchain.Compiler]rule.CompilerRequirement{
 			toolchain.CompilerGCC:   {MinVersion: toolchain.Version{Major: 6, Minor: 0}, Flag: "-fno-plt"},
 			toolchain.CompilerClang: {MinVersion: toolchain.Version{Major: 3, Minor: 9}, Flag: "-fno-plt"},
@@ -32,28 +34,34 @@ func (r NoPLTRule) Execute(bin *binary.ELFBinary) rule.ExecuteResult {
 	if bin.File.Section(".dynamic") == nil {
 		return rule.ExecuteResult{
 			Status:  rule.StatusSkipped,
-			Message: "Static binary (PLT not applicable)",
+			Message: "Static binary, PLT not applicable",
 		}
 	}
 
-	// .plt.sec is used by Intel CET - secure PLT, acceptable
-	if bin.File.Section(".plt.sec") != nil {
+	hasIBT := parseGNUProperty(bin.File, GNU_PROPERTY_X86_FEATURE_1_AND, GNU_PROPERTY_X86_FEATURE_1_IBT)
+	if hasIBT {
 		return rule.ExecuteResult{
-			Status:  rule.StatusPassed,
-			Message: "Using secure PLT (.plt.sec for CET compatibility)",
+			Status:  rule.StatusSkipped,
+			Message: "CET-IBT enabled, PLT gadgets protected by hardware",
 		}
 	}
 
-	// .rela.plt contains PLT relocations - if absent, -fno-plt was used
-	if bin.File.Section(".rela.plt") == nil {
+	var hasPLTRelocations bool
+	if bin.File.Class == elf.ELFCLASS64 {
+		hasPLTRelocations = bin.File.Section(".rela.plt") != nil
+	} else {
+		hasPLTRelocations = bin.File.Section(".rel.plt") != nil
+	}
+
+	if !hasPLTRelocations {
 		return rule.ExecuteResult{
 			Status:  rule.StatusPassed,
-			Message: "No PLT relocations (compiled with -fno-plt)",
+			Message: "PLT not used, direct GOT access",
 		}
 	}
 
 	return rule.ExecuteResult{
 		Status:  rule.StatusFailed,
-		Message: "PLT is used",
+		Message: "PLT in use, ROP gadgets present",
 	}
 }
