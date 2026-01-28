@@ -14,7 +14,6 @@ var allRules = []rule.ELFRule{
 	StackLimitRule{},
 	FortifySourceRule{},
 	CFIRule{},
-	KernelCFIRule{},
 	ASANRule{},
 	UBSanRule{},
 	NoInsecureRPATHRule{},

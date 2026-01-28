@@ -12,7 +12,6 @@ const (
 	NameRecommended = "recommended"
 	NameHardened    = "hardened"
 	NameBuildTest   = "build-test"
-	NameKernel      = "kernel"
 
 	Default = NameRecommended
 )
@@ -87,23 +86,11 @@ var BuildTest = Preset{
 	},
 }
 
-var Kernel = Preset{
-	Rules: []string{
-		elf.ARMBranchProtectionRuleID,
-		elf.ARMBTIRuleID,
-		elf.ARMPACRuleID,
-		elf.KernelCFIRuleID,
-		elf.StackCanaryRuleID,
-		elf.X86RetpolineRuleID,
-	},
-}
-
 var All = map[string]Preset{
 	NameMinimal:     Minimal,
 	NameRecommended: Recommended,
 	NameHardened:    Hardened,
 	NameBuildTest:   BuildTest,
-	NameKernel:      Kernel,
 }
 
 func Get(name string) (Preset, bool) {
