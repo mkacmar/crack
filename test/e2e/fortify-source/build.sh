@@ -6,7 +6,6 @@ mkdir -p binaries
 
 . test/e2e/testdata/log-env.sh
 
-# source with fortifiable functions using runtime-determined sizes
 cat > /tmp/fortify.c << 'EOF'
 #include <string.h>
 #include <stdio.h>
