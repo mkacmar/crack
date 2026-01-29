@@ -31,11 +31,11 @@ func (r X86CETIBTRule) Execute(bin *binary.ELFBinary) rule.ExecuteResult {
 	if hasIBT {
 		return rule.ExecuteResult{
 			Status:  rule.StatusPassed,
-			Message: "CET IBT (Indirect Branch Tracking) is enabled",
+			Message: "CET IBT enabled",
 		}
 	}
 	return rule.ExecuteResult{
 		Status:  rule.StatusFailed,
-		Message: "CET IBT is NOT enabled",
+		Message: "CET IBT not enabled",
 	}
 }

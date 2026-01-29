@@ -47,6 +47,6 @@ func (r NoInsecureRUNPATHRule) Execute(bin *binary.ELFBinary) rule.ExecuteResult
 
 	return rule.ExecuteResult{
 		Status:  rule.StatusPassed,
-		Message: "RUNPATH is secure",
+		Message: "RUNPATH secure",
 	}
 }

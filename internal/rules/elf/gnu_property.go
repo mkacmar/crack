@@ -2,14 +2,12 @@ package elf
 
 import "debug/elf"
 
-// GNU Property constants for x86
 const (
 	GNU_PROPERTY_X86_FEATURE_1_AND   = 0xc0000002
 	GNU_PROPERTY_X86_FEATURE_1_IBT   = 0x1
 	GNU_PROPERTY_X86_FEATURE_1_SHSTK = 0x2
 )
 
-// GNU Property constants for AArch64
 const (
 	GNU_PROPERTY_AARCH64_FEATURE_1_AND = 0xc0000000
 	GNU_PROPERTY_AARCH64_FEATURE_1_BTI = 0x1
@@ -36,8 +34,8 @@ func parseGNUProperty(f *elf.File, propertyType uint32, featureFlag uint32) bool
 		descsz := f.ByteOrder.Uint32(data[offset+4 : offset+8])
 		noteType := f.ByteOrder.Uint32(data[offset+8 : offset+12])
 
-		// Note name is always 4-byte aligned per ELF spec
-		// Descriptor alignment depends on ELF class for .note.gnu.property
+		// Note name is always 4-byte aligned per ELF spec.
+		// Descriptor alignment depends on ELF class for .note.gnu.property.
 		align := 4
 		if f.Class == elf.ELFCLASS64 {
 			align = 8
@@ -52,11 +50,11 @@ func parseGNUProperty(f *elf.File, propertyType uint32, featureFlag uint32) bool
 			break
 		}
 
-		// Check if this is a GNU note (NT_GNU_PROPERTY_TYPE_0 = 5)
+		// Check if this is a GNU note (NT_GNU_PROPERTY_TYPE_0 = 5).
 		if noteType == 5 && namesz >= 4 {
 			name := string(data[nameStart : nameStart+4])
 			if name == "GNU\x00" {
-				// Parse properties in the descriptor
+				// Parse properties in the descriptor.
 				propOffset := descStart
 				propEnd := descStart + int(descsz)
 				for propOffset+8 <= propEnd {
@@ -70,7 +68,7 @@ func parseGNUProperty(f *elf.File, propertyType uint32, featureFlag uint32) bool
 						}
 					}
 
-					// Move to next property (aligned)
+					// Move to next property (aligned).
 					alignedPropSize := (int(propSize) + align - 1) &^ (align - 1)
 					propOffset += 8 + alignedPropSize
 				}

@@ -30,26 +30,26 @@ func (r WXorXRule) Applicability() rule.Applicability {
 
 func (r WXorXRule) Execute(bin *binary.ELFBinary) rule.ExecuteResult {
 	for _, prog := range bin.File.Progs {
-		// Check PT_LOAD segments for W+X
+		// Check PT_LOAD segments for W+X.
 		if prog.Type == elf.PT_LOAD {
 			if (prog.Flags&elf.PF_W) != 0 && (prog.Flags&elf.PF_X) != 0 {
 				return rule.ExecuteResult{
 					Status:  rule.StatusFailed,
-					Message: fmt.Sprintf("W^X violation: segment at offset 0x%x is both writable and executable", prog.Off),
+					Message: fmt.Sprintf("W^X violation at offset 0x%x, writable and executable", prog.Off),
 				}
 			}
 		}
-		// Check PT_GNU_STACK for executable stack
+		// Check PT_GNU_STACK for executable stack.
 		if prog.Type == elf.PT_GNU_STACK && (prog.Flags&elf.PF_X) != 0 {
 			return rule.ExecuteResult{
 				Status:  rule.StatusFailed,
-				Message: "W^X violation: executable stack",
+				Message: "W^X violation, executable stack",
 			}
 		}
 	}
 
 	return rule.ExecuteResult{
 		Status:  rule.StatusPassed,
-		Message: "All memory segments follow W^X policy (no segment is both writable and executable)",
+		Message: "W^X policy enforced",
 	}
 }

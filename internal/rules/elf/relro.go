@@ -39,11 +39,11 @@ func (r RELRORule) Execute(bin *binary.ELFBinary) rule.ExecuteResult {
 	if hasRELRO {
 		return rule.ExecuteResult{
 			Status:  rule.StatusPassed,
-			Message: "Partial RELRO is enabled (some ELF sections read-only after load)",
+			Message: "RELRO enabled",
 		}
 	}
 	return rule.ExecuteResult{
 		Status:  rule.StatusFailed,
-		Message: "Partial RELRO is NOT enabled (ELF sections remain writable)",
+		Message: "RELRO not enabled",
 	}
 }

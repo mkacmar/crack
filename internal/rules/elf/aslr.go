@@ -32,10 +32,9 @@ func (r ASLRRule) Execute(bin *binary.ELFBinary) rule.ExecuteResult {
 	case elf.ET_EXEC:
 		return rule.ExecuteResult{
 			Status:  rule.StatusFailed,
-			Message: "Binary is NOT ASLR compatible (not compiled as PIE)",
+			Message: "Not ASLR compatible, not PIE",
 		}
 	case elf.ET_DYN:
-		// Continue with analysis below
 	default:
 		return rule.ExecuteResult{
 			Status:  rule.StatusSkipped,
@@ -43,10 +42,10 @@ func (r ASLRRule) Execute(bin *binary.ELFBinary) rule.ExecuteResult {
 		}
 	}
 
-	// ET_DYN can be PIE executable or shared library
+	// ET_DYN can be PIE executable or shared library.
 	isPIE := HasDynFlag(bin.File, elf.DT_FLAGS_1, DF_1_PIE)
 	if !isPIE {
-		// Check for PT_INTERP as fallback for older binaries
+		// Check for PT_INTERP as fallback for older binaries.
 		for _, prog := range bin.File.Progs {
 			if prog.Type == elf.PT_INTERP {
 				isPIE = true
@@ -58,7 +57,7 @@ func (r ASLRRule) Execute(bin *binary.ELFBinary) rule.ExecuteResult {
 	if !isPIE {
 		return rule.ExecuteResult{
 			Status:  rule.StatusSkipped,
-			Message: "Shared library (ASLR check not applicable)",
+			Message: "Shared library, ASLR not applicable",
 		}
 	}
 
@@ -73,20 +72,20 @@ func (r ASLRRule) Execute(bin *binary.ELFBinary) rule.ExecuteResult {
 	if !hasNXStack {
 		return rule.ExecuteResult{
 			Status:  rule.StatusFailed,
-			Message: "Binary is NOT fully ASLR compatible (executable stack)",
+			Message: "Not ASLR compatible, executable stack",
 		}
 	}
 
-	// Check for text relocations (breaks ASLR)
+	// Check for text relocations (breaks ASLR).
 	if HasDynTag(bin.File, elf.DT_TEXTREL) {
 		return rule.ExecuteResult{
 			Status:  rule.StatusFailed,
-			Message: "Binary is NOT ASLR compatible (has text relocations)",
+			Message: "Not ASLR compatible, text relocations present",
 		}
 	}
 
 	return rule.ExecuteResult{
 		Status:  rule.StatusPassed,
-		Message: "Binary is fully ASLR compatible (PIE + NX stack + no text relocations)",
+		Message: "ASLR compatible",
 	}
 }

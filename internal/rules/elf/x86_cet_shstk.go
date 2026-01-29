@@ -31,11 +31,11 @@ func (r X86CETShadowStackRule) Execute(bin *binary.ELFBinary) rule.ExecuteResult
 	if hasShadowStack {
 		return rule.ExecuteResult{
 			Status:  rule.StatusPassed,
-			Message: "CET Shadow Stack is enabled",
+			Message: "CET Shadow Stack enabled",
 		}
 	}
 	return rule.ExecuteResult{
 		Status:  rule.StatusFailed,
-		Message: "CET Shadow Stack is NOT enabled",
+		Message: "CET Shadow Stack not enabled",
 	}
 }

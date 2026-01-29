@@ -33,13 +33,13 @@ func (r UBSanRule) Execute(bin *binary.ELFBinary) rule.ExecuteResult {
 		if strings.HasPrefix(sym.Name, "__ubsan_") {
 			return rule.ExecuteResult{
 				Status:  rule.StatusPassed,
-				Message: "UBSan is enabled",
+				Message: "UBSan enabled",
 			}
 		}
 	}
 
 	return rule.ExecuteResult{
 		Status:  rule.StatusFailed,
-		Message: "UBSan is NOT enabled",
+		Message: "UBSan not enabled",
 	}
 }

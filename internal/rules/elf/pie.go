@@ -35,7 +35,7 @@ func (r PIERule) Execute(bin *binary.ELFBinary) rule.ExecuteResult {
 	case elf.ET_EXEC:
 		return rule.ExecuteResult{
 			Status:  rule.StatusFailed,
-			Message: "Binary is NOT compiled as PIE (ASLR not possible)",
+			Message: "Not PIE",
 		}
 	case elf.ET_DYN:
 	default:
@@ -52,7 +52,7 @@ func (r PIERule) Execute(bin *binary.ELFBinary) rule.ExecuteResult {
 	if HasDynFlag(bin.File, elf.DT_FLAGS_1, DF_1_PIE) {
 		return rule.ExecuteResult{
 			Status:  rule.StatusPassed,
-			Message: "Binary is compiled as PIE (enables ASLR when system supports it)",
+			Message: "PIE enabled",
 		}
 	}
 
@@ -60,13 +60,13 @@ func (r PIERule) Execute(bin *binary.ELFBinary) rule.ExecuteResult {
 		if prog.Type == elf.PT_INTERP {
 			return rule.ExecuteResult{
 				Status:  rule.StatusPassed,
-				Message: "Binary is compiled as PIE (enables ASLR when system supports it)",
+				Message: "PIE enabled",
 			}
 		}
 	}
 
 	return rule.ExecuteResult{
 		Status:  rule.StatusSkipped,
-		Message: "Shared library (PIE check not applicable)",
+		Message: "Shared library, PIE not applicable",
 	}
 }

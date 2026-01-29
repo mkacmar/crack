@@ -29,32 +29,24 @@ func (r StackLimitRule) Applicability() rule.Applicability {
 }
 
 func (r StackLimitRule) Execute(bin *binary.ELFBinary) rule.ExecuteResult {
-	hasExplicitStackLimit := false
-	stackSize := uint64(0)
-	foundGNUStack := false
+	var stackSize uint64
 
 	for _, prog := range bin.File.Progs {
 		if prog.Type == elf.PT_GNU_STACK {
-			foundGNUStack = true
 			stackSize = prog.Memsz
-			hasExplicitStackLimit = stackSize > 0
 			break
 		}
 	}
 
-	if hasExplicitStackLimit {
+	if stackSize > 0 {
 		return rule.ExecuteResult{
 			Status:  rule.StatusPassed,
-			Message: fmt.Sprintf("Stack has explicit size limit: %d bytes", stackSize),
+			Message: fmt.Sprintf("Explicit stack limit set (%d bytes)", stackSize),
 		}
 	}
 
-	msg := "No PT_GNU_STACK segment found"
-	if foundGNUStack {
-		msg = "Stack uses system default size (no explicit limit set)"
-	}
 	return rule.ExecuteResult{
 		Status:  rule.StatusFailed,
-		Message: msg,
+		Message: "No explicit stack limit",
 	}
 }

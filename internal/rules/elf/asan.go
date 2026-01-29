@@ -33,13 +33,13 @@ func (r ASANRule) Execute(bin *binary.ELFBinary) rule.ExecuteResult {
 		if strings.HasPrefix(sym.Name, "__asan_") {
 			return rule.ExecuteResult{
 				Status:  rule.StatusPassed,
-				Message: "AddressSanitizer is enabled",
+				Message: "ASan enabled",
 			}
 		}
 	}
 
 	return rule.ExecuteResult{
 		Status:  rule.StatusFailed,
-		Message: "AddressSanitizer is NOT enabled",
+		Message: "ASan not enabled",
 	}
 }

@@ -61,7 +61,7 @@ func (r FortifySourceRule) Execute(bin *binary.ELFBinary) rule.ExecuteResult {
 	if bin.LibC == toolchain.LibCMusl {
 		return rule.ExecuteResult{
 			Status:  rule.StatusSkipped,
-			Message: "musl libc does not support FORTIFY_SOURCE",
+			Message: "musl libc, FORTIFY_SOURCE not supported",
 		}
 	}
 
@@ -89,9 +89,9 @@ func (r FortifySourceRule) Execute(bin *binary.ELFBinary) rule.ExecuteResult {
 	}
 
 	if len(fortifiedFuncs) > 0 {
-		msg := fmt.Sprintf("FORTIFY_SOURCE is enabled. %d fortified %v", len(fortifiedFuncs), fortifiedFuncs)
+		msg := fmt.Sprintf("FORTIFY_SOURCE enabled (%d fortified)", len(fortifiedFuncs))
 		if len(unfortifiedFuncs) > 0 {
-			msg += fmt.Sprintf(", %d left unfortified %v", len(unfortifiedFuncs), unfortifiedFuncs)
+			msg = fmt.Sprintf("FORTIFY_SOURCE enabled (%d fortified, %d unfortified)", len(fortifiedFuncs), len(unfortifiedFuncs))
 		}
 		return rule.ExecuteResult{
 			Status:  rule.StatusPassed,
@@ -104,7 +104,7 @@ func (r FortifySourceRule) Execute(bin *binary.ELFBinary) rule.ExecuteResult {
 	if len(unfortifiedFuncs) > 0 {
 		return rule.ExecuteResult{
 			Status:  rule.StatusFailed,
-			Message: fmt.Sprintf("FORTIFY_SOURCE is NOT enabled, unfortified: %v", unfortifiedFuncs),
+			Message: "FORTIFY_SOURCE not enabled",
 		}
 	}
 

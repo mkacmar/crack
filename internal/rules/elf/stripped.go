@@ -48,26 +48,26 @@ func (r StrippedRule) Execute(bin *binary.ELFBinary) rule.ExecuteResult {
 	if !hasSymbolTable && !hasDebugSections {
 		return rule.ExecuteResult{
 			Status:  rule.StatusPassed,
-			Message: "Binary is fully stripped (no symbol table or debug sections)",
+			Message: "Fully stripped",
 		}
 	}
 
 	if hasSymbolTable && hasDebugSections {
 		return rule.ExecuteResult{
 			Status:  rule.StatusFailed,
-			Message: "Binary is NOT stripped (contains symbol table and debug sections)",
+			Message: "Not stripped, has symbols and debug info",
 		}
 	}
 
 	if hasSymbolTable {
 		return rule.ExecuteResult{
 			Status:  rule.StatusFailed,
-			Message: "Binary is NOT stripped (contains symbol table)",
+			Message: "Not stripped, has symbols",
 		}
 	}
 
 	return rule.ExecuteResult{
 		Status:  rule.StatusFailed,
-		Message: "Binary is partially stripped (no symbol table, but has debug sections)",
+		Message: "Partially stripped, has debug info",
 	}
 }

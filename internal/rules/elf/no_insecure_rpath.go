@@ -47,7 +47,7 @@ func (r NoInsecureRPATHRule) Execute(bin *binary.ELFBinary) rule.ExecuteResult {
 
 	return rule.ExecuteResult{
 		Status:  rule.StatusPassed,
-		Message: "RPATH is secure",
+		Message: "RPATH secure",
 	}
 }
 
@@ -65,18 +65,16 @@ func findInsecurePaths(rpath string) []string {
 	return insecure
 }
 
-// See CWE-426: Untrusted Search Path (https://cwe.mitre.org/data/definitions/426.html)
+// CWE-426: Untrusted Search Path (https://cwe.mitre.org/data/definitions/426.html)
 func isInsecurePath(p string) bool {
 	if p == "" {
 		return true // empty path component means current directory
 	}
 
-	// Relative paths
 	if p == "." || p == ".." || strings.HasPrefix(p, "./") || strings.HasPrefix(p, "../") {
 		return true
 	}
 
-	// World-writable directories
 	worldWritable := []string{"/tmp", "/var/tmp"}
 	for _, ww := range worldWritable {
 		if p == ww || strings.HasPrefix(p, ww+"/") {

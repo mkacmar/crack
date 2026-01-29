@@ -32,13 +32,13 @@ func (r SafeStackRule) Execute(bin *binary.ELFBinary) rule.ExecuteResult {
 		if strings.HasPrefix(sym.Name, "__safestack_") {
 			return rule.ExecuteResult{
 				Status:  rule.StatusPassed,
-				Message: "SafeStack is enabled",
+				Message: "SafeStack enabled",
 			}
 		}
 	}
 
 	return rule.ExecuteResult{
 		Status:  rule.StatusFailed,
-		Message: "SafeStack is NOT enabled",
+		Message: "SafeStack not enabled",
 	}
 }

@@ -38,11 +38,11 @@ func (r ARMMTERule) Execute(bin *binary.ELFBinary) rule.ExecuteResult {
 	if hasMTE {
 		return rule.ExecuteResult{
 			Status:  rule.StatusPassed,
-			Message: "ARM MTE (Memory Tagging Extension) is enabled",
+			Message: "ARM MTE enabled",
 		}
 	}
 	return rule.ExecuteResult{
 		Status:  rule.StatusFailed,
-		Message: "ARM MTE is NOT enabled (requires ARMv8.5+ hardware)",
+		Message: "ARM MTE not enabled",
 	}
 }

@@ -31,12 +31,12 @@ func (r NoDumpRule) Execute(bin *binary.ELFBinary) rule.ExecuteResult {
 	if HasDynFlag(bin.File, elf.DT_FLAGS_1, uint64(elf.DF_1_NODUMP)) {
 		return rule.ExecuteResult{
 			Status:  rule.StatusPassed,
-			Message: "Core dumps are disabled (DF_1_NODUMP set)",
+			Message: "Core dumps disabled",
 		}
 	}
 
 	return rule.ExecuteResult{
 		Status:  rule.StatusFailed,
-		Message: "Core dumps are NOT explicitly disabled",
+		Message: "Core dumps not explicitly disabled",
 	}
 }

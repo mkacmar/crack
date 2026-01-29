@@ -38,12 +38,12 @@ func (r NoDLOpenRule) Execute(bin *binary.ELFBinary) rule.ExecuteResult {
 	if HasDynFlag(bin.File, elf.DT_FLAGS_1, uint64(elf.DF_1_NOOPEN)) {
 		return rule.ExecuteResult{
 			Status:  rule.StatusPassed,
-			Message: "dlopen is disabled via DF_1_NOOPEN flag",
+			Message: "dlopen disabled",
 		}
 	}
 
 	return rule.ExecuteResult{
 		Status:  rule.StatusFailed,
-		Message: "dlopen is NOT disabled (library can be loaded dynamically)",
+		Message: "dlopen not disabled",
 	}
 }

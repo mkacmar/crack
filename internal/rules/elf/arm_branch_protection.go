@@ -30,25 +30,28 @@ func (r ARMBranchProtectionRule) Applicability() rule.Applicability {
 func (r ARMBranchProtectionRule) Execute(bin *binary.ELFBinary) rule.ExecuteResult {
 	hasPAC := parseGNUProperty(bin.File, GNU_PROPERTY_AARCH64_FEATURE_1_AND, GNU_PROPERTY_AARCH64_FEATURE_1_PAC)
 	hasBTI := parseGNUProperty(bin.File, GNU_PROPERTY_AARCH64_FEATURE_1_AND, GNU_PROPERTY_AARCH64_FEATURE_1_BTI)
-	hasBranchProt := hasPAC && hasBTI
 
-	if hasBranchProt {
+	switch {
+	case hasPAC && hasBTI:
 		return rule.ExecuteResult{
 			Status:  rule.StatusPassed,
-			Message: "ARM branch protection (PAC+BTI) is fully enabled",
+			Message: "ARM branch protection enabled (PAC+BTI)",
 		}
-	}
-
-	// PAC property requires all linked objects (including libc) to have PAC support
-	message := "ARM branch protection is NOT enabled (libc must also be compiled with PAC+BTI)"
-	if hasPAC && !hasBTI {
-		message = "ARM branch protection is partial (PAC enabled, BTI missing)"
-	} else if !hasPAC && hasBTI {
-		message = "ARM branch protection is partial (BTI enabled, PAC missing; libc may lack PAC support)"
-	}
-
-	return rule.ExecuteResult{
-		Status:  rule.StatusFailed,
-		Message: message,
+	case hasPAC:
+		return rule.ExecuteResult{
+			Status:  rule.StatusFailed,
+			Message: "ARM branch protection partial, BTI missing",
+		}
+	case hasBTI:
+		// PAC requires all linked objects (including libc) to have PAC support.
+		return rule.ExecuteResult{
+			Status:  rule.StatusFailed,
+			Message: "ARM branch protection partial, PAC missing (libc may lack PAC support)",
+		}
+	default:
+		return rule.ExecuteResult{
+			Status:  rule.StatusFailed,
+			Message: "ARM branch protection not enabled",
+		}
 	}
 }

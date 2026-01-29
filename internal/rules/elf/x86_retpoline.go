@@ -32,12 +32,12 @@ func (r X86RetpolineRule) Applicability() rule.Applicability {
 func (r X86RetpolineRule) Execute(bin *binary.ELFBinary) rule.ExecuteResult {
 	// CET-IBT and retpoline both mitigate Spectre v2 indirect branch attacks.
 	// Hardware mitigations take precedence over software (retpoline).
-	// See: https://www.kernel.org/doc/html/latest/admin-guide/hw-vuln/spectre.html
+	// https://www.kernel.org/doc/html/latest/admin-guide/hw-vuln/spectre.html
 	hasCETIBT := parseGNUProperty(bin.File, GNU_PROPERTY_X86_FEATURE_1_AND, GNU_PROPERTY_X86_FEATURE_1_IBT)
 	if hasCETIBT {
 		return rule.ExecuteResult{
 			Status:  rule.StatusSkipped,
-			Message: "CET-IBT enabled (hardware mitigation supersedes retpoline)",
+			Message: "CET IBT enabled, retpoline not needed",
 		}
 	}
 
@@ -53,7 +53,7 @@ func (r X86RetpolineRule) Execute(bin *binary.ELFBinary) rule.ExecuteResult {
 	if !hasSymtab {
 		return rule.ExecuteResult{
 			Status:  rule.StatusSkipped,
-			Message: "Stripped binary (retpoline symbols not available)",
+			Message: "Stripped binary, retpoline detection limited",
 		}
 	}
 
@@ -83,6 +83,6 @@ func (r X86RetpolineRule) Execute(bin *binary.ELFBinary) rule.ExecuteResult {
 	}
 	return rule.ExecuteResult{
 		Status:  rule.StatusFailed,
-		Message: "Retpoline is NOT enabled (x86 Spectre v2 mitigation missing)",
+		Message: "Retpoline not enabled",
 	}
 }

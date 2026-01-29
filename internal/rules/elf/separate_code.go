@@ -28,7 +28,7 @@ func (r SeparateCodeRule) Applicability() rule.Applicability {
 }
 
 func (r SeparateCodeRule) Execute(bin *binary.ELFBinary) rule.ExecuteResult {
-	// Check file offsets at 4KB page granularity
+	// Check file offsets at 4KB page granularity.
 	const pageSize uint64 = 4096
 
 	var codePages, dataPages [][2]uint64 // [start, end) page ranges
@@ -56,13 +56,13 @@ func (r SeparateCodeRule) Execute(bin *binary.ELFBinary) rule.ExecuteResult {
 		}
 	}
 
-	// Check if any code page range overlaps with any data page range
+	// Check if any code page range overlaps with any data page range.
 	for _, code := range codePages {
 		for _, data := range dataPages {
 			if code[0] < data[1] && code[1] > data[0] {
 				return rule.ExecuteResult{
 					Status:  rule.StatusFailed,
-					Message: "Code and data segments share page boundary",
+					Message: "Code and data share pages",
 				}
 			}
 		}
@@ -70,6 +70,6 @@ func (r SeparateCodeRule) Execute(bin *binary.ELFBinary) rule.ExecuteResult {
 
 	return rule.ExecuteResult{
 		Status:  rule.StatusPassed,
-		Message: "Code and data are in separate pages",
+		Message: "Code and data separated",
 	}
 }

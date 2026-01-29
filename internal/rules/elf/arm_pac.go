@@ -33,11 +33,11 @@ func (r ARMPACRule) Execute(bin *binary.ELFBinary) rule.ExecuteResult {
 	if hasPAC {
 		return rule.ExecuteResult{
 			Status:  rule.StatusPassed,
-			Message: "ARM PAC (Pointer Authentication Code) is enabled",
+			Message: "ARM PAC enabled",
 		}
 	}
 	return rule.ExecuteResult{
 		Status:  rule.StatusFailed,
-		Message: "ARM PAC is NOT enabled (requires ARMv8.3+ hardware)",
+		Message: "ARM PAC not enabled",
 	}
 }

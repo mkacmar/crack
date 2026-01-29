@@ -51,7 +51,7 @@ func (r CFIRule) Execute(bin *binary.ELFBinary) rule.ExecuteResult {
 			if strings.Contains(sym.Name, cfiSym) {
 				return rule.ExecuteResult{
 					Status:  rule.StatusPassed,
-					Message: "CFI is enabled (cross-DSO mode)",
+					Message: "CFI enabled (cross-DSO mode)",
 				}
 			}
 		}
@@ -60,7 +60,7 @@ func (r CFIRule) Execute(bin *binary.ELFBinary) rule.ExecuteResult {
 	if len(bin.Symbols) == 0 {
 		return rule.ExecuteResult{
 			Status:  rule.StatusSkipped,
-			Message: "Binary is stripped, cannot detect regular CFI",
+			Message: "Stripped binary, CFI detection limited",
 		}
 	}
 
@@ -69,7 +69,7 @@ func (r CFIRule) Execute(bin *binary.ELFBinary) rule.ExecuteResult {
 			if strings.HasSuffix(sym.Name, suffix) {
 				return rule.ExecuteResult{
 					Status:  rule.StatusPassed,
-					Message: "CFI is enabled",
+					Message: "CFI enabled",
 				}
 			}
 		}
@@ -77,7 +77,7 @@ func (r CFIRule) Execute(bin *binary.ELFBinary) rule.ExecuteResult {
 			if strings.HasPrefix(sym.Name, prefix) {
 				return rule.ExecuteResult{
 					Status:  rule.StatusPassed,
-					Message: "CFI is enabled",
+					Message: "CFI enabled",
 				}
 			}
 		}
@@ -85,6 +85,6 @@ func (r CFIRule) Execute(bin *binary.ELFBinary) rule.ExecuteResult {
 
 	return rule.ExecuteResult{
 		Status:  rule.StatusFailed,
-		Message: "CFI is NOT enabled",
+		Message: "CFI not enabled",
 	}
 }

@@ -40,7 +40,7 @@ func (r StackCanaryRule) Execute(bin *binary.ELFBinary) rule.ExecuteResult {
 			strings.Contains(sym.Name, "__intel_security_cookie") {
 			return rule.ExecuteResult{
 				Status:  rule.StatusPassed,
-				Message: "Stack canary protection is enabled",
+				Message: "Stack canary enabled",
 			}
 		}
 	}
@@ -49,6 +49,6 @@ func (r StackCanaryRule) Execute(bin *binary.ELFBinary) rule.ExecuteResult {
 	// While the compiler might omit these if no functions need protection, real-world binaries typically have stack buffers.
 	return rule.ExecuteResult{
 		Status:  rule.StatusFailed,
-		Message: "Stack canary protection is NOT enabled",
+		Message: "Stack canary not enabled",
 	}
 }

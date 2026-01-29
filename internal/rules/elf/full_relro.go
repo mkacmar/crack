@@ -44,7 +44,7 @@ func (r FullRELRORule) Execute(bin *binary.ELFBinary) rule.ExecuteResult {
 	if !hasRELRO {
 		return rule.ExecuteResult{
 			Status:  rule.StatusFailed,
-			Message: "Full RELRO is NOT enabled (no PT_GNU_RELRO segment)",
+			Message: "Full RELRO not enabled, no RELRO segment",
 		}
 	}
 
@@ -55,12 +55,12 @@ func (r FullRELRORule) Execute(bin *binary.ELFBinary) rule.ExecuteResult {
 		HasDynFlag(bin.File, elf.DT_FLAGS_1, DF_1_NOW) {
 		return rule.ExecuteResult{
 			Status:  rule.StatusPassed,
-			Message: "Full RELRO is enabled (GOT read-only, lazy binding disabled)",
+			Message: "Full RELRO enabled",
 		}
 	}
 
 	return rule.ExecuteResult{
 		Status:  rule.StatusFailed,
-		Message: "Full RELRO is NOT enabled (GOT may be writable)",
+		Message: "Full RELRO not enabled, partial RELRO only",
 	}
 }

@@ -30,11 +30,11 @@ func (r ARMBTIRule) Execute(bin *binary.ELFBinary) rule.ExecuteResult {
 	if hasBTI {
 		return rule.ExecuteResult{
 			Status:  rule.StatusPassed,
-			Message: "ARM BTI (Branch Target Identification) is enabled",
+			Message: "ARM BTI enabled",
 		}
 	}
 	return rule.ExecuteResult{
 		Status:  rule.StatusFailed,
-		Message: "ARM BTI is NOT enabled (requires ARMv8.5+ hardware)",
+		Message: "ARM BTI not enabled",
 	}
 }
