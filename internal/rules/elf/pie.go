@@ -8,8 +8,6 @@ import (
 	"github.com/mkacmar/crack/internal/toolchain"
 )
 
-const DF_1_PIE = 0x08000000
-
 const PIERuleID = "pie"
 
 // PIERule checks if binary is compiled as Position Independent Executable
@@ -49,7 +47,7 @@ func (r PIERule) Execute(bin *binary.ELFBinary) rule.ExecuteResult {
 	// 1. DF_1_PIE flag in .dynamic section - set by modern linkers for PIE executables (including static-pie).
 	// 2. PT_INTERP program header - present in dynamically linked executables but not in shared libraries.
 	// static-pie binaries (-static-pie) have DF_1_PIE but no PT_INTERP, so the DF_1_PIE check must come first.
-	if HasDynFlag(bin.File, elf.DT_FLAGS_1, DF_1_PIE) {
+	if HasDynFlag(bin.File, elf.DT_FLAGS_1, uint64(elf.DF_1_PIE)) {
 		return rule.ExecuteResult{
 			Status:  rule.StatusPassed,
 			Message: "PIE enabled",

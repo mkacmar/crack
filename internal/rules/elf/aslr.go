@@ -43,7 +43,7 @@ func (r ASLRRule) Execute(bin *binary.ELFBinary) rule.ExecuteResult {
 	}
 
 	// ET_DYN can be PIE executable or shared library.
-	isPIE := HasDynFlag(bin.File, elf.DT_FLAGS_1, DF_1_PIE)
+	isPIE := HasDynFlag(bin.File, elf.DT_FLAGS_1, uint64(elf.DF_1_PIE))
 	if !isPIE {
 		// Check for PT_INTERP as fallback for older binaries.
 		for _, prog := range bin.File.Progs {

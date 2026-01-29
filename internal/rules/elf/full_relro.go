@@ -8,11 +8,6 @@ import (
 	"github.com/mkacmar/crack/internal/toolchain"
 )
 
-const (
-	DF_BIND_NOW = 0x8
-	DF_1_NOW    = 0x1
-)
-
 const FullRELRORuleID = "full-relro"
 
 // FullRELRORule checks for full RELRO protection
@@ -51,8 +46,8 @@ func (r FullRELRORule) Execute(bin *binary.ELFBinary) rule.ExecuteResult {
 	// Check for BIND_NOW flag which makes RELRO "full" by disabling lazy binding.
 	// This can be indicated by DT_BIND_NOW, DT_FLAGS with DF_BIND_NOW, or DT_FLAGS_1 with DF_1_NOW.
 	if HasDynTag(bin.File, elf.DT_BIND_NOW) ||
-		HasDynFlag(bin.File, elf.DT_FLAGS, DF_BIND_NOW) ||
-		HasDynFlag(bin.File, elf.DT_FLAGS_1, DF_1_NOW) {
+		HasDynFlag(bin.File, elf.DT_FLAGS, uint64(elf.DF_BIND_NOW)) ||
+		HasDynFlag(bin.File, elf.DT_FLAGS_1, uint64(elf.DF_1_NOW)) {
 		return rule.ExecuteResult{
 			Status:  rule.StatusPassed,
 			Message: "Full RELRO enabled",
