@@ -26,8 +26,6 @@ func (a *App) Run(args []string) int {
 	switch cmd {
 	case "analyze":
 		return a.runAnalyze(args[0], args[2:])
-	case "list-rules":
-		return a.runListRules(args[0], args[2:])
 	case "version", "-v", "--version":
 		a.printVersion()
 		return 0
@@ -58,7 +56,6 @@ Usage: %s <command> [options]
 
 Commands:
   analyze      Analyze binaries for security hardening features
-  list-rules   List available security rules
   version      Show version information
   help         Show this help message
 

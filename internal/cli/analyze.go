@@ -31,8 +31,7 @@ func (a *App) printAnalyzeUsage(prog string) {
 Analyze binaries for security hardening features.
 
 Options:
-  -P, --preset string         Security preset to use (default %q)
-  -R, --rules string          Comma-separated list of rule IDs to run (mutually exclusive with --preset)
+  -R, --rules string          Comma-separated list of rule IDs to run
   -i, --input string          Read file paths from file (use "-" for stdin, mutually exclusive with positional args)
   -o, --sarif string          Save detailed SARIF report to file
   -a, --aggregate             Aggregate findings into actionable recommendations
@@ -49,17 +48,7 @@ Debuginfod options:
       --debuginfod-cache      Debuginfod cache directory (default "%s")
       --debuginfod-timeout    Debuginfod HTTP timeout (default %v)
       --debuginfod-retries    Debuginfod max retries per server (default %d)
-
-Presets:
-`, prog, preset.Default, runtime.NumCPU(), debuginfo.DefaultServerURL, debuginfo.DefaultCacheDir(), debuginfo.DefaultTimeout, debuginfo.DefaultRetries)
-
-	for _, name := range preset.Names() {
-		if name == preset.Default {
-			fmt.Fprintf(os.Stderr, "  %s (default)\n", name)
-		} else {
-			fmt.Fprintf(os.Stderr, "  %s\n", name)
-		}
-	}
+`, prog, runtime.NumCPU(), debuginfo.DefaultServerURL, debuginfo.DefaultCacheDir(), debuginfo.DefaultTimeout, debuginfo.DefaultRetries)
 }
 
 func (a *App) runAnalyze(prog string, args []string) int {
@@ -69,7 +58,6 @@ func (a *App) runAnalyze(prog string, args []string) int {
 	fs := flag.NewFlagSet("analyze", flag.ExitOnError)
 
 	var (
-		presetName        string
 		rulesFlag         string
 		inputFile         string
 		sarifOutput       string
@@ -87,8 +75,6 @@ func (a *App) runAnalyze(prog string, args []string) int {
 		debuginfodRetries int
 	)
 
-	fs.StringVar(&presetName, "preset", "", "")
-	fs.StringVar(&presetName, "P", "", "")
 	fs.StringVar(&rulesFlag, "rules", "", "")
 	fs.StringVar(&rulesFlag, "R", "", "")
 	fs.StringVar(&inputFile, "input", "", "")
@@ -120,14 +106,9 @@ func (a *App) runAnalyze(prog string, args []string) int {
 		return 1
 	}
 
-	if rulesFlag != "" && presetName != "" {
-		fmt.Fprintf(os.Stderr, "Error: --rules and --preset are mutually exclusive\n")
-		return 1
-	}
-
-	var p preset.Preset
+	var ruleIDs []string
 	if rulesFlag != "" {
-		ruleIDs := strings.Split(rulesFlag, ",")
+		ruleIDs = strings.Split(rulesFlag, ",")
 		for i, id := range ruleIDs {
 			ruleIDs[i] = strings.TrimSpace(id)
 		}
@@ -138,18 +119,8 @@ func (a *App) runAnalyze(prog string, args []string) int {
 				return 1
 			}
 		}
-		p = preset.Preset{Rules: ruleIDs}
 	} else {
-		if presetName == "" {
-			presetName = preset.Default
-		}
-		var ok bool
-		p, ok = preset.Get(presetName)
-		if !ok {
-			fmt.Fprintf(os.Stderr, "Error: unknown preset %q\n", presetName)
-			fmt.Fprintf(os.Stderr, "Available presets: %s\n", strings.Join(preset.Names(), ", "))
-			return 1
-		}
+		ruleIDs = preset.DefaultRules
 	}
 
 	if fs.NArg() == 0 && inputFile == "" {
@@ -212,7 +183,7 @@ func (a *App) runAnalyze(prog string, args []string) int {
 	}
 
 	analyzer := elfanalyzer.NewAnalyzer(elfanalyzer.Options{
-		RuleIDs:          p.Rules,
+		RuleIDs:          ruleIDs,
 		DebuginfodClient: debuginfodClient,
 		Logger:           a.logger,
 	})

@@ -18,14 +18,14 @@ Based on recommendations from:
 # Show help
 crack analyze --help
 
-# Analyze a binary with the default (recommended) preset
+# Analyze a binary
 crack analyze /usr/bin/ls
 
-# List rules in a specific preset
-crack analyze --preset=hardened --list-rules
+# Analyze with specific rules only
+crack analyze --rules=pie,relro,stack-canary /usr/bin/ls
 
 # Analyze with debuginfod to fetch debug symbols for stripped binaries
-crack analyze --preset=hardened --debuginfod --debuginfod-urls=https://debuginfod.elfutils.org /usr/bin/ls
+crack analyze --debuginfod /usr/bin/ls
 ```
 
 ## Available Rules
@@ -39,12 +39,10 @@ crack analyze --preset=hardened --debuginfod --debuginfod-urls=https://debuginfo
 | `cfi` | [Control Flow Integrity](https://clang.llvm.org/docs/ControlFlowIntegrity.html) | | ✓ |
 | `fortify-source` | [FORTIFY_SOURCE buffer overflow protection](https://gcc.gnu.org/onlinedocs/gcc/Instrumentation-Options.html#index-D_FORTIFY_SOURCE) | ✓ | ✓ |
 | `full-relro` | [Full RELRO (immediate binding)](https://www.redhat.com/en/blog/hardening-elf-binaries-using-relocation-read-only-relro) | ✓ | ✓ |
-| `kernel-cfi` | [Kernel CFI](https://clang.llvm.org/docs/ControlFlowIntegrity.html#fsanitize-kcfi) | | ✓ |
 | `no-dlopen` | [Dynamic library loading disabled](https://sourceware.org/binutils/docs/ld/Options.html) | ✓ | ✓ |
 | `no-dump` | [Core dump disabled](https://sourceware.org/binutils/docs/ld/Options.html) | ✓ | ✓ |
 | `no-insecure-rpath` | [No insecure RPATH entries](https://man7.org/linux/man-pages/man8/ld.so.8.html) | ✓ | ✓ |
 | `no-insecure-runpath` | [No insecure RUNPATH entries](https://man7.org/linux/man-pages/man8/ld.so.8.html) | ✓ | ✓ |
-| `no-plt` | [No PLT (direct GOT access)](https://gcc.gnu.org/onlinedocs/gcc/Code-Gen-Options.html#index-fno-plt) | ✓ | ✓ |
 | `nx-bit` | [Non-executable stack (NX bit)](https://www.gnu.org/software/binutils/manual/ld.html) | ✓ | ✓ |
 | `pie` | [Position Independent Executable](https://gcc.gnu.org/onlinedocs/gcc/Code-Gen-Options.html#index-fPIE) | ✓ | ✓ |
 | `relro` | [Read-only relocations (RELRO)](https://www.redhat.com/en/blog/hardening-elf-binaries-using-relocation-read-only-relro) | ✓ | ✓ |
@@ -60,8 +58,8 @@ crack analyze --preset=hardened --debuginfod --debuginfod-urls=https://debuginfo
 
 | Rule ID | Description | GCC | Clang (LLVM) |
 |---------|-------------|-----|--------------|
-| `intel-cet-ibt` | [Intel CET Indirect Branch Tracking](https://gcc.gnu.org/onlinedocs/gcc/Instrumentation-Options.html#index-fcf-protection) | ✓ | ✓ |
-| `intel-cet-shstk` | [Intel CET Shadow Stack](https://gcc.gnu.org/onlinedocs/gcc/Instrumentation-Options.html#index-fcf-protection) | ✓ | ✓ |
+| `x86-cet-ibt` | [x86 CET Indirect Branch Tracking](https://gcc.gnu.org/onlinedocs/gcc/Instrumentation-Options.html#index-fcf-protection) | ✓ | ✓ |
+| `x86-cet-shstk` | [x86 CET Shadow Stack](https://gcc.gnu.org/onlinedocs/gcc/Instrumentation-Options.html#index-fcf-protection) | ✓ | ✓ |
 | `x86-retpoline` | [Retpoline Spectre v2 mitigation](https://gcc.gnu.org/onlinedocs/gcc/x86-Options.html#index-mindirect-branch) | ✓ | ✓ |
 
 ### ARM64 Specific Rules
