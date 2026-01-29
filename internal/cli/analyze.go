@@ -4,6 +4,7 @@ import (
 	"context"
 	"flag"
 	"fmt"
+	"io"
 	"log/slog"
 	"os"
 	"runtime"
@@ -36,6 +37,7 @@ Options:
   -o, --sarif string          Save detailed SARIF report to file
   -a, --aggregate             Aggregate findings into actionable recommendations
   -r, --recursive             Recursively scan directories
+      --log string            Log output file (default stderr)
       --log-level string      Log level: none, debug, info, warn, error (default "error")
       --show-passed           Show passing checks in output
       --show-skipped          Show skipped checks in output
@@ -73,6 +75,7 @@ func (a *App) runAnalyze(prog string, args []string) int {
 		sarifOutput       string
 		aggregate         bool
 		recursive         bool
+		logFile           string
 		logLevel          string
 		showPassed        bool
 		showSkipped       bool
@@ -96,6 +99,7 @@ func (a *App) runAnalyze(prog string, args []string) int {
 	fs.BoolVar(&aggregate, "a", false, "")
 	fs.BoolVar(&recursive, "recursive", false, "")
 	fs.BoolVar(&recursive, "r", false, "")
+	fs.StringVar(&logFile, "log", "", "")
 	fs.StringVar(&logLevel, "log-level", "error", "")
 	fs.BoolVar(&showPassed, "show-passed", false, "")
 	fs.BoolVar(&showSkipped, "show-skipped", false, "")
@@ -179,11 +183,17 @@ func (a *App) runAnalyze(prog string, args []string) int {
 		return 1
 	}
 
-	var logLevelValid bool
-	a.logger, logLevelValid = setupLogger(logLevel)
-	if !logLevelValid {
-		fmt.Fprintf(os.Stderr, "Warning: invalid log level %q, using \"error\"\n", logLevel)
+	var logOutput io.Writer = os.Stderr
+	if logFile != "" {
+		f, err := os.Create(logFile)
+		if err != nil {
+			fmt.Fprintf(os.Stderr, "Error: failed to open log file: %v\n", err)
+			return 1
+		}
+		defer f.Close()
+		logOutput = f
 	}
+	a.logger = setupLogger(logLevel, logOutput)
 
 	var debuginfodClient *debuginfo.Client
 	if useDebuginfod {

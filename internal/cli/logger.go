@@ -1,15 +1,14 @@
 package cli
 
 import (
+	"io"
 	"log/slog"
-	"os"
 )
 
 const logLevelDisabled = slog.Level(99)
 
-func setupLogger(level string) (*slog.Logger, bool) {
+func setupLogger(level string, output io.Writer) *slog.Logger {
 	var logLevel slog.Level
-	valid := true
 
 	switch level {
 	case "none":
@@ -24,13 +23,12 @@ func setupLogger(level string) (*slog.Logger, bool) {
 		logLevel = slog.LevelError
 	default:
 		logLevel = slog.LevelError
-		valid = false
 	}
 
 	opts := &slog.HandlerOptions{
 		Level: logLevel,
 	}
 
-	handler := slog.NewTextHandler(os.Stderr, opts)
-	return slog.New(handler), valid
+	handler := slog.NewTextHandler(output, opts)
+	return slog.New(handler)
 }
