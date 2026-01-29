@@ -32,6 +32,7 @@ Analyze binaries for security hardening features.
 Options:
   -P, --preset string         Security preset to use (default %q)
   -R, --rules string          Comma-separated list of rule IDs to run (mutually exclusive with --preset)
+  -i, --input string          Read file paths from file (use "-" for stdin, mutually exclusive with positional args)
   -o, --sarif string          Save detailed SARIF report to file
   -a, --aggregate             Aggregate findings into actionable recommendations
   -r, --recursive             Recursively scan directories
@@ -68,6 +69,7 @@ func (a *App) runAnalyze(prog string, args []string) int {
 	var (
 		presetName        string
 		rulesFlag         string
+		inputFile         string
 		sarifOutput       string
 		aggregate         bool
 		recursive         bool
@@ -86,6 +88,8 @@ func (a *App) runAnalyze(prog string, args []string) int {
 	fs.StringVar(&presetName, "P", "", "")
 	fs.StringVar(&rulesFlag, "rules", "", "")
 	fs.StringVar(&rulesFlag, "R", "", "")
+	fs.StringVar(&inputFile, "input", "", "")
+	fs.StringVar(&inputFile, "i", "", "")
 	fs.StringVar(&sarifOutput, "sarif", "", "")
 	fs.StringVar(&sarifOutput, "o", "", "")
 	fs.BoolVar(&aggregate, "aggregate", false, "")
@@ -144,9 +148,30 @@ func (a *App) runAnalyze(prog string, args []string) int {
 		}
 	}
 
-	if fs.NArg() == 0 {
+	if fs.NArg() == 0 && inputFile == "" {
 		fs.Usage()
 		return 1
+	}
+
+	if fs.NArg() > 0 && inputFile != "" {
+		fmt.Fprintf(os.Stderr, "Error: --input and positional arguments are mutually exclusive\n")
+		return 1
+	}
+
+	var paths []string
+	if inputFile != "" {
+		var err error
+		paths, err = readPathsFromInput(inputFile)
+		if err != nil {
+			fmt.Fprintf(os.Stderr, "Error: %v\n", err)
+			return 1
+		}
+		if len(paths) == 0 {
+			fmt.Fprintf(os.Stderr, "Error: no paths found in input\n")
+			return 1
+		}
+	} else {
+		paths = fs.Args()
 	}
 
 	if parallel < 1 {
@@ -189,7 +214,6 @@ func (a *App) runAnalyze(prog string, args []string) int {
 	scan := scanner.NewScanner(analyzer, scannerOpts)
 
 	ctx := context.Background()
-	paths := fs.Args()
 
 	a.logger.Info("starting scan", slog.Int("paths", len(paths)), slog.Bool("recursive", recursive))
 
@@ -282,14 +306,4 @@ func (a *App) processStreaming(resultsChan <-chan analyzer.Result, showPassed, s
 		return 1
 	}
 	return 0
-}
-
-func parseURLList(s string) []string {
-	var urls []string
-	for _, url := range strings.Split(s, ",") {
-		if url = strings.TrimSpace(url); url != "" {
-			urls = append(urls, url)
-		}
-	}
-	return urls
 }
