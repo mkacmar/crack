@@ -17,6 +17,9 @@ type PIERule struct{}
 
 func (r PIERule) ID() string   { return PIERuleID }
 func (r PIERule) Name() string { return "Position Independent Executable" }
+func (r PIERule) Description() string {
+	return "Checks if the binary is compiled as a Position Independent Executable (PIE). PIE enables full ASLR by allowing the executable to be loaded at a random base address, making return-oriented programming (ROP) attacks significantly harder."
+}
 
 func (r PIERule) Applicability() rule.Applicability {
 	return rule.Applicability{

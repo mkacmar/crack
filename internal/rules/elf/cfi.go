@@ -35,6 +35,9 @@ type CFIRule struct{}
 
 func (r CFIRule) ID() string   { return CFIRuleID }
 func (r CFIRule) Name() string { return "Control Flow Integrity" }
+func (r CFIRule) Description() string {
+	return "Checks for Clang Control Flow Integrity (CFI) instrumentation. CFI validates that indirect calls and jumps target expected locations, preventing attackers from hijacking control flow through corrupted function pointers or vtables."
+}
 
 func (r CFIRule) Applicability() rule.Applicability {
 	return rule.Applicability{

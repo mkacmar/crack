@@ -17,6 +17,9 @@ type StackLimitRule struct{}
 
 func (r StackLimitRule) ID() string   { return StackLimitRuleID }
 func (r StackLimitRule) Name() string { return "Explicit Stack Size Limit" }
+func (r StackLimitRule) Description() string {
+	return "Checks if an explicit stack size limit is set. Defining a maximum stack size helps prevent stack exhaustion attacks."
+}
 
 func (r StackLimitRule) Applicability() rule.Applicability {
 	return rule.Applicability{

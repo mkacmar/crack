@@ -17,6 +17,9 @@ type SafeStackRule struct{}
 
 func (r SafeStackRule) ID() string   { return SafeStackRuleID }
 func (r SafeStackRule) Name() string { return "SafeStack" }
+func (r SafeStackRule) Description() string {
+	return "Checks for Clang SafeStack instrumentation. SafeStack separates the stack into a safe stack for return addresses and an unsafe stack for buffers, protecting control flow from stack buffer overflows."
+}
 
 func (r SafeStackRule) Applicability() rule.Applicability {
 	return rule.Applicability{

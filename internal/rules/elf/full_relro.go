@@ -16,6 +16,9 @@ type FullRELRORule struct{}
 
 func (r FullRELRORule) ID() string   { return FullRELRORuleID }
 func (r FullRELRORule) Name() string { return "Full RELRO" }
+func (r FullRELRORule) Description() string {
+	return "Checks for full RELRO (Relocation Read-Only) protection. Full RELRO makes the Global Offset Table (GOT) read-only after initialization, preventing GOT overwrite attacks that redirect function calls to malicious code."
+}
 
 func (r FullRELRORule) Applicability() rule.Applicability {
 	return rule.Applicability{

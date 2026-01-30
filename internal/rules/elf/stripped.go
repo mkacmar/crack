@@ -17,6 +17,9 @@ type StrippedRule struct{}
 
 func (r StrippedRule) ID() string   { return StrippedRuleID }
 func (r StrippedRule) Name() string { return "Stripped Binary" }
+func (r StrippedRule) Description() string {
+	return "Checks if the binary has been stripped of symbol tables and debug information. Stripping removes metadata that could help attackers understand the binary's structure and identify vulnerabilities."
+}
 
 func (r StrippedRule) Applicability() rule.Applicability {
 	return rule.Applicability{

@@ -16,6 +16,9 @@ type NoDLOpenRule struct{}
 
 func (r NoDLOpenRule) ID() string   { return NoDLOpenRuleID }
 func (r NoDLOpenRule) Name() string { return "Disallow dlopen" }
+func (r NoDLOpenRule) Description() string {
+	return "Checks if the shared library disallows being loaded via dlopen(). This prevents attackers from injecting the library into arbitrary processes."
+}
 
 func (r NoDLOpenRule) Applicability() rule.Applicability {
 	return rule.Applicability{

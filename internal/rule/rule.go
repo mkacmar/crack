@@ -52,6 +52,7 @@ type Applicability struct {
 type Rule interface {
 	ID() string
 	Name() string
+	Description() string
 	Applicability() Applicability
 }
 

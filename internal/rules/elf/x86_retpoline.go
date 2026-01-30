@@ -17,7 +17,10 @@ const X86RetpolineRuleID = "x86-retpoline"
 type X86RetpolineRule struct{}
 
 func (r X86RetpolineRule) ID() string   { return X86RetpolineRuleID }
-func (r X86RetpolineRule) Name() string { return "x86 Retpoline (Spectre v2)" }
+func (r X86RetpolineRule) Name() string { return "x86 Retpoline" }
+func (r X86RetpolineRule) Description() string {
+	return "Checks for retpoline mitigation against Spectre v2 attacks. Retpoline replaces indirect branches with a return-based sequence that prevents speculative execution through the branch target buffer."
+}
 
 func (r X86RetpolineRule) Applicability() rule.Applicability {
 	return rule.Applicability{

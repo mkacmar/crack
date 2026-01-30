@@ -18,6 +18,9 @@ type NoInsecureRUNPATHRule struct{}
 
 func (r NoInsecureRUNPATHRule) ID() string   { return NoInsecureRUNPATHRuleID }
 func (r NoInsecureRUNPATHRule) Name() string { return "Secure RUNPATH" }
+func (r NoInsecureRUNPATHRule) Description() string {
+	return "Checks for insecure RUNPATH values that could enable library injection. Relative paths, empty components, or world-writable directories in RUNPATH allow attackers to place malicious libraries that get loaded instead of legitimate ones."
+}
 
 func (r NoInsecureRUNPATHRule) Applicability() rule.Applicability {
 	return rule.Applicability{

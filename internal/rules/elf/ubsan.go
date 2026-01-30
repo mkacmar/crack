@@ -17,6 +17,9 @@ type UBSanRule struct{}
 
 func (r UBSanRule) ID() string   { return UBSanRuleID }
 func (r UBSanRule) Name() string { return "Undefined Behavior Sanitizer" }
+func (r UBSanRule) Description() string {
+	return "Checks for Undefined Behavior Sanitizer (UBSan) instrumentation. UBSan detects undefined behavior such as integer overflows, null pointer dereferences, and misaligned accesses at runtime."
+}
 
 func (r UBSanRule) Applicability() rule.Applicability {
 	return rule.Applicability{

@@ -16,6 +16,9 @@ type SeparateCodeRule struct{}
 
 func (r SeparateCodeRule) ID() string   { return SeparateCodeRuleID }
 func (r SeparateCodeRule) Name() string { return "Separate Code Segments" }
+func (r SeparateCodeRule) Description() string {
+	return "Checks if code and data are in separate memory pages. This prevents code pages from being writable and data pages from being executable, reducing the attack surface for memory corruption exploits."
+}
 
 func (r SeparateCodeRule) Applicability() rule.Applicability {
 	return rule.Applicability{

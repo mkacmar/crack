@@ -18,6 +18,9 @@ type NoInsecureRPATHRule struct{}
 
 func (r NoInsecureRPATHRule) ID() string   { return NoInsecureRPATHRuleID }
 func (r NoInsecureRPATHRule) Name() string { return "Secure RPATH" }
+func (r NoInsecureRPATHRule) Description() string {
+	return "Checks for insecure RPATH values that could enable library injection. RPATH takes precedence over system library paths, so relative paths or world-writable directories allow attackers to hijack library loading."
+}
 
 func (r NoInsecureRPATHRule) Applicability() rule.Applicability {
 	return rule.Applicability{

@@ -13,6 +13,9 @@ type ARMBTIRule struct{}
 
 func (r ARMBTIRule) ID() string   { return ARMBTIRuleID }
 func (r ARMBTIRule) Name() string { return "ARM Branch Target Identification" }
+func (r ARMBTIRule) Description() string {
+	return "Checks for ARM Branch Target Identification (BTI). BTI marks valid indirect branch targets with landing pad instructions, causing the CPU to fault if an indirect branch lands elsewhere. This prevents attackers from redirecting indirect calls and jumps to arbitrary code."
+}
 
 func (r ARMBTIRule) Applicability() rule.Applicability {
 	return rule.Applicability{

@@ -16,6 +16,9 @@ type ASLRRule struct{}
 
 func (r ASLRRule) ID() string   { return ASLRRuleID }
 func (r ASLRRule) Name() string { return "ASLR Compatibility" }
+func (r ASLRRule) Description() string {
+	return "Checks if the binary is compatible with Address Space Layout Randomization (ASLR). ASLR randomizes memory addresses at runtime, making it difficult for attackers to predict the location of code and data. This checks binary compatibility only, not system ASLR settings."
+}
 
 func (r ASLRRule) Applicability() rule.Applicability {
 	return rule.Applicability{

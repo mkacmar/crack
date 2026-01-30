@@ -14,6 +14,9 @@ type X86CETShadowStackRule struct{}
 
 func (r X86CETShadowStackRule) ID() string   { return X86CETShadowStackRuleID }
 func (r X86CETShadowStackRule) Name() string { return "x86 CET - Shadow Stack" }
+func (r X86CETShadowStackRule) Description() string {
+	return "Checks for Intel Control-flow Enforcement Technology Shadow Stack (CET-SS). Shadow Stack maintains a hardware-protected copy of return addresses, detecting ROP attacks when the shadow and regular stacks diverge on function return."
+}
 
 func (r X86CETShadowStackRule) Applicability() rule.Applicability {
 	return rule.Applicability{

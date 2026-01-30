@@ -16,6 +16,9 @@ type NXBitRule struct{}
 
 func (r NXBitRule) ID() string   { return NXBitRuleID }
 func (r NXBitRule) Name() string { return "Non-Executable Stack" }
+func (r NXBitRule) Description() string {
+	return "Checks if the stack is marked non-executable (NX bit). This prevents stack-based buffer overflow exploits from executing shellcode placed on the stack."
+}
 
 func (r NXBitRule) Applicability() rule.Applicability {
 	return rule.Applicability{

@@ -16,6 +16,9 @@ type ARMBranchProtectionRule struct{}
 
 func (r ARMBranchProtectionRule) ID() string   { return ARMBranchProtectionRuleID }
 func (r ARMBranchProtectionRule) Name() string { return "ARM Branch Protection" }
+func (r ARMBranchProtectionRule) Description() string {
+	return "Checks for ARM branch protection (BTI + PAC combined). This enables both Branch Target Identification to validate indirect branch targets and Pointer Authentication to sign return addresses."
+}
 
 func (r ARMBranchProtectionRule) Applicability() rule.Applicability {
 	return rule.Applicability{

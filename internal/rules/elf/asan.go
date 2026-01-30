@@ -17,6 +17,9 @@ type ASANRule struct{}
 
 func (r ASANRule) ID() string   { return ASANRuleID }
 func (r ASANRule) Name() string { return "Address Sanitizer" }
+func (r ASANRule) Description() string {
+	return "Checks for AddressSanitizer (ASan) instrumentation. ASan detects memory errors including buffer overflows, use-after-free, and memory leaks at runtime."
+}
 
 func (r ASANRule) Applicability() rule.Applicability {
 	return rule.Applicability{

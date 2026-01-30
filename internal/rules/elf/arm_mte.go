@@ -15,6 +15,9 @@ type ARMMTERule struct{}
 
 func (r ARMMTERule) ID() string   { return ARMMTERuleID }
 func (r ARMMTERule) Name() string { return "ARM Memory Tagging Extension" }
+func (r ARMMTERule) Description() string {
+	return "Checks for ARM Memory Tagging Extension (MTE). MTE assigns 4-bit tags to memory regions and pointers, detecting use-after-free and buffer overflows when tags mismatch during memory access."
+}
 
 func (r ARMMTERule) Applicability() rule.Applicability {
 	return rule.Applicability{

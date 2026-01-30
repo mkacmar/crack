@@ -17,6 +17,9 @@ type WXorXRule struct{}
 
 func (r WXorXRule) ID() string   { return WXorXRuleID }
 func (r WXorXRule) Name() string { return "W^X (Write XOR Execute)" }
+func (r WXorXRule) Description() string {
+	return "Checks that no memory region is both writable and executable. The W^X policy ensures code cannot be modified at runtime and data cannot be executed, preventing most code injection attacks."
+}
 
 func (r WXorXRule) Applicability() rule.Applicability {
 	return rule.Applicability{

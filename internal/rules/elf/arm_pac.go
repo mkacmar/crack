@@ -16,6 +16,9 @@ type ARMPACRule struct{}
 
 func (r ARMPACRule) ID() string   { return ARMPACRuleID }
 func (r ARMPACRule) Name() string { return "ARM Pointer Authentication" }
+func (r ARMPACRule) Description() string {
+	return "Checks for ARM Pointer Authentication Code (PAC). PAC signs return addresses with a cryptographic key, detecting tampering when the signature is verified on function return. This prevents attackers from overwriting return addresses to hijack control flow."
+}
 
 func (r ARMPACRule) Applicability() rule.Applicability {
 	return rule.Applicability{

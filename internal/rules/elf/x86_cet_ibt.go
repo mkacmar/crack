@@ -14,6 +14,9 @@ type X86CETIBTRule struct{}
 
 func (r X86CETIBTRule) ID() string   { return X86CETIBTRuleID }
 func (r X86CETIBTRule) Name() string { return "x86 CET - Indirect Branch Tracking" }
+func (r X86CETIBTRule) Description() string {
+	return "Checks for Intel Control-flow Enforcement Technology Indirect Branch Tracking (CET-IBT). IBT requires indirect branches to land on ENDBR instructions, preventing attackers from redirecting indirect calls and jumps to arbitrary code. Invalid branch targets trigger a control protection exception."
+}
 
 func (r X86CETIBTRule) Applicability() rule.Applicability {
 	return rule.Applicability{

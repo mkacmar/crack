@@ -16,6 +16,9 @@ type RELRORule struct{}
 
 func (r RELRORule) ID() string   { return RELRORuleID }
 func (r RELRORule) Name() string { return "Partial RELRO" }
+func (r RELRORule) Description() string {
+	return "Checks for partial RELRO (Relocation Read-Only) protection. Partial RELRO reorders ELF sections to protect internal data structures and makes some segments read-only, but leaves the GOT writable for lazy binding."
+}
 
 func (r RELRORule) Applicability() rule.Applicability {
 	return rule.Applicability{
