@@ -22,7 +22,7 @@ func (r SafeStackRule) Applicability() rule.Applicability {
 	return rule.Applicability{
 		Platform: binary.PlatformAll,
 		Compilers: map[toolchain.Compiler]rule.CompilerRequirement{
-			toolchain.CompilerClang: {MinVersion: toolchain.Version{Major: 3, Minor: 8}, Flag: "-fsanitize=safe-stack"},
+			toolchain.CompilerClang: {MinVersion: toolchain.Version{Major: 3, Minor: 7}, Flag: "-fsanitize=safe-stack"},
 		},
 	}
 }

@@ -22,8 +22,8 @@ func (r ASANRule) Applicability() rule.Applicability {
 	return rule.Applicability{
 		Platform: binary.PlatformAll,
 		Compilers: map[toolchain.Compiler]rule.CompilerRequirement{
-			toolchain.CompilerGCC:   {MinVersion: toolchain.Version{Major: 4, Minor: 8}, Flag: "-fsanitize=address"},
-			toolchain.CompilerClang: {MinVersion: toolchain.Version{Major: 3, Minor: 1}, Flag: "-fsanitize=address"},
+			toolchain.CompilerGCC:   {MinVersion: toolchain.Version{Major: 5, Minor: 1}, Flag: "-fsanitize=address"},
+			toolchain.CompilerClang: {MinVersion: toolchain.Version{Major: 3, Minor: 4}, Flag: "-fsanitize=address"},
 		},
 	}
 }

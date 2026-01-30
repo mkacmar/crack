@@ -22,8 +22,8 @@ func (r UBSanRule) Applicability() rule.Applicability {
 	return rule.Applicability{
 		Platform: binary.PlatformAll,
 		Compilers: map[toolchain.Compiler]rule.CompilerRequirement{
-			toolchain.CompilerGCC:   {MinVersion: toolchain.Version{Major: 4, Minor: 9}, Flag: "-fsanitize=undefined"},
-			toolchain.CompilerClang: {MinVersion: toolchain.Version{Major: 3, Minor: 3}, Flag: "-fsanitize=undefined"},
+			toolchain.CompilerGCC:   {MinVersion: toolchain.Version{Major: 5, Minor: 1}, Flag: "-fsanitize=undefined"},
+			toolchain.CompilerClang: {MinVersion: toolchain.Version{Major: 3, Minor: 4}, Flag: "-fsanitize=undefined"},
 		},
 	}
 }

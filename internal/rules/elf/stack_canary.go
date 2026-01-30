@@ -22,8 +22,8 @@ func (r StackCanaryRule) Applicability() rule.Applicability {
 	return rule.Applicability{
 		Platform: binary.PlatformAll,
 		Compilers: map[toolchain.Compiler]rule.CompilerRequirement{
-			toolchain.CompilerGCC:   {MinVersion: toolchain.Version{Major: 4, Minor: 9}, Flag: "-fstack-protector-strong"},
-			toolchain.CompilerClang: {MinVersion: toolchain.Version{Major: 3, Minor: 0}, Flag: "-fstack-protector-strong"},
+			toolchain.CompilerGCC:   {MinVersion: toolchain.Version{Major: 4, Minor: 9}, DefaultVersion: toolchain.Version{Major: 4, Minor: 9}, Flag: "-fstack-protector-strong"},
+			toolchain.CompilerClang: {MinVersion: toolchain.Version{Major: 3, Minor: 5}, DefaultVersion: toolchain.Version{Major: 3, Minor: 5}, Flag: "-fstack-protector-strong"},
 		},
 	}
 }

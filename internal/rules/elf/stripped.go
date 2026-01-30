@@ -23,7 +23,7 @@ func (r StrippedRule) Applicability() rule.Applicability {
 		Platform: binary.PlatformAll,
 		Compilers: map[toolchain.Compiler]rule.CompilerRequirement{
 			toolchain.CompilerGCC:   {MinVersion: toolchain.Version{Major: 3, Minor: 0}, Flag: "-s"},
-			toolchain.CompilerClang: {MinVersion: toolchain.Version{Major: 3, Minor: 0}, Flag: "-s"},
+			toolchain.CompilerClang: {MinVersion: toolchain.Version{Major: 1, Minor: 0}, Flag: "-s"},
 		},
 	}
 }

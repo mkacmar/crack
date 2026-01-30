@@ -21,8 +21,8 @@ func (r NXBitRule) Applicability() rule.Applicability {
 	return rule.Applicability{
 		Platform: binary.PlatformAll,
 		Compilers: map[toolchain.Compiler]rule.CompilerRequirement{
-			toolchain.CompilerGCC:   {MinVersion: toolchain.Version{Major: 3, Minor: 0}, DefaultVersion: toolchain.Version{Major: 3, Minor: 0}, Flag: "-z noexecstack"},
-			toolchain.CompilerClang: {MinVersion: toolchain.Version{Major: 3, Minor: 0}, DefaultVersion: toolchain.Version{Major: 3, Minor: 0}, Flag: "-z noexecstack"},
+			toolchain.CompilerGCC:   {MinVersion: toolchain.Version{Major: 3, Minor: 4}, DefaultVersion: toolchain.Version{Major: 3, Minor: 4}, Flag: "-z noexecstack"},
+			toolchain.CompilerClang: {MinVersion: toolchain.Version{Major: 1, Minor: 0}, DefaultVersion: toolchain.Version{Major: 1, Minor: 0}, Flag: "-z noexecstack"},
 		},
 	}
 }

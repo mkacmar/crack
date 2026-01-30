@@ -49,7 +49,7 @@ func (r FortifySourceRule) Applicability() rule.Applicability {
 	return rule.Applicability{
 		Platform: binary.PlatformAll,
 		Compilers: map[toolchain.Compiler]rule.CompilerRequirement{
-			toolchain.CompilerGCC:   {MinVersion: toolchain.Version{Major: 12, Minor: 0}, Flag: "-D_FORTIFY_SOURCE=3 -O1"},
+			toolchain.CompilerGCC:   {MinVersion: toolchain.Version{Major: 12, Minor: 1}, Flag: "-D_FORTIFY_SOURCE=3 -O1"},
 			toolchain.CompilerClang: {MinVersion: toolchain.Version{Major: 12, Minor: 0}, Flag: "-D_FORTIFY_SOURCE=3 -O1"},
 		},
 	}
