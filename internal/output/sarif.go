@@ -56,6 +56,7 @@ type SARIFDriver struct {
 type SARIFRule struct {
 	ID                   string             `json:"id"`
 	Name                 string             `json:"name"`
+	HelpUri              string             `json:"helpUri,omitempty"`
 	FullDescription      SARIFMessage       `json:"fullDescription,omitempty"`
 	DefaultConfiguration SARIFConfiguration `json:"defaultConfiguration"`
 }
@@ -168,8 +169,9 @@ func (f *SARIFFormatter) buildRules(report *analyzer.Results) ([]SARIFRule, map[
 		check := ruleMap[id]
 		ruleIndex[id] = i
 		r := SARIFRule{
-			ID:   check.RuleID,
-			Name: check.Name,
+			ID:      check.RuleID,
+			Name:    check.Name,
+			HelpUri: ruleHelpURL(check.Name, check.RuleID),
 			DefaultConfiguration: SARIFConfiguration{
 				Level: "warning",
 			},
@@ -306,4 +308,12 @@ func toFileURI(path string) string {
 		return "file://" + path
 	}
 	return path
+}
+
+const wikiBaseURL = "https://github.com/mkacmar/crack/wiki/Rules"
+
+func ruleHelpURL(name, id string) string {
+	slug := strings.ToLower(name)
+	slug = strings.ReplaceAll(slug, " ", "-")
+	return fmt.Sprintf("%s#%s-%s", wikiBaseURL, slug, id)
 }

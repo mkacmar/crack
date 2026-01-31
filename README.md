@@ -18,6 +18,9 @@ crack analyze --rules=pie,relro,stack-canary /usr/bin/ls
 crack analyze --debuginfod /usr/bin/ls
 ```
 
+## Documentation
+
+- [Rules Reference](https://github.com/mkacmar/crack/wiki/Rules)
 
 ## License
 
