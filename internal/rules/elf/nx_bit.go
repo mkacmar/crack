@@ -31,6 +31,13 @@ func (r NXBitRule) Applicability() rule.Applicability {
 }
 
 func (r NXBitRule) Execute(bin *binary.ELFBinary) rule.ExecuteResult {
+	if bin.File.Type != elf.ET_EXEC && bin.File.Type != elf.ET_DYN {
+		return rule.ExecuteResult{
+			Status:  rule.StatusSkipped,
+			Message: "Not an executable or shared library",
+		}
+	}
+
 	for _, prog := range bin.File.Progs {
 		if prog.Type == elf.PT_GNU_STACK {
 			if (prog.Flags & elf.PF_X) == 0 {

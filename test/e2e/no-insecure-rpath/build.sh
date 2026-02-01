@@ -27,6 +27,6 @@ clang -o binaries/${ARCH}-clang-no-rpath $SRC
 clang $RPATH_FLAGS -Wl,-rpath,/usr/lib -o binaries/${ARCH}-clang-rpath-absolute $SRC
 clang $RPATH_FLAGS -Wl,-rpath,. -o binaries/${ARCH}-clang-rpath-dot $SRC
 clang $RPATH_FLAGS -Wl,-rpath,/tmp -o binaries/${ARCH}-clang-rpath-tmp $SRC
+clang -c -o binaries/${ARCH}-clang-relocatable.o $SRC
 
 ls -la binaries/
-

@@ -31,6 +31,13 @@ func (r NoDumpRule) Applicability() rule.Applicability {
 }
 
 func (r NoDumpRule) Execute(bin *binary.ELFBinary) rule.ExecuteResult {
+	if bin.File.Type != elf.ET_EXEC && bin.File.Type != elf.ET_DYN {
+		return rule.ExecuteResult{
+			Status:  rule.StatusSkipped,
+			Message: "Not an executable or shared library",
+		}
+	}
+
 	if HasDynFlag(bin.File, elf.DT_FLAGS_1, uint64(elf.DF_1_NODUMP)) {
 		return rule.ExecuteResult{
 			Status:  rule.StatusPassed,

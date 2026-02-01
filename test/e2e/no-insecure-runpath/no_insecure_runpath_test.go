@@ -27,6 +27,7 @@ func TestNoInsecureRUNPATHRule(t *testing.T) {
 		{Binary: "x86_64-clang-runpath-absolute", Expect: e2e.Pass},
 		{Binary: "x86_64-clang-runpath-dot", Expect: e2e.Fail},
 		{Binary: "x86_64-clang-runpath-tmp", Expect: e2e.Fail},
+		{Binary: "x86_64-clang-relocatable.o", Expect: e2e.Skip},
 
 		// aarch64 GCC
 		{Binary: "aarch64-gcc-no-runpath", Expect: e2e.Pass},
@@ -47,6 +48,7 @@ func TestNoInsecureRUNPATHRule(t *testing.T) {
 		{Binary: "aarch64-clang-runpath-absolute", Expect: e2e.Pass},
 		{Binary: "aarch64-clang-runpath-dot", Expect: e2e.Fail},
 		{Binary: "aarch64-clang-runpath-tmp", Expect: e2e.Fail},
+		{Binary: "aarch64-clang-relocatable.o", Expect: e2e.Skip},
 
 		// armv7 GCC
 		{Binary: "armv7-gcc-no-runpath", Expect: e2e.Pass},
@@ -67,5 +69,6 @@ func TestNoInsecureRUNPATHRule(t *testing.T) {
 		{Binary: "armv7-clang-runpath-absolute", Expect: e2e.Pass},
 		{Binary: "armv7-clang-runpath-dot", Expect: e2e.Fail},
 		{Binary: "armv7-clang-runpath-tmp", Expect: e2e.Fail},
+		{Binary: "armv7-clang-relocatable.o", Expect: e2e.Skip},
 	})
 }

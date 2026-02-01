@@ -33,6 +33,13 @@ func (r NoInsecureRPATHRule) Applicability() rule.Applicability {
 }
 
 func (r NoInsecureRPATHRule) Execute(bin *binary.ELFBinary) rule.ExecuteResult {
+	if bin.File.Type != elf.ET_EXEC && bin.File.Type != elf.ET_DYN {
+		return rule.ExecuteResult{
+			Status:  rule.StatusSkipped,
+			Message: "Not an executable or shared library",
+		}
+	}
+
 	rpath := GetDynString(bin.File, elf.DT_RPATH)
 	if rpath == "" {
 		return rule.ExecuteResult{

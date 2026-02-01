@@ -14,11 +14,13 @@ gcc -Wl,-z,relro,-z,now -o binaries/${ARCH}-gcc-full-relro-stripped $SRC
 strip binaries/${ARCH}-gcc-full-relro-stripped
 gcc -static -Wl,-z,relro,-z,now -o binaries/${ARCH}-gcc-full-relro-static $SRC
 gcc -shared -fPIC -Wl,-z,relro,-z,now -o binaries/${ARCH}-gcc-full-relro-shared $SRC
+gcc -c -o binaries/${ARCH}-gcc-relocatable.o $SRC
 
 clang -Wl,-z,relro -o binaries/${ARCH}-clang-partial-relro $SRC
 clang -Wl,-z,relro,-z,now -o binaries/${ARCH}-clang-full-relro $SRC
 clang -Wl,-z,norelro -o binaries/${ARCH}-clang-no-relro $SRC
 clang -Wl,-z,relro,-z,now -o binaries/${ARCH}-clang-full-relro-stripped $SRC
 strip binaries/${ARCH}-clang-full-relro-stripped
+clang -c -o binaries/${ARCH}-clang-relocatable.o $SRC
 
 ls -la binaries/

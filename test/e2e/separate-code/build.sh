@@ -16,7 +16,8 @@ gcc -Wl,-z,separate-code -shared -fPIC -o binaries/${ARCH}-gcc-separate-code-sha
 clang -Wl,-z,separate-code -o binaries/${ARCH}-clang-separate-code $SRC
 clang -Wl,-z,separate-code -o binaries/${ARCH}-clang-separate-code-stripped $SRC
 strip binaries/${ARCH}-clang-separate-code-stripped
+clang -c -o binaries/${ARCH}-clang-relocatable.o $SRC
 
-gcc -c -o binaries/${ARCH}-gcc-object-file $SRC
+gcc -c -o binaries/${ARCH}-gcc-relocatable.o $SRC
 
 ls -la binaries/

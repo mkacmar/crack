@@ -27,6 +27,6 @@ clang -o binaries/${ARCH}-clang-no-runpath $SRC
 clang $RUNPATH_FLAGS -Wl,-rpath,/usr/lib -o binaries/${ARCH}-clang-runpath-absolute $SRC
 clang $RUNPATH_FLAGS -Wl,-rpath,. -o binaries/${ARCH}-clang-runpath-dot $SRC
 clang $RUNPATH_FLAGS -Wl,-rpath,/tmp -o binaries/${ARCH}-clang-runpath-tmp $SRC
+clang -c -o binaries/${ARCH}-clang-relocatable.o $SRC
 
 ls -la binaries/
-

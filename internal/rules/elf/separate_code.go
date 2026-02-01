@@ -31,6 +31,13 @@ func (r SeparateCodeRule) Applicability() rule.Applicability {
 }
 
 func (r SeparateCodeRule) Execute(bin *binary.ELFBinary) rule.ExecuteResult {
+	if bin.File.Type != elf.ET_EXEC && bin.File.Type != elf.ET_DYN {
+		return rule.ExecuteResult{
+			Status:  rule.StatusSkipped,
+			Message: "Not an executable or shared library",
+		}
+	}
+
 	// Check file offsets at 4KB page granularity.
 	const pageSize uint64 = 4096
 

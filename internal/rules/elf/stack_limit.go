@@ -32,6 +32,13 @@ func (r StackLimitRule) Applicability() rule.Applicability {
 }
 
 func (r StackLimitRule) Execute(bin *binary.ELFBinary) rule.ExecuteResult {
+	if bin.File.Type != elf.ET_EXEC && bin.File.Type != elf.ET_DYN {
+		return rule.ExecuteResult{
+			Status:  rule.StatusSkipped,
+			Message: "Not an executable or shared library",
+		}
+	}
+
 	var stackSize uint64
 
 	for _, prog := range bin.File.Progs {
