@@ -33,7 +33,7 @@ Analyze binaries for security hardening features.
 Options:
   -R, --rules string          Comma-separated list of rule IDs to run
   -i, --input string          Read file paths from file (use "-" for stdin, mutually exclusive with positional args)
-  -o, --sarif string          Save detailed SARIF report to file
+      --sarif string          Save detailed SARIF report to file
   -a, --aggregate             Aggregate findings into actionable recommendations
   -r, --recursive             Recursively scan directories
       --log string            Log output file (default stderr)
@@ -41,6 +41,7 @@ Options:
       --show-passed           Show passing checks in output
       --show-skipped          Show skipped checks in output
   -p, --parallel int          Number of files to analyze in parallel (default %d)
+      --exit-zero             Exit with 0 even when findings are detected
 
 Debuginfod options:
   -d, --debuginfod            Fetch debug symbols from debuginfod servers
@@ -68,6 +69,7 @@ func (a *App) runAnalyze(prog string, args []string) int {
 		showPassed        bool
 		showSkipped       bool
 		parallel          int
+		exitZero          bool
 		useDebuginfod     bool
 		debuginfodURLs    string
 		debuginfodCache   string
@@ -80,7 +82,6 @@ func (a *App) runAnalyze(prog string, args []string) int {
 	fs.StringVar(&inputFile, "input", "", "")
 	fs.StringVar(&inputFile, "i", "", "")
 	fs.StringVar(&sarifOutput, "sarif", "", "")
-	fs.StringVar(&sarifOutput, "o", "", "")
 	fs.BoolVar(&aggregate, "aggregate", false, "")
 	fs.BoolVar(&aggregate, "a", false, "")
 	fs.BoolVar(&recursive, "recursive", false, "")
@@ -91,6 +92,7 @@ func (a *App) runAnalyze(prog string, args []string) int {
 	fs.BoolVar(&showSkipped, "show-skipped", false, "")
 	fs.IntVar(&parallel, "parallel", runtime.NumCPU(), "")
 	fs.IntVar(&parallel, "p", runtime.NumCPU(), "")
+	fs.BoolVar(&exitZero, "exit-zero", false, "")
 	fs.BoolVar(&useDebuginfod, "debuginfod", false, "")
 	fs.BoolVar(&useDebuginfod, "d", false, "")
 	fs.StringVar(&debuginfodURLs, "debuginfod-urls", debuginfo.DefaultServerURL, "")
@@ -103,7 +105,7 @@ func (a *App) runAnalyze(prog string, args []string) int {
 	}
 
 	if err := fs.Parse(args); err != nil {
-		return 1
+		return ExitError
 	}
 
 	var ruleIDs []string
@@ -116,7 +118,7 @@ func (a *App) runAnalyze(prog string, args []string) int {
 			if rule.Get(id) == nil {
 				fmt.Fprintf(os.Stderr, "Error: unknown rule %q\n", id)
 				fmt.Fprintf(os.Stderr, "Use 'crack list-rules' to see available rules.\n")
-				return 1
+				return ExitError
 			}
 		}
 	} else {
@@ -125,12 +127,12 @@ func (a *App) runAnalyze(prog string, args []string) int {
 
 	if fs.NArg() == 0 && inputFile == "" {
 		fs.Usage()
-		return 1
+		return ExitError
 	}
 
 	if fs.NArg() > 0 && inputFile != "" {
 		fmt.Fprintf(os.Stderr, "Error: --input and positional arguments are mutually exclusive\n")
-		return 1
+		return ExitError
 	}
 
 	var paths []string
@@ -139,11 +141,11 @@ func (a *App) runAnalyze(prog string, args []string) int {
 		paths, err = readPathsFromInput(inputFile)
 		if err != nil {
 			fmt.Fprintf(os.Stderr, "Error: %v\n", err)
-			return 1
+			return ExitError
 		}
 		if len(paths) == 0 {
 			fmt.Fprintf(os.Stderr, "Error: no paths found in input\n")
-			return 1
+			return ExitError
 		}
 	} else {
 		paths = fs.Args()
@@ -151,7 +153,7 @@ func (a *App) runAnalyze(prog string, args []string) int {
 
 	if parallel < 1 {
 		fmt.Fprintf(os.Stderr, "Error: --parallel must be at least 1\n")
-		return 1
+		return ExitError
 	}
 
 	var logOutput io.Writer = os.Stderr
@@ -159,7 +161,7 @@ func (a *App) runAnalyze(prog string, args []string) int {
 		f, err := os.Create(logFile)
 		if err != nil {
 			fmt.Fprintf(os.Stderr, "Error: failed to open log file: %v\n", err)
-			return 1
+			return ExitError
 		}
 		defer f.Close()
 		logOutput = f
@@ -177,7 +179,7 @@ func (a *App) runAnalyze(prog string, args []string) int {
 		})
 		if err != nil {
 			fmt.Fprintf(os.Stderr, "Error: failed to initialize debuginfod client: %v\n", err)
-			return 1
+			return ExitError
 		}
 		debuginfodClient = client
 	}
@@ -210,12 +212,12 @@ func (a *App) runAnalyze(prog string, args []string) int {
 	}
 
 	if needsFullReport {
-		return a.processFullReport(resultsChan, aggregate, showPassed, showSkipped, sarifOutput, invocation)
+		return a.processFullReport(resultsChan, aggregate, showPassed, showSkipped, sarifOutput, invocation, exitZero)
 	}
-	return a.processStreaming(resultsChan, showPassed, showSkipped)
+	return a.processStreaming(resultsChan, showPassed, showSkipped, exitZero)
 }
 
-func (a *App) processFullReport(resultsChan <-chan analyzer.Result, aggregate, showPassed, showSkipped bool, sarifOutput string, invocation *output.InvocationInfo) int {
+func (a *App) processFullReport(resultsChan <-chan analyzer.Result, aggregate, showPassed, showSkipped bool, sarifOutput string, invocation *output.InvocationInfo, exitZero bool) int {
 	var results []analyzer.Result
 	var totalFailed int
 
@@ -236,7 +238,7 @@ func (a *App) processFullReport(resultsChan <-chan analyzer.Result, aggregate, s
 		textFormatter, _ := output.GetFormatter("text", output.FormatterOptions{ShowPassed: showPassed, ShowSkipped: showSkipped})
 		if err := textFormatter.Format(report, os.Stdout); err != nil {
 			a.logger.Error("failed to format output", slog.Any("error", err))
-			return 1
+			return ExitError
 		}
 	}
 
@@ -252,23 +254,23 @@ func (a *App) processFullReport(resultsChan <-chan analyzer.Result, aggregate, s
 		f, err := os.Create(sarifOutput)
 		if err != nil {
 			a.logger.Error("failed to create SARIF file", slog.String("path", sarifOutput), slog.Any("error", err))
-			return 1
+			return ExitError
 		}
 		defer f.Close()
 		if err := sarifFormatter.Format(report, f); err != nil {
 			a.logger.Error("failed to write SARIF report", slog.Any("error", err))
-			return 1
+			return ExitError
 		}
 		a.logger.Info("SARIF report saved", slog.String("path", sarifOutput))
 	}
 
-	if totalFailed > 0 {
-		return 1
+	if totalFailed > 0 && !exitZero {
+		return ExitFindings
 	}
-	return 0
+	return ExitSuccess
 }
 
-func (a *App) processStreaming(resultsChan <-chan analyzer.Result, showPassed, showSkipped bool) int {
+func (a *App) processStreaming(resultsChan <-chan analyzer.Result, showPassed, showSkipped bool, exitZero bool) int {
 	var totalFailed int
 	textFormatter, _ := output.GetFormatter("text", output.FormatterOptions{ShowPassed: showPassed, ShowSkipped: showSkipped})
 
@@ -283,8 +285,8 @@ func (a *App) processStreaming(resultsChan <-chan analyzer.Result, showPassed, s
 		}
 	}
 
-	if totalFailed > 0 {
-		return 1
+	if totalFailed > 0 && !exitZero {
+		return ExitFindings
 	}
-	return 0
+	return ExitSuccess
 }

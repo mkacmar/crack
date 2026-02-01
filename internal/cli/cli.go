@@ -8,6 +8,12 @@ import (
 	"github.com/mkacmar/crack/internal/version"
 )
 
+const (
+	ExitSuccess  = 0
+	ExitError    = 1
+	ExitFindings = 2
+)
+
 type App struct {
 	logger *slog.Logger
 }
@@ -19,7 +25,7 @@ func New() *App {
 func (a *App) Run(args []string) int {
 	if len(args) < 2 {
 		a.printUsage(args[0])
-		return 1
+		return ExitError
 	}
 
 	cmd := args[1]
@@ -28,14 +34,14 @@ func (a *App) Run(args []string) int {
 		return a.runAnalyze(args[0], args[2:])
 	case "version", "-v", "--version":
 		a.printVersion()
-		return 0
+		return ExitSuccess
 	case "help", "-h", "--help":
 		a.printUsage(args[0])
-		return 0
+		return ExitSuccess
 	default:
 		fmt.Fprintf(os.Stderr, "Error: unknown command: %s\n\n", cmd)
 		a.printUsage(args[0])
-		return 1
+		return ExitError
 	}
 }
 
