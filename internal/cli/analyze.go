@@ -32,7 +32,7 @@ Analyze binaries for security hardening features.
 
 Options:
   -R, --rules string          Comma-separated list of rule IDs to run
-  -i, --input string          Read file paths from file (use "-" for stdin, mutually exclusive with positional args)
+  -i, --input string          Read file paths from file, one path per line (use "-" for stdin, mutually exclusive with positional args)
       --sarif string          Save detailed SARIF report to file
   -a, --aggregate             Aggregate findings into actionable recommendations
   -r, --recursive             Recursively scan directories
@@ -45,7 +45,7 @@ Options:
 
 Debuginfod options:
   -d, --debuginfod            Fetch debug symbols from debuginfod servers
-      --debuginfod-urls       Debuginfod server URLs (default %q)
+      --debuginfod-urls       Comma-separated debuginfod server URLs (default %q)
       --debuginfod-cache      Debuginfod cache directory (default "%s")
       --debuginfod-timeout    Debuginfod HTTP timeout (default %v)
       --debuginfod-retries    Debuginfod max retries per server (default %d)
