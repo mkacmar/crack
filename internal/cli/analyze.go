@@ -117,7 +117,6 @@ func (a *App) runAnalyze(prog string, args []string) int {
 		for _, id := range ruleIDs {
 			if rule.Get(id) == nil {
 				fmt.Fprintf(os.Stderr, "Error: unknown rule %q\n", id)
-				fmt.Fprintf(os.Stderr, "Use 'crack list-rules' to see available rules.\n")
 				return ExitError
 			}
 		}
