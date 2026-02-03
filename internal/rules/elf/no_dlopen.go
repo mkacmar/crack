@@ -34,7 +34,22 @@ func (r NoDLOpenRule) Execute(bin *binary.ELFBinary) rule.ExecuteResult {
 	if bin.File.Type != elf.ET_DYN {
 		return rule.ExecuteResult{
 			Status:  rule.StatusSkipped,
-			Message: "Not a shared library",
+			Message: "Not a shared library, dlopen protection not applicable",
+		}
+	}
+
+	if HasDynFlag(bin.File, elf.DT_FLAGS_1, uint64(elf.DF_1_PIE)) {
+		return rule.ExecuteResult{
+			Status:  rule.StatusSkipped,
+			Message: "PIE executable, dlopen protection not applicable",
+		}
+	}
+	for _, prog := range bin.File.Progs {
+		if prog.Type == elf.PT_INTERP {
+			return rule.ExecuteResult{
+				Status:  rule.StatusSkipped,
+				Message: "PIE executable, dlopen protection not applicable",
+			}
 		}
 	}
 

@@ -18,4 +18,7 @@ strip binaries/${ARCH}-clang-nodlopen-stripped.so
 gcc -shared -fPIC -o binaries/${ARCH}-gcc-default.so $SRC
 clang -shared -fPIC -o binaries/${ARCH}-clang-default.so $SRC
 
+gcc -fPIE -pie -o binaries/${ARCH}-gcc-pie-executable $SRC
+clang -fPIE -pie -o binaries/${ARCH}-clang-pie-executable $SRC
+
 ls -la binaries/

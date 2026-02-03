@@ -11,25 +11,31 @@ func TestNoDLOpenRule(t *testing.T) {
 		{Binary: "x86_64-gcc-nodlopen.so", Expect: e2e.Pass},
 		{Binary: "x86_64-gcc-nodlopen-stripped.so", Expect: e2e.Pass},
 		{Binary: "x86_64-gcc-default.so", Expect: e2e.Fail},
+		{Binary: "x86_64-gcc-pie-executable", Expect: e2e.Skip},
 
 		{Binary: "x86_64-clang-nodlopen.so", Expect: e2e.Pass},
 		{Binary: "x86_64-clang-nodlopen-stripped.so", Expect: e2e.Pass},
 		{Binary: "x86_64-clang-default.so", Expect: e2e.Fail},
+		{Binary: "x86_64-clang-pie-executable", Expect: e2e.Skip},
 
 		{Binary: "aarch64-gcc-nodlopen.so", Expect: e2e.Pass},
 		{Binary: "aarch64-gcc-nodlopen-stripped.so", Expect: e2e.Pass},
 		{Binary: "aarch64-gcc-default.so", Expect: e2e.Fail},
+		{Binary: "aarch64-gcc-pie-executable", Expect: e2e.Skip},
 
 		{Binary: "aarch64-clang-nodlopen.so", Expect: e2e.Pass},
 		{Binary: "aarch64-clang-nodlopen-stripped.so", Expect: e2e.Pass},
 		{Binary: "aarch64-clang-default.so", Expect: e2e.Fail},
+		{Binary: "aarch64-clang-pie-executable", Expect: e2e.Skip},
 
 		{Binary: "armv7-gcc-nodlopen.so", Expect: e2e.Pass},
 		{Binary: "armv7-gcc-nodlopen-stripped.so", Expect: e2e.Pass},
 		{Binary: "armv7-gcc-default.so", Expect: e2e.Fail},
+		{Binary: "armv7-gcc-pie-executable", Expect: e2e.Skip},
 
 		{Binary: "armv7-clang-nodlopen.so", Expect: e2e.Pass},
 		{Binary: "armv7-clang-nodlopen-stripped.so", Expect: e2e.Pass},
 		{Binary: "armv7-clang-default.so", Expect: e2e.Fail},
+		{Binary: "armv7-clang-pie-executable", Expect: e2e.Skip},
 	})
 }
