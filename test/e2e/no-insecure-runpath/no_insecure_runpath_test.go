@@ -21,6 +21,10 @@ func TestNoInsecureRUNPATHRule(t *testing.T) {
 		{Binary: "x86_64-gcc-runpath-tmp-subdir", Expect: e2e.Fail},
 		{Binary: "x86_64-gcc-runpath-empty-component", Expect: e2e.Fail},
 		{Binary: "x86_64-gcc-runpath-mixed", Expect: e2e.Fail},
+		{Binary: "x86_64-gcc-runpath-bare-relative", Expect: e2e.Fail},
+		{Binary: "x86_64-gcc-runpath-subdir-relative", Expect: e2e.Fail},
+		{Binary: "x86_64-gcc-runpath-origin-relative", Expect: e2e.Fail},
+		{Binary: "x86_64-gcc-runpath-dev-shm", Expect: e2e.Fail},
 
 		// x86_64 Clang
 		{Binary: "x86_64-clang-no-runpath", Expect: e2e.Pass},
@@ -42,6 +46,10 @@ func TestNoInsecureRUNPATHRule(t *testing.T) {
 		{Binary: "aarch64-gcc-runpath-tmp-subdir", Expect: e2e.Fail},
 		{Binary: "aarch64-gcc-runpath-empty-component", Expect: e2e.Fail},
 		{Binary: "aarch64-gcc-runpath-mixed", Expect: e2e.Fail},
+		{Binary: "aarch64-gcc-runpath-bare-relative", Expect: e2e.Fail},
+		{Binary: "aarch64-gcc-runpath-subdir-relative", Expect: e2e.Fail},
+		{Binary: "aarch64-gcc-runpath-origin-relative", Expect: e2e.Fail},
+		{Binary: "aarch64-gcc-runpath-dev-shm", Expect: e2e.Fail},
 
 		// aarch64 Clang
 		{Binary: "aarch64-clang-no-runpath", Expect: e2e.Pass},
@@ -63,6 +71,10 @@ func TestNoInsecureRUNPATHRule(t *testing.T) {
 		{Binary: "armv7-gcc-runpath-tmp-subdir", Expect: e2e.Fail},
 		{Binary: "armv7-gcc-runpath-empty-component", Expect: e2e.Fail},
 		{Binary: "armv7-gcc-runpath-mixed", Expect: e2e.Fail},
+		{Binary: "armv7-gcc-runpath-bare-relative", Expect: e2e.Fail},
+		{Binary: "armv7-gcc-runpath-subdir-relative", Expect: e2e.Fail},
+		{Binary: "armv7-gcc-runpath-origin-relative", Expect: e2e.Fail},
+		{Binary: "armv7-gcc-runpath-dev-shm", Expect: e2e.Fail},
 
 		// armv7 Clang
 		{Binary: "armv7-clang-no-runpath", Expect: e2e.Pass},

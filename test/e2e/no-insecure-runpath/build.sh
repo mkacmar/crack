@@ -7,7 +7,7 @@ mkdir -p binaries
 
 . test/e2e/testdata/log-env.sh
 
-# use --enable-new-dtags to force RUNPATH (default on modern linkers, but explicit for clarity)
+# use --enable-new-dtags to force RUNPATH
 RUNPATH_FLAGS="-Wl,--enable-new-dtags"
 
 gcc -o binaries/${ARCH}-gcc-no-runpath $SRC
@@ -22,6 +22,11 @@ gcc $RUNPATH_FLAGS -Wl,-rpath,/var/tmp -o binaries/${ARCH}-gcc-runpath-var-tmp $
 gcc $RUNPATH_FLAGS -Wl,-rpath,/tmp/mylibs -o binaries/${ARCH}-gcc-runpath-tmp-subdir $SRC
 gcc $RUNPATH_FLAGS -Wl,-rpath,/usr/lib::/usr/local/lib -o binaries/${ARCH}-gcc-runpath-empty-component $SRC
 gcc $RUNPATH_FLAGS -Wl,-rpath,/usr/lib:. -o binaries/${ARCH}-gcc-runpath-mixed $SRC
+
+gcc $RUNPATH_FLAGS -Wl,-rpath,lib -o binaries/${ARCH}-gcc-runpath-bare-relative $SRC
+gcc $RUNPATH_FLAGS -Wl,-rpath,subdir/lib -o binaries/${ARCH}-gcc-runpath-subdir-relative $SRC
+gcc $RUNPATH_FLAGS '-Wl,-rpath,$ORIGIN/../lib' -o binaries/${ARCH}-gcc-runpath-origin-relative $SRC
+gcc $RUNPATH_FLAGS -Wl,-rpath,/dev/shm -o binaries/${ARCH}-gcc-runpath-dev-shm $SRC
 
 clang -o binaries/${ARCH}-clang-no-runpath $SRC
 clang $RUNPATH_FLAGS -Wl,-rpath,/usr/lib -o binaries/${ARCH}-clang-runpath-absolute $SRC

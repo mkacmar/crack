@@ -23,6 +23,11 @@ gcc $RPATH_FLAGS -Wl,-rpath,/tmp/mylibs -o binaries/${ARCH}-gcc-rpath-tmp-subdir
 gcc $RPATH_FLAGS -Wl,-rpath,/usr/lib::/usr/local/lib -o binaries/${ARCH}-gcc-rpath-empty-component $SRC
 gcc $RPATH_FLAGS -Wl,-rpath,/usr/lib:. -o binaries/${ARCH}-gcc-rpath-mixed $SRC
 
+gcc $RPATH_FLAGS -Wl,-rpath,lib -o binaries/${ARCH}-gcc-rpath-bare-relative $SRC
+gcc $RPATH_FLAGS -Wl,-rpath,subdir/lib -o binaries/${ARCH}-gcc-rpath-subdir-relative $SRC
+gcc $RPATH_FLAGS '-Wl,-rpath,$ORIGIN/../lib' -o binaries/${ARCH}-gcc-rpath-origin-relative $SRC
+gcc $RPATH_FLAGS -Wl,-rpath,/dev/shm -o binaries/${ARCH}-gcc-rpath-dev-shm $SRC
+
 clang -o binaries/${ARCH}-clang-no-rpath $SRC
 clang $RPATH_FLAGS -Wl,-rpath,/usr/lib -o binaries/${ARCH}-clang-rpath-absolute $SRC
 clang $RPATH_FLAGS -Wl,-rpath,. -o binaries/${ARCH}-clang-rpath-dot $SRC

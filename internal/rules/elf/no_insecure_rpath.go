@@ -81,11 +81,17 @@ func isInsecurePath(p string) bool {
 		return true // empty path component means current directory
 	}
 
-	if p == "." || p == ".." || strings.HasPrefix(p, "./") || strings.HasPrefix(p, "../") {
+	// Relative paths resolve from CWD
+	if !strings.HasPrefix(p, "/") && !strings.HasPrefix(p, "$") {
 		return true
 	}
 
-	worldWritable := []string{"/tmp", "/var/tmp"}
+	// Attacker can control binary location and use ../ to reach writable directories
+	if strings.HasPrefix(p, "$ORIGIN") && strings.Contains(p, "..") {
+		return true
+	}
+
+	worldWritable := []string{"/tmp", "/var/tmp", "/dev/shm"}
 	for _, ww := range worldWritable {
 		if p == ww || strings.HasPrefix(p, ww+"/") {
 			return true
