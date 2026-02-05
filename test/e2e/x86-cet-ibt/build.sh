@@ -12,16 +12,16 @@ if [ "$ARCH" != "x86_64" ]; then
     exit 1
 fi
 
-build() { $1 -fcf-protection=$2 -o binaries/$1-cet-$2 $SRC; }
-build_strip() { $1 -fcf-protection=$2 -o binaries/$1-cet-$3 $SRC && strip binaries/$1-cet-$3; }
+build_c() { $1 -fcf-protection=$2 -o binaries/$1-cet-$2 $SRC; }
+build_c_strip() { $1 -fcf-protection=$2 -o binaries/$1-cet-$3 $SRC && strip binaries/$1-cet-$3; }
 
-build gcc full
-build gcc branch
-build gcc none
-build_strip gcc full full-stripped
+build_c gcc full
+build_c gcc branch
+build_c gcc none
+build_c_strip gcc full full-stripped
 
-build clang full
-build clang branch
-build clang none
+build_c clang full
+build_c clang branch
+build_c clang none
 
 ls -la binaries/

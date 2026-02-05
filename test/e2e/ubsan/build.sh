@@ -18,17 +18,17 @@ EOF
 
 SRC=/tmp/ubsan.c
 
-build() { $1 $2 -o binaries/${ARCH}-$1-$3 $SRC; }
-build_strip() { $1 $2 -o binaries/${ARCH}-$1-$3 $SRC && strip binaries/${ARCH}-$1-$3; }
+build_c() { $1 $2 -o binaries/${ARCH}-$1-$3 $SRC; }
+build_c_strip() { $1 $2 -o binaries/${ARCH}-$1-$3 $SRC && strip binaries/${ARCH}-$1-$3; }
 
-build gcc "-fsanitize=undefined" ubsan
-build_strip gcc "-fsanitize=undefined" ubsan-stripped
+build_c gcc "-fsanitize=undefined" ubsan
+build_c_strip gcc "-fsanitize=undefined" ubsan-stripped
 
-build clang "-fsanitize=undefined" ubsan
-build_strip clang "-fsanitize=undefined" ubsan-stripped
+build_c clang "-fsanitize=undefined" ubsan
+build_c_strip clang "-fsanitize=undefined" ubsan-stripped
 
-build gcc "" no-ubsan
-build clang "" no-ubsan
+build_c gcc "" no-ubsan
+build_c clang "" no-ubsan
 
 ls -la binaries/
 rm -f /tmp/ubsan.c

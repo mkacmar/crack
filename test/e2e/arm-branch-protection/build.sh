@@ -12,19 +12,19 @@ if [ "$ARCH" != "aarch64" ]; then
     exit 1
 fi
 
-build() { $1 -mbranch-protection=$2 -o binaries/$1-$3 $SRC; }
-build_strip() { $1 -mbranch-protection=$2 -o binaries/$1-$3 $SRC && strip binaries/$1-$3; }
+build_c() { $1 -mbranch-protection=$2 -o binaries/$1-$3 $SRC; }
+build_c_strip() { $1 -mbranch-protection=$2 -o binaries/$1-$3 $SRC && strip binaries/$1-$3; }
 
-build gcc standard branch-protection-standard
-build gcc pac-ret branch-protection-pac-ret
-build gcc bti branch-protection-bti
-build gcc none no-branch-protection
-build_strip gcc standard branch-protection-stripped
+build_c gcc standard branch-protection-standard
+build_c gcc pac-ret branch-protection-pac-ret
+build_c gcc bti branch-protection-bti
+build_c gcc none no-branch-protection
+build_c_strip gcc standard branch-protection-stripped
 
-build clang standard branch-protection-standard
-build clang pac-ret branch-protection-pac-ret
-build clang bti branch-protection-bti
-build clang none no-branch-protection
-build_strip clang standard branch-protection-stripped
+build_c clang standard branch-protection-standard
+build_c clang pac-ret branch-protection-pac-ret
+build_c clang bti branch-protection-bti
+build_c clang none no-branch-protection
+build_c_strip clang standard branch-protection-stripped
 
 ls -la binaries/
