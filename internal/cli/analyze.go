@@ -26,30 +26,34 @@ func init() {
 }
 
 func (a *App) printAnalyzeUsage(prog string) {
-	fmt.Fprintf(os.Stderr, `Usage: %s analyze [options] <binary|directory>...
+	fmt.Fprintf(os.Stderr, `Usage: %s analyze [options] [<path>...]
 
 Analyze binaries for security hardening features.
 
 Options:
-  -R, --rules string          Comma-separated list of rule IDs to run
   -i, --input string          Read file paths from file, one path per line (use "-" for stdin, mutually exclusive with positional args)
-      --sarif string          Save detailed SARIF report to file
-  -a, --aggregate             Aggregate findings into actionable recommendations
+  -p, --parallel int          Number of files to analyze in parallel (default %d)
   -r, --recursive             Recursively scan directories
+      --rules string          Comma-separated list of rule IDs to run
+
+Output options:
+  -a, --aggregate             Aggregate findings into actionable recommendations
+      --exit-zero             Exit with 0 even when findings are detected
+      --include-passed        Include passing checks in output
+      --include-skipped       Include skipped checks in output
+      --sarif string          Save detailed SARIF report to file
+
+Logging options:
       --log string            Log output file (default stderr)
       --log-level string      Log level: none, debug, info, warn, error (default "error")
-      --show-passed           Show passing checks in output
-      --show-skipped          Show skipped checks in output
-  -p, --parallel int          Number of files to analyze in parallel (default %d)
-      --exit-zero             Exit with 0 even when findings are detected
 
 Debuginfod options:
-  -d, --debuginfod            Fetch debug symbols from debuginfod servers
-      --debuginfod-urls       Comma-separated debuginfod server URLs (default %q)
-      --debuginfod-cache      Debuginfod cache directory (default "%s")
-      --debuginfod-timeout    Debuginfod HTTP timeout (default %v)
-      --debuginfod-retries    Debuginfod max retries per server (default %d)
-`, prog, runtime.NumCPU(), debuginfo.DefaultServerURL, debuginfo.DefaultCacheDir(), debuginfo.DefaultTimeout, debuginfo.DefaultRetries)
+      --debuginfod                  Fetch debug symbols from debuginfod servers
+      --debuginfod-cache string     Debuginfod cache directory (default "%s")
+      --debuginfod-retries int      Debuginfod max retries per server (default %d)
+      --debuginfod-servers string   Comma-separated debuginfod server URLs (default %q)
+      --debuginfod-timeout duration Debuginfod HTTP timeout (default %v)
+`, prog, runtime.NumCPU(), debuginfo.DefaultCacheDir(), debuginfo.DefaultRetries, debuginfo.DefaultServerURL, debuginfo.DefaultTimeout)
 }
 
 func (a *App) runAnalyze(prog string, args []string) int {
@@ -66,19 +70,18 @@ func (a *App) runAnalyze(prog string, args []string) int {
 		recursive         bool
 		logFile           string
 		logLevel          string
-		showPassed        bool
-		showSkipped       bool
+		includePassed     bool
+		includeSkipped    bool
 		parallel          int
 		exitZero          bool
 		useDebuginfod     bool
-		debuginfodURLs    string
+		debuginfodServers string
 		debuginfodCache   string
 		debuginfodTimeout time.Duration
 		debuginfodRetries int
 	)
 
 	fs.StringVar(&rulesFlag, "rules", "", "")
-	fs.StringVar(&rulesFlag, "R", "", "")
 	fs.StringVar(&inputFile, "input", "", "")
 	fs.StringVar(&inputFile, "i", "", "")
 	fs.StringVar(&sarifOutput, "sarif", "", "")
@@ -88,14 +91,13 @@ func (a *App) runAnalyze(prog string, args []string) int {
 	fs.BoolVar(&recursive, "r", false, "")
 	fs.StringVar(&logFile, "log", "", "")
 	fs.StringVar(&logLevel, "log-level", "error", "")
-	fs.BoolVar(&showPassed, "show-passed", false, "")
-	fs.BoolVar(&showSkipped, "show-skipped", false, "")
+	fs.BoolVar(&includePassed, "include-passed", false, "")
+	fs.BoolVar(&includeSkipped, "include-skipped", false, "")
 	fs.IntVar(&parallel, "parallel", runtime.NumCPU(), "")
 	fs.IntVar(&parallel, "p", runtime.NumCPU(), "")
 	fs.BoolVar(&exitZero, "exit-zero", false, "")
 	fs.BoolVar(&useDebuginfod, "debuginfod", false, "")
-	fs.BoolVar(&useDebuginfod, "d", false, "")
-	fs.StringVar(&debuginfodURLs, "debuginfod-urls", debuginfo.DefaultServerURL, "")
+	fs.StringVar(&debuginfodServers, "debuginfod-servers", debuginfo.DefaultServerURL, "")
 	fs.StringVar(&debuginfodCache, "debuginfod-cache", "", "")
 	fs.DurationVar(&debuginfodTimeout, "debuginfod-timeout", debuginfo.DefaultTimeout, "")
 	fs.IntVar(&debuginfodRetries, "debuginfod-retries", debuginfo.DefaultRetries, "")
@@ -170,7 +172,7 @@ func (a *App) runAnalyze(prog string, args []string) int {
 	var debuginfodClient *debuginfo.Client
 	if useDebuginfod {
 		client, err := debuginfo.NewClient(debuginfo.Options{
-			ServerURLs: parseURLList(debuginfodURLs),
+			ServerURLs: parseURLList(debuginfodServers),
 			CacheDir:   debuginfodCache,
 			Timeout:    debuginfodTimeout,
 			MaxRetries: debuginfodRetries,
@@ -211,12 +213,12 @@ func (a *App) runAnalyze(prog string, args []string) int {
 	}
 
 	if needsFullReport {
-		return a.processFullReport(resultsChan, aggregate, showPassed, showSkipped, sarifOutput, invocation, exitZero)
+		return a.processFullReport(resultsChan, aggregate, includePassed, includeSkipped, sarifOutput, invocation, exitZero)
 	}
-	return a.processStreaming(resultsChan, showPassed, showSkipped, exitZero)
+	return a.processStreaming(resultsChan, includePassed, includeSkipped, exitZero)
 }
 
-func (a *App) processFullReport(resultsChan <-chan analyzer.Result, aggregate, showPassed, showSkipped bool, sarifOutput string, invocation *output.InvocationInfo, exitZero bool) int {
+func (a *App) processFullReport(resultsChan <-chan analyzer.Result, aggregate, includePassed, includeSkipped bool, sarifOutput string, invocation *output.InvocationInfo, exitZero bool) int {
 	var results []analyzer.Result
 	var totalFailed int
 
@@ -234,7 +236,7 @@ func (a *App) processFullReport(resultsChan <-chan analyzer.Result, aggregate, s
 		agg := output.AggregateFindings(report)
 		fmt.Print(output.FormatAggregated(agg))
 	} else {
-		textFormatter, _ := output.GetFormatter("text", output.FormatterOptions{ShowPassed: showPassed, ShowSkipped: showSkipped})
+		textFormatter, _ := output.GetFormatter("text", output.FormatterOptions{IncludePassed: includePassed, IncludeSkipped: includeSkipped})
 		if err := textFormatter.Format(report, os.Stdout); err != nil {
 			a.logger.Error("failed to format output", slog.Any("error", err))
 			return ExitError
@@ -246,9 +248,9 @@ func (a *App) processFullReport(resultsChan <-chan analyzer.Result, aggregate, s
 		invocation.Successful = totalFailed == 0
 
 		sarifFormatter, _ := output.GetFormatter("sarif", output.FormatterOptions{
-			ShowPassed:  showPassed,
-			ShowSkipped: showSkipped,
-			Invocation:  invocation,
+			IncludePassed:  includePassed,
+			IncludeSkipped: includeSkipped,
+			Invocation:     invocation,
 		})
 		f, err := os.Create(sarifOutput)
 		if err != nil {
@@ -269,9 +271,9 @@ func (a *App) processFullReport(resultsChan <-chan analyzer.Result, aggregate, s
 	return ExitSuccess
 }
 
-func (a *App) processStreaming(resultsChan <-chan analyzer.Result, showPassed, showSkipped bool, exitZero bool) int {
+func (a *App) processStreaming(resultsChan <-chan analyzer.Result, includePassed, includeSkipped bool, exitZero bool) int {
 	var totalFailed int
-	textFormatter, _ := output.GetFormatter("text", output.FormatterOptions{ShowPassed: showPassed, ShowSkipped: showSkipped})
+	textFormatter, _ := output.GetFormatter("text", output.FormatterOptions{IncludePassed: includePassed, IncludeSkipped: includeSkipped})
 
 	for res := range resultsChan {
 		if res.Skipped {

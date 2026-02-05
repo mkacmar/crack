@@ -53,8 +53,8 @@ func RunRuleTests(t *testing.T, rule string, cases []TestCase) {
 				crackBin,
 				"analyze",
 				"--rules="+rule,
-				"--show-passed",
-				"--show-skipped",
+				"--include-passed",
+				"--include-skipped",
 				"--sarif="+sarifPath,
 				binaryPath,
 			)

@@ -13,8 +13,8 @@ type Formatter interface {
 }
 
 type TextFormatter struct {
-	ShowPassed  bool
-	ShowSkipped bool
+	IncludePassed  bool
+	IncludeSkipped bool
 }
 
 func (f *TextFormatter) Format(report *analyzer.Results, w io.Writer) error {
@@ -27,7 +27,7 @@ func (f *TextFormatter) Format(report *analyzer.Results, w io.Writer) error {
 		for _, check := range result.Results {
 			switch check.Status {
 			case rule.StatusPassed:
-				if f.ShowPassed {
+				if f.IncludePassed {
 					fmt.Fprintf(w, "PASS = %s @ %s: %s\n", check.RuleID, result.Path, check.Message)
 				}
 			case rule.StatusFailed:
@@ -37,7 +37,7 @@ func (f *TextFormatter) Format(report *analyzer.Results, w io.Writer) error {
 					fmt.Fprintf(w, "FAIL = %s @ %s: %s\n", check.RuleID, result.Path, check.Message)
 				}
 			case rule.StatusSkipped:
-				if f.ShowSkipped {
+				if f.IncludeSkipped {
 					fmt.Fprintf(w, "SKIP = %s @ %s: %s\n", check.RuleID, result.Path, check.Message)
 				}
 			}
@@ -48,22 +48,22 @@ func (f *TextFormatter) Format(report *analyzer.Results, w io.Writer) error {
 }
 
 type FormatterOptions struct {
-	ShowPassed  bool
-	ShowSkipped bool
-	Invocation  *InvocationInfo
+	IncludePassed  bool
+	IncludeSkipped bool
+	Invocation     *InvocationInfo
 }
 
 var formatters = map[string]func(FormatterOptions) Formatter{
 	"text": func(opts FormatterOptions) Formatter {
-		return &TextFormatter{ShowPassed: opts.ShowPassed, ShowSkipped: opts.ShowSkipped}
+		return &TextFormatter{IncludePassed: opts.IncludePassed, IncludeSkipped: opts.IncludeSkipped}
 	},
 	"": func(opts FormatterOptions) Formatter {
-		return &TextFormatter{ShowPassed: opts.ShowPassed, ShowSkipped: opts.ShowSkipped}
+		return &TextFormatter{IncludePassed: opts.IncludePassed, IncludeSkipped: opts.IncludeSkipped}
 	},
 	"sarif": func(opts FormatterOptions) Formatter {
 		return &SARIFFormatter{
-			IncludePassed:  opts.ShowPassed,
-			IncludeSkipped: opts.ShowSkipped,
+			IncludePassed:  opts.IncludePassed,
+			IncludeSkipped: opts.IncludeSkipped,
 			Invocation:     opts.Invocation,
 		}
 	},
