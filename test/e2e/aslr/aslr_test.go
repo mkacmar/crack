@@ -8,7 +8,6 @@ import (
 
 func TestASLRRule(t *testing.T) {
 	e2e.RunRuleTests(t, "aslr", []e2e.TestCase{
-		// x86_64 GCC
 		{Binary: "x86_64-gcc-aslr-full", Expect: e2e.Pass},
 		{Binary: "x86_64-gcc-no-pie", Expect: e2e.Fail},
 		{Binary: "x86_64-gcc-execstack", Expect: e2e.Fail},
@@ -19,16 +18,13 @@ func TestASLRRule(t *testing.T) {
 		{Binary: "x86_64-gcc-textrel-patched", Expect: e2e.Fail},
 		{Binary: "x86_64-gcc-object-file", Expect: e2e.Skip},
 
-		// x86_64 Clang
 		{Binary: "x86_64-clang-aslr-full", Expect: e2e.Pass},
 		{Binary: "x86_64-clang-no-pie", Expect: e2e.Fail},
 		{Binary: "x86_64-clang-execstack", Expect: e2e.Fail},
 		{Binary: "x86_64-clang-static-no-pie", Expect: e2e.Fail},
 
-		// x86_64 GCC old toolchain
 		{Binary: "x86_64-gcc-old-pie", Expect: e2e.Pass},
 
-		// aarch64 GCC
 		{Binary: "aarch64-gcc-aslr-full", Expect: e2e.Pass},
 		{Binary: "aarch64-gcc-no-pie", Expect: e2e.Fail},
 		{Binary: "aarch64-gcc-execstack", Expect: e2e.Fail},
@@ -38,13 +34,11 @@ func TestASLRRule(t *testing.T) {
 		{Binary: "aarch64-gcc-static-no-pie", Expect: e2e.Fail},
 		{Binary: "aarch64-gcc-textrel-patched", Expect: e2e.Fail},
 
-		// aarch64 Clang
 		{Binary: "aarch64-clang-aslr-full", Expect: e2e.Pass},
 		{Binary: "aarch64-clang-no-pie", Expect: e2e.Fail},
 		{Binary: "aarch64-clang-execstack", Expect: e2e.Fail},
 		{Binary: "aarch64-clang-static-no-pie", Expect: e2e.Fail},
 
-		// armv7 GCC
 		{Binary: "armv7-gcc-aslr-full", Expect: e2e.Pass},
 		{Binary: "armv7-gcc-no-pie", Expect: e2e.Fail},
 		{Binary: "armv7-gcc-execstack", Expect: e2e.Fail},
@@ -54,7 +48,6 @@ func TestASLRRule(t *testing.T) {
 		{Binary: "armv7-gcc-static-no-pie", Expect: e2e.Fail},
 		{Binary: "armv7-gcc-textrel-patched", Expect: e2e.Fail},
 
-		// armv7 Clang
 		{Binary: "armv7-clang-aslr-full", Expect: e2e.Pass},
 		{Binary: "armv7-clang-no-pie", Expect: e2e.Fail},
 		{Binary: "armv7-clang-execstack", Expect: e2e.Fail},

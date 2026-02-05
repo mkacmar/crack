@@ -8,7 +8,6 @@ import (
 
 func TestNoInsecureRUNPATHRule(t *testing.T) {
 	e2e.RunRuleTests(t, "no-insecure-runpath", []e2e.TestCase{
-		// x86_64 GCC
 		{Binary: "x86_64-gcc-no-runpath", Expect: e2e.Pass},
 		{Binary: "x86_64-gcc-runpath-absolute", Expect: e2e.Pass},
 		{Binary: "x86_64-gcc-runpath-multiple-absolute", Expect: e2e.Pass},
@@ -26,14 +25,12 @@ func TestNoInsecureRUNPATHRule(t *testing.T) {
 		{Binary: "x86_64-gcc-runpath-origin-relative", Expect: e2e.Fail},
 		{Binary: "x86_64-gcc-runpath-dev-shm", Expect: e2e.Fail},
 
-		// x86_64 Clang
 		{Binary: "x86_64-clang-no-runpath", Expect: e2e.Pass},
 		{Binary: "x86_64-clang-runpath-absolute", Expect: e2e.Pass},
 		{Binary: "x86_64-clang-runpath-dot", Expect: e2e.Fail},
 		{Binary: "x86_64-clang-runpath-tmp", Expect: e2e.Fail},
 		{Binary: "x86_64-clang-relocatable.o", Expect: e2e.Skip},
 
-		// aarch64 GCC
 		{Binary: "aarch64-gcc-no-runpath", Expect: e2e.Pass},
 		{Binary: "aarch64-gcc-runpath-absolute", Expect: e2e.Pass},
 		{Binary: "aarch64-gcc-runpath-multiple-absolute", Expect: e2e.Pass},
@@ -51,14 +48,12 @@ func TestNoInsecureRUNPATHRule(t *testing.T) {
 		{Binary: "aarch64-gcc-runpath-origin-relative", Expect: e2e.Fail},
 		{Binary: "aarch64-gcc-runpath-dev-shm", Expect: e2e.Fail},
 
-		// aarch64 Clang
 		{Binary: "aarch64-clang-no-runpath", Expect: e2e.Pass},
 		{Binary: "aarch64-clang-runpath-absolute", Expect: e2e.Pass},
 		{Binary: "aarch64-clang-runpath-dot", Expect: e2e.Fail},
 		{Binary: "aarch64-clang-runpath-tmp", Expect: e2e.Fail},
 		{Binary: "aarch64-clang-relocatable.o", Expect: e2e.Skip},
 
-		// armv7 GCC
 		{Binary: "armv7-gcc-no-runpath", Expect: e2e.Pass},
 		{Binary: "armv7-gcc-runpath-absolute", Expect: e2e.Pass},
 		{Binary: "armv7-gcc-runpath-multiple-absolute", Expect: e2e.Pass},
@@ -76,7 +71,6 @@ func TestNoInsecureRUNPATHRule(t *testing.T) {
 		{Binary: "armv7-gcc-runpath-origin-relative", Expect: e2e.Fail},
 		{Binary: "armv7-gcc-runpath-dev-shm", Expect: e2e.Fail},
 
-		// armv7 Clang
 		{Binary: "armv7-clang-no-runpath", Expect: e2e.Pass},
 		{Binary: "armv7-clang-runpath-absolute", Expect: e2e.Pass},
 		{Binary: "armv7-clang-runpath-dot", Expect: e2e.Fail},

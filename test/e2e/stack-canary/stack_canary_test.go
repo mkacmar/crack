@@ -8,7 +8,6 @@ import (
 
 func TestStackCanaryRule(t *testing.T) {
 	e2e.RunRuleTests(t, "stack-canary", []e2e.TestCase{
-		// x86_64 GCC
 		{Binary: "x86_64-gcc-stack-protector-strong", Expect: e2e.Pass},
 		{Binary: "x86_64-gcc-stack-protector-all", Expect: e2e.Pass},
 		{Binary: "x86_64-gcc-stack-protector", Expect: e2e.Pass},
@@ -20,7 +19,6 @@ func TestStackCanaryRule(t *testing.T) {
 		{Binary: "x86_64-gcc-stack-protector-static-stripped", Expect: e2e.Fail},
 		{Binary: "x86_64-gcc-stack-protector-lto", Expect: e2e.Pass},
 
-		// x86_64 Clang
 		{Binary: "x86_64-clang-stack-protector-strong", Expect: e2e.Pass},
 		{Binary: "x86_64-clang-stack-protector-all", Expect: e2e.Pass},
 		{Binary: "x86_64-clang-no-stack-protector", Expect: e2e.Fail},
@@ -29,7 +27,6 @@ func TestStackCanaryRule(t *testing.T) {
 		{Binary: "x86_64-clang-stack-protector-static-stripped", Expect: e2e.Fail},
 		{Binary: "x86_64-clang-stack-protector-lto", Expect: e2e.Pass},
 
-		// aarch64 GCC
 		{Binary: "aarch64-gcc-stack-protector-strong", Expect: e2e.Pass},
 		{Binary: "aarch64-gcc-stack-protector-all", Expect: e2e.Pass},
 		{Binary: "aarch64-gcc-stack-protector", Expect: e2e.Pass},
@@ -41,7 +38,6 @@ func TestStackCanaryRule(t *testing.T) {
 		{Binary: "aarch64-gcc-stack-protector-static-stripped", Expect: e2e.Fail},
 		{Binary: "aarch64-gcc-stack-protector-lto", Expect: e2e.Pass},
 
-		// aarch64 Clang
 		{Binary: "aarch64-clang-stack-protector-strong", Expect: e2e.Pass},
 		{Binary: "aarch64-clang-stack-protector-all", Expect: e2e.Pass},
 		{Binary: "aarch64-clang-no-stack-protector", Expect: e2e.Fail},
@@ -50,7 +46,6 @@ func TestStackCanaryRule(t *testing.T) {
 		{Binary: "aarch64-clang-stack-protector-static-stripped", Expect: e2e.Fail},
 		{Binary: "aarch64-clang-stack-protector-lto", Expect: e2e.Pass},
 
-		// armv7 GCC
 		{Binary: "armv7-gcc-stack-protector-strong", Expect: e2e.Pass},
 		{Binary: "armv7-gcc-stack-protector-all", Expect: e2e.Pass},
 		{Binary: "armv7-gcc-stack-protector", Expect: e2e.Pass},
@@ -62,7 +57,6 @@ func TestStackCanaryRule(t *testing.T) {
 		{Binary: "armv7-gcc-stack-protector-static-stripped", Expect: e2e.Fail},
 		{Binary: "armv7-gcc-stack-protector-lto", Expect: e2e.Pass},
 
-		// armv7 Clang
 		{Binary: "armv7-clang-stack-protector-strong", Expect: e2e.Pass},
 		{Binary: "armv7-clang-stack-protector-all", Expect: e2e.Pass},
 		{Binary: "armv7-clang-no-stack-protector", Expect: e2e.Fail},

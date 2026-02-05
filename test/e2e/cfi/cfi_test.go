@@ -8,13 +8,11 @@ import (
 
 func TestCFIRule(t *testing.T) {
 	e2e.RunRuleTests(t, "cfi", []e2e.TestCase{
-		// x86_64 Clang (cross-DSO CFI survives stripping)
 		{Binary: "x86_64-clang-cfi", Expect: e2e.Pass},
 		{Binary: "x86_64-clang-cfi-stripped", Expect: e2e.Pass},
 		{Binary: "x86_64-clang-no-cfi", Expect: e2e.Fail},
 		{Binary: "x86_64-gcc-no-cfi", Expect: e2e.Fail},
 
-		// aarch64 Clang (cross-DSO CFI survives stripping)
 		{Binary: "aarch64-clang-cfi", Expect: e2e.Pass},
 		{Binary: "aarch64-clang-cfi-stripped", Expect: e2e.Pass},
 		{Binary: "aarch64-clang-no-cfi", Expect: e2e.Fail},
