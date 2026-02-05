@@ -7,31 +7,31 @@ mkdir -p binaries
 
 . test/e2e/testdata/log-env.sh
 
-# use --disable-new-dtags to force RPATH instead of RUNPATH
 RPATH_FLAGS="-Wl,--disable-new-dtags"
 
-gcc -o binaries/${ARCH}-gcc-no-rpath $SRC
-gcc $RPATH_FLAGS -Wl,-rpath,/usr/lib -o binaries/${ARCH}-gcc-rpath-absolute $SRC
-gcc $RPATH_FLAGS -Wl,-rpath,/usr/lib:/usr/local/lib -o binaries/${ARCH}-gcc-rpath-multiple-absolute $SRC
-gcc $RPATH_FLAGS -Wl,-rpath,. -o binaries/${ARCH}-gcc-rpath-dot $SRC
-gcc $RPATH_FLAGS -Wl,-rpath,.. -o binaries/${ARCH}-gcc-rpath-dotdot $SRC
-gcc $RPATH_FLAGS -Wl,-rpath,./lib -o binaries/${ARCH}-gcc-rpath-relative $SRC
-gcc $RPATH_FLAGS -Wl,-rpath,../lib -o binaries/${ARCH}-gcc-rpath-parent-relative $SRC
-gcc $RPATH_FLAGS -Wl,-rpath,/tmp -o binaries/${ARCH}-gcc-rpath-tmp $SRC
-gcc $RPATH_FLAGS -Wl,-rpath,/var/tmp -o binaries/${ARCH}-gcc-rpath-var-tmp $SRC
-gcc $RPATH_FLAGS -Wl,-rpath,/tmp/mylibs -o binaries/${ARCH}-gcc-rpath-tmp-subdir $SRC
-gcc $RPATH_FLAGS -Wl,-rpath,/usr/lib::/usr/local/lib -o binaries/${ARCH}-gcc-rpath-empty-component $SRC
-gcc $RPATH_FLAGS -Wl,-rpath,/usr/lib:. -o binaries/${ARCH}-gcc-rpath-mixed $SRC
+build() { $1 $RPATH_FLAGS -Wl,-rpath,$2 -o binaries/${ARCH}-$1-rpath-$3 $SRC; }
 
-gcc $RPATH_FLAGS -Wl,-rpath,lib -o binaries/${ARCH}-gcc-rpath-bare-relative $SRC
-gcc $RPATH_FLAGS -Wl,-rpath,subdir/lib -o binaries/${ARCH}-gcc-rpath-subdir-relative $SRC
+gcc -o binaries/${ARCH}-gcc-no-rpath $SRC
+build gcc /usr/lib absolute
+build gcc /usr/lib:/usr/local/lib multiple-absolute
+build gcc . dot
+build gcc .. dotdot
+build gcc ./lib relative
+build gcc ../lib parent-relative
+build gcc /tmp tmp
+build gcc /var/tmp var-tmp
+build gcc /tmp/mylibs tmp-subdir
+build gcc /usr/lib::/usr/local/lib empty-component
+build gcc /usr/lib:. mixed
+build gcc lib bare-relative
+build gcc subdir/lib subdir-relative
+build gcc /dev/shm dev-shm
 gcc $RPATH_FLAGS '-Wl,-rpath,$ORIGIN/../lib' -o binaries/${ARCH}-gcc-rpath-origin-relative $SRC
-gcc $RPATH_FLAGS -Wl,-rpath,/dev/shm -o binaries/${ARCH}-gcc-rpath-dev-shm $SRC
 
 clang -o binaries/${ARCH}-clang-no-rpath $SRC
-clang $RPATH_FLAGS -Wl,-rpath,/usr/lib -o binaries/${ARCH}-clang-rpath-absolute $SRC
-clang $RPATH_FLAGS -Wl,-rpath,. -o binaries/${ARCH}-clang-rpath-dot $SRC
-clang $RPATH_FLAGS -Wl,-rpath,/tmp -o binaries/${ARCH}-clang-rpath-tmp $SRC
+build clang /usr/lib absolute
+build clang . dot
+build clang /tmp tmp
 clang -c -o binaries/${ARCH}-clang-relocatable.o $SRC
 
 ls -la binaries/

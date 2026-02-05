@@ -24,14 +24,15 @@ else
     PREFIX=""
 fi
 
-gcc -mbranch-protection=bti -Wl,-z,force-bti -o binaries/${PREFIX}gcc-bti-enabled $SRC
-gcc -mbranch-protection=none -o binaries/${PREFIX}gcc-bti-disabled $SRC
-gcc -mbranch-protection=bti -Wl,-z,force-bti -o binaries/${PREFIX}gcc-bti-stripped $SRC
-strip binaries/${PREFIX}gcc-bti-stripped
+build() { $1 $2 -o binaries/${PREFIX}$1-$3 $SRC; }
+build_strip() { $1 $2 -o binaries/${PREFIX}$1-$3 $SRC && strip binaries/${PREFIX}$1-$3; }
 
-clang -mbranch-protection=bti -Wl,-z,force-bti -o binaries/${PREFIX}clang-bti-enabled $SRC
-clang -mbranch-protection=none -o binaries/${PREFIX}clang-bti-disabled $SRC
-clang -mbranch-protection=bti -Wl,-z,force-bti -o binaries/${PREFIX}clang-bti-stripped $SRC
-strip binaries/${PREFIX}clang-bti-stripped
+build gcc "-mbranch-protection=bti -Wl,-z,force-bti" bti-enabled
+build gcc "-mbranch-protection=none" bti-disabled
+build_strip gcc "-mbranch-protection=bti -Wl,-z,force-bti" bti-stripped
+
+build clang "-mbranch-protection=bti -Wl,-z,force-bti" bti-enabled
+build clang "-mbranch-protection=none" bti-disabled
+build_strip clang "-mbranch-protection=bti -Wl,-z,force-bti" bti-stripped
 
 ls -la binaries/

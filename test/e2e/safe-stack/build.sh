@@ -7,11 +7,13 @@ mkdir -p binaries
 
 . test/e2e/testdata/log-env.sh
 
-clang -fsanitize=safe-stack -o binaries/${ARCH}-clang-safestack $SRC
-clang -fsanitize=safe-stack -o binaries/${ARCH}-clang-safestack-stripped $SRC
-strip binaries/${ARCH}-clang-safestack-stripped
+build() { $1 $2 -o binaries/${ARCH}-$1-$3 $SRC; }
+build_strip() { $1 $2 -o binaries/${ARCH}-$1-$3 $SRC && strip binaries/${ARCH}-$1-$3; }
 
-clang -o binaries/${ARCH}-clang-no-safestack $SRC
-gcc -o binaries/${ARCH}-gcc-no-safestack $SRC
+build clang "-fsanitize=safe-stack" safestack
+build_strip clang "-fsanitize=safe-stack" safestack-stripped
+
+build clang "" no-safestack
+build gcc "" no-safestack
 
 ls -la binaries/

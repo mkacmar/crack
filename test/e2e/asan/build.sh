@@ -7,15 +7,16 @@ mkdir -p binaries
 
 . test/e2e/testdata/log-env.sh
 
-gcc -fsanitize=address -o binaries/${ARCH}-gcc-asan $SRC
-gcc -fsanitize=address -o binaries/${ARCH}-gcc-asan-stripped $SRC
-strip binaries/${ARCH}-gcc-asan-stripped
+build() { $1 $2 -o binaries/${ARCH}-$1-$3 $SRC; }
+build_strip() { $1 $2 -o binaries/${ARCH}-$1-$3 $SRC && strip binaries/${ARCH}-$1-$3; }
 
-clang -fsanitize=address -o binaries/${ARCH}-clang-asan $SRC
-clang -fsanitize=address -o binaries/${ARCH}-clang-asan-stripped $SRC
-strip binaries/${ARCH}-clang-asan-stripped
+build gcc "-fsanitize=address" asan
+build_strip gcc "-fsanitize=address" asan-stripped
 
-gcc -o binaries/${ARCH}-gcc-no-asan $SRC
-clang -o binaries/${ARCH}-clang-no-asan $SRC
+build clang "-fsanitize=address" asan
+build_strip clang "-fsanitize=address" asan-stripped
+
+build gcc "" no-asan
+build clang "" no-asan
 
 ls -la binaries/

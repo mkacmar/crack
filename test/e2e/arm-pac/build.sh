@@ -12,14 +12,15 @@ if [ "$ARCH" != "aarch64" ]; then
     exit 1
 fi
 
-gcc -mbranch-protection=pac-ret -o binaries/gcc-pac-enabled $SRC
-gcc -mbranch-protection=none -o binaries/gcc-pac-disabled $SRC
-gcc -mbranch-protection=pac-ret -o binaries/gcc-pac-stripped $SRC
-strip binaries/gcc-pac-stripped
+build() { $1 $2 -o binaries/$1-$3 $SRC; }
+build_strip() { $1 $2 -o binaries/$1-$3 $SRC && strip binaries/$1-$3; }
 
-clang -mbranch-protection=pac-ret -o binaries/clang-pac-enabled $SRC
-clang -mbranch-protection=none -o binaries/clang-pac-disabled $SRC
-clang -mbranch-protection=pac-ret -o binaries/clang-pac-stripped $SRC
-strip binaries/clang-pac-stripped
+build gcc "-mbranch-protection=pac-ret" pac-enabled
+build gcc "-mbranch-protection=none" pac-disabled
+build_strip gcc "-mbranch-protection=pac-ret" pac-stripped
+
+build clang "-mbranch-protection=pac-ret" pac-enabled
+build clang "-mbranch-protection=none" pac-disabled
+build_strip clang "-mbranch-protection=pac-ret" pac-stripped
 
 ls -la binaries/

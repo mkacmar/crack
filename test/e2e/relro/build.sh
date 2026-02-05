@@ -7,20 +7,21 @@ mkdir -p binaries
 
 . test/e2e/testdata/log-env.sh
 
-gcc -Wl,-z,relro -o binaries/${ARCH}-gcc-partial-relro $SRC
-gcc -Wl,-z,relro,-z,now -o binaries/${ARCH}-gcc-full-relro $SRC
-gcc -Wl,-z,norelro -o binaries/${ARCH}-gcc-no-relro $SRC
-gcc -Wl,-z,relro,-z,now -o binaries/${ARCH}-gcc-full-relro-stripped $SRC
-strip binaries/${ARCH}-gcc-full-relro-stripped
-gcc -static -Wl,-z,relro,-z,now -o binaries/${ARCH}-gcc-full-relro-static $SRC
-gcc -shared -fPIC -Wl,-z,relro,-z,now -o binaries/${ARCH}-gcc-full-relro-shared $SRC
+build() { $1 $2 -o binaries/${ARCH}-$1-$3 $SRC; }
+build_strip() { $1 $2 -o binaries/${ARCH}-$1-$3 $SRC && strip binaries/${ARCH}-$1-$3; }
+
+build gcc "-Wl,-z,relro" partial-relro
+build gcc "-Wl,-z,relro,-z,now" full-relro
+build gcc "-Wl,-z,norelro" no-relro
+build_strip gcc "-Wl,-z,relro,-z,now" full-relro-stripped
+build gcc "-static -Wl,-z,relro,-z,now" full-relro-static
+build gcc "-shared -fPIC -Wl,-z,relro,-z,now" full-relro-shared
 gcc -c -o binaries/${ARCH}-gcc-relocatable.o $SRC
 
-clang -Wl,-z,relro -o binaries/${ARCH}-clang-partial-relro $SRC
-clang -Wl,-z,relro,-z,now -o binaries/${ARCH}-clang-full-relro $SRC
-clang -Wl,-z,norelro -o binaries/${ARCH}-clang-no-relro $SRC
-clang -Wl,-z,relro,-z,now -o binaries/${ARCH}-clang-full-relro-stripped $SRC
-strip binaries/${ARCH}-clang-full-relro-stripped
+build clang "-Wl,-z,relro" partial-relro
+build clang "-Wl,-z,relro,-z,now" full-relro
+build clang "-Wl,-z,norelro" no-relro
+build_strip clang "-Wl,-z,relro,-z,now" full-relro-stripped
 clang -c -o binaries/${ARCH}-clang-relocatable.o $SRC
 
 ls -la binaries/

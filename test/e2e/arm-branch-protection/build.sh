@@ -12,18 +12,19 @@ if [ "$ARCH" != "aarch64" ]; then
     exit 1
 fi
 
-gcc -mbranch-protection=standard -o binaries/gcc-branch-protection-standard $SRC
-gcc -mbranch-protection=pac-ret -o binaries/gcc-branch-protection-pac-ret $SRC
-gcc -mbranch-protection=bti -o binaries/gcc-branch-protection-bti $SRC
-gcc -mbranch-protection=none -o binaries/gcc-no-branch-protection $SRC
-gcc -mbranch-protection=standard -o binaries/gcc-branch-protection-stripped $SRC
-strip binaries/gcc-branch-protection-stripped
+build() { $1 -mbranch-protection=$2 -o binaries/$1-$3 $SRC; }
+build_strip() { $1 -mbranch-protection=$2 -o binaries/$1-$3 $SRC && strip binaries/$1-$3; }
 
-clang -mbranch-protection=standard -o binaries/clang-branch-protection-standard $SRC
-clang -mbranch-protection=pac-ret -o binaries/clang-branch-protection-pac-ret $SRC
-clang -mbranch-protection=bti -o binaries/clang-branch-protection-bti $SRC
-clang -mbranch-protection=none -o binaries/clang-no-branch-protection $SRC
-clang -mbranch-protection=standard -o binaries/clang-branch-protection-stripped $SRC
-strip binaries/clang-branch-protection-stripped
+build gcc standard branch-protection-standard
+build gcc pac-ret branch-protection-pac-ret
+build gcc bti branch-protection-bti
+build gcc none no-branch-protection
+build_strip gcc standard branch-protection-stripped
+
+build clang standard branch-protection-standard
+build clang pac-ret branch-protection-pac-ret
+build clang bti branch-protection-bti
+build clang none no-branch-protection
+build_strip clang standard branch-protection-stripped
 
 ls -la binaries/

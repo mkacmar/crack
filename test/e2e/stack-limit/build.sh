@@ -7,12 +7,14 @@ mkdir -p binaries
 
 . test/e2e/testdata/log-env.sh
 
-gcc -Wl,-z,stack-size=8388608 -o binaries/${ARCH}-gcc-stack-limit $SRC
-gcc -o binaries/${ARCH}-gcc-no-stack-limit $SRC
+build() { $1 $2 -o binaries/${ARCH}-$1-$3 $SRC; }
+
+build gcc "-Wl,-z,stack-size=8388608" stack-limit
+build gcc "" no-stack-limit
 gcc -c -o binaries/${ARCH}-gcc-relocatable.o $SRC
 
-clang -Wl,-z,stack-size=8388608 -o binaries/${ARCH}-clang-stack-limit $SRC
-clang -o binaries/${ARCH}-clang-no-stack-limit $SRC
+build clang "-Wl,-z,stack-size=8388608" stack-limit
+build clang "" no-stack-limit
 clang -c -o binaries/${ARCH}-clang-relocatable.o $SRC
 
 ls -la binaries/

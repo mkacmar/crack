@@ -19,19 +19,19 @@ EOF
 
 SRC=/tmp/cfi.c
 
-# Cross-DSO CFI with LTO
-clang -fsanitize=cfi -fsanitize-cfi-cross-dso -flto -fvisibility=hidden -fuse-ld=lld -o binaries/${ARCH}-clang-cfi $SRC
-clang -fsanitize=cfi -fsanitize-cfi-cross-dso -flto -fvisibility=hidden -fuse-ld=lld -o binaries/${ARCH}-clang-cfi-stripped $SRC
-strip binaries/${ARCH}-clang-cfi-stripped
+build() { $1 $2 -o binaries/${ARCH}-$1-$3 $SRC; }
+build_strip() { $1 $2 -o binaries/${ARCH}-$1-$3 $SRC && strip binaries/${ARCH}-$1-$3; }
 
-# No CFI
-clang -o binaries/${ARCH}-clang-no-cfi $SRC
-clang -o binaries/${ARCH}-clang-no-cfi-stripped $SRC
-strip binaries/${ARCH}-clang-no-cfi-stripped
+CFI_FLAGS="-fsanitize=cfi -fsanitize-cfi-cross-dso -flto -fvisibility=hidden -fuse-ld=lld"
 
-gcc -o binaries/${ARCH}-gcc-no-cfi $SRC
-gcc -o binaries/${ARCH}-gcc-no-cfi-stripped $SRC
-strip binaries/${ARCH}-gcc-no-cfi-stripped
+build clang "$CFI_FLAGS" cfi
+build_strip clang "$CFI_FLAGS" cfi-stripped
+
+build clang "" no-cfi
+build_strip clang "" no-cfi-stripped
+
+build gcc "" no-cfi
+build_strip gcc "" no-cfi-stripped
 
 ls -la binaries/
 rm -f /tmp/cfi.c

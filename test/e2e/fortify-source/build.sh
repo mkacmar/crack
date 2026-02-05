@@ -27,29 +27,26 @@ EOF
 SRC=/tmp/fortify.c
 SIMPLE=test/e2e/testdata/main.c
 
-gcc -D_FORTIFY_SOURCE=2 -O2 -o binaries/${ARCH}-gcc-fortify2-O2 $SRC
-gcc -D_FORTIFY_SOURCE=1 -O1 -o binaries/${ARCH}-gcc-fortify1-O1 $SRC
-gcc -D_FORTIFY_SOURCE=3 -O2 -o binaries/${ARCH}-gcc-fortify3-O2 $SRC || echo "FORTIFY_SOURCE=3 not supported"
-gcc -U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=0 -O2 -o binaries/${ARCH}-gcc-no-fortify $SRC
-# -O0 disables fortify optimization
-gcc -D_FORTIFY_SOURCE=2 -O0 -o binaries/${ARCH}-gcc-fortify2-O0 $SRC
-gcc -D_FORTIFY_SOURCE=2 -O2 -o binaries/${ARCH}-gcc-fortify2-stripped $SRC
-strip binaries/${ARCH}-gcc-fortify2-stripped
-gcc -D_FORTIFY_SOURCE=2 -O2 -static -o binaries/${ARCH}-gcc-fortify2-static $SRC || echo "static linking not supported"
-gcc -D_FORTIFY_SOURCE=2 -O2 -static -o binaries/${ARCH}-gcc-fortify2-static-stripped $SRC && \
-  strip binaries/${ARCH}-gcc-fortify2-static-stripped || echo "static linking not supported"
-gcc -D_FORTIFY_SOURCE=2 -O2 -flto -o binaries/${ARCH}-gcc-fortify2-lto $SRC
-# simple program without fortifiable functions
+build() { $1 $2 -o binaries/${ARCH}-$1-$3 $SRC; }
+build_strip() { build "$@" && strip binaries/${ARCH}-$1-$3; }
+
+build gcc "-D_FORTIFY_SOURCE=2 -O2" fortify2-O2
+build gcc "-D_FORTIFY_SOURCE=1 -O1" fortify1-O1
+build gcc "-D_FORTIFY_SOURCE=3 -O2" fortify3-O2
+build gcc "-U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=0 -O2" no-fortify
+build gcc "-D_FORTIFY_SOURCE=2 -O0" fortify2-O0
+build_strip gcc "-D_FORTIFY_SOURCE=2 -O2" fortify2-stripped
+build gcc "-D_FORTIFY_SOURCE=2 -O2 -static" fortify2-static
+build_strip gcc "-D_FORTIFY_SOURCE=2 -O2 -static" fortify2-static-stripped
+build gcc "-D_FORTIFY_SOURCE=2 -O2 -flto" fortify2-lto
 gcc -D_FORTIFY_SOURCE=2 -O2 -o binaries/${ARCH}-gcc-fortify2-simple $SIMPLE
 
-clang -D_FORTIFY_SOURCE=2 -O2 -o binaries/${ARCH}-clang-fortify2-O2 $SRC
-clang -D_FORTIFY_SOURCE=1 -O1 -o binaries/${ARCH}-clang-fortify1-O1 $SRC
-clang -U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=0 -O2 -o binaries/${ARCH}-clang-no-fortify $SRC
-# -O0 disables fortify optimization
-clang -D_FORTIFY_SOURCE=2 -O0 -o binaries/${ARCH}-clang-fortify2-O0 $SRC
-clang -D_FORTIFY_SOURCE=2 -O2 -o binaries/${ARCH}-clang-fortify2-stripped $SRC
-strip binaries/${ARCH}-clang-fortify2-stripped
-clang -D_FORTIFY_SOURCE=2 -O2 -flto -o binaries/${ARCH}-clang-fortify2-lto $SRC
+build clang "-D_FORTIFY_SOURCE=2 -O2" fortify2-O2
+build clang "-D_FORTIFY_SOURCE=1 -O1" fortify1-O1
+build clang "-U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=0 -O2" no-fortify
+build clang "-D_FORTIFY_SOURCE=2 -O0" fortify2-O0
+build_strip clang "-D_FORTIFY_SOURCE=2 -O2" fortify2-stripped
+build clang "-D_FORTIFY_SOURCE=2 -O2 -flto" fortify2-lto
 
 ls -la binaries/
 rm -f /tmp/fortify.c

@@ -7,16 +7,17 @@ mkdir -p binaries
 
 . test/e2e/testdata/log-env.sh
 
-gcc -shared -fPIC -Wl,-z,nodlopen -o binaries/${ARCH}-gcc-nodlopen.so $SRC
-gcc -shared -fPIC -Wl,-z,nodlopen -o binaries/${ARCH}-gcc-nodlopen-stripped.so $SRC
-strip binaries/${ARCH}-gcc-nodlopen-stripped.so
+build() { $1 -shared -fPIC $2 -o binaries/${ARCH}-$1-$3.so $SRC; }
+build_strip() { build $1 "$2" $3 && strip binaries/${ARCH}-$1-$3.so; }
 
-clang -shared -fPIC -Wl,-z,nodlopen -o binaries/${ARCH}-clang-nodlopen.so $SRC
-clang -shared -fPIC -Wl,-z,nodlopen -o binaries/${ARCH}-clang-nodlopen-stripped.so $SRC
-strip binaries/${ARCH}-clang-nodlopen-stripped.so
+build gcc "-Wl,-z,nodlopen" nodlopen
+build_strip gcc "-Wl,-z,nodlopen" nodlopen-stripped
 
-gcc -shared -fPIC -o binaries/${ARCH}-gcc-default.so $SRC
-clang -shared -fPIC -o binaries/${ARCH}-clang-default.so $SRC
+build clang "-Wl,-z,nodlopen" nodlopen
+build_strip clang "-Wl,-z,nodlopen" nodlopen-stripped
+
+build gcc "" default
+build clang "" default
 
 gcc -fPIE -pie -o binaries/${ARCH}-gcc-pie-executable $SRC
 clang -fPIE -pie -o binaries/${ARCH}-clang-pie-executable $SRC

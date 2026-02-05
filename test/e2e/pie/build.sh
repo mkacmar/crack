@@ -7,20 +7,19 @@ mkdir -p binaries
 
 . test/e2e/testdata/log-env.sh
 
-gcc -fPIE -pie -o binaries/${ARCH}-gcc-pie-explicit $SRC
-gcc -fno-pie -no-pie -o binaries/${ARCH}-gcc-no-pie $SRC
-gcc -static-pie -o binaries/${ARCH}-gcc-static-pie $SRC
-gcc -shared -fPIC -o binaries/${ARCH}-gcc-shared $SRC
-gcc -fPIE -pie -o binaries/${ARCH}-gcc-pie-stripped $SRC
-strip binaries/${ARCH}-gcc-pie-stripped
-# strip debug only, keep symbols
-gcc -fPIE -pie -o binaries/${ARCH}-gcc-pie-strip-debug $SRC
-strip --strip-debug binaries/${ARCH}-gcc-pie-strip-debug
+build() { $1 $2 -o binaries/${ARCH}-$1-$3 $SRC; }
+build_strip() { $1 $2 -o binaries/${ARCH}-$1-$3 $SRC && strip binaries/${ARCH}-$1-$3; }
 
-clang -fPIE -pie -o binaries/${ARCH}-clang-pie-explicit $SRC
-clang -fno-pie -no-pie -o binaries/${ARCH}-clang-no-pie $SRC
-clang -fPIE -pie -o binaries/${ARCH}-clang-pie-stripped $SRC
-strip binaries/${ARCH}-clang-pie-stripped
+build gcc "-fPIE -pie" pie-explicit
+build gcc "-fno-pie -no-pie" no-pie
+build gcc -static-pie static-pie
+build gcc "-shared -fPIC" shared
+build_strip gcc "-fPIE -pie" pie-stripped
+gcc -fPIE -pie -o binaries/${ARCH}-gcc-pie-strip-debug $SRC && strip --strip-debug binaries/${ARCH}-gcc-pie-strip-debug
+
+build clang "-fPIE -pie" pie-explicit
+build clang "-fno-pie -no-pie" no-pie
+build_strip clang "-fPIE -pie" pie-stripped
 
 gcc -c -o binaries/${ARCH}-gcc-object-file $SRC
 

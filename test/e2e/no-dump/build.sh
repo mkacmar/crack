@@ -7,17 +7,18 @@ mkdir -p binaries
 
 . test/e2e/testdata/log-env.sh
 
-gcc -Wl,-z,nodump -o binaries/${ARCH}-gcc-nodump $SRC
-gcc -Wl,-z,nodump -o binaries/${ARCH}-gcc-nodump-stripped $SRC
-strip binaries/${ARCH}-gcc-nodump-stripped
+build() { $1 $2 -o binaries/${ARCH}-$1-$3 $SRC; }
+build_strip() { $1 $2 -o binaries/${ARCH}-$1-$3 $SRC && strip binaries/${ARCH}-$1-$3; }
+
+build gcc "-Wl,-z,nodump" nodump
+build_strip gcc "-Wl,-z,nodump" nodump-stripped
 gcc -c -o binaries/${ARCH}-gcc-relocatable.o $SRC
 
-clang -Wl,-z,nodump -o binaries/${ARCH}-clang-nodump $SRC
-clang -Wl,-z,nodump -o binaries/${ARCH}-clang-nodump-stripped $SRC
-strip binaries/${ARCH}-clang-nodump-stripped
+build clang "-Wl,-z,nodump" nodump
+build_strip clang "-Wl,-z,nodump" nodump-stripped
 clang -c -o binaries/${ARCH}-clang-relocatable.o $SRC
 
-gcc -o binaries/${ARCH}-gcc-default $SRC
-clang -o binaries/${ARCH}-clang-default $SRC
+build gcc "" default
+build clang "" default
 
 ls -la binaries/

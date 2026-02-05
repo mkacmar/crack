@@ -6,7 +6,6 @@ mkdir -p binaries
 
 . test/e2e/testdata/log-env.sh
 
-# source with a buffer that triggers stack protection
 cat > /tmp/vulnerable.c << 'EOF'
 #include <string.h>
 void vulnerable(const char *input) {
@@ -22,29 +21,27 @@ EOF
 SRC=/tmp/vulnerable.c
 SIMPLE=test/e2e/testdata/main.c
 
-gcc -fstack-protector-strong -o binaries/${ARCH}-gcc-stack-protector-strong $SRC
-gcc -fstack-protector-all -o binaries/${ARCH}-gcc-stack-protector-all $SRC
-gcc -fstack-protector -o binaries/${ARCH}-gcc-stack-protector $SRC
-gcc -fno-stack-protector -o binaries/${ARCH}-gcc-no-stack-protector $SRC
-# simple program (no vulnerable buffer)
-gcc -fstack-protector -o binaries/${ARCH}-gcc-stack-protector-simple $SIMPLE
-gcc -fstack-protector-all -o binaries/${ARCH}-gcc-stack-protector-all-simple $SIMPLE
-gcc -fstack-protector-strong -o binaries/${ARCH}-gcc-stack-protector-stripped $SRC
-strip binaries/${ARCH}-gcc-stack-protector-stripped
-gcc -fstack-protector-strong -static -o binaries/${ARCH}-gcc-stack-protector-static $SRC || echo "static linking not supported"
-gcc -fstack-protector-strong -static -o binaries/${ARCH}-gcc-stack-protector-static-stripped $SRC && \
-  strip binaries/${ARCH}-gcc-stack-protector-static-stripped || echo "static linking not supported"
-gcc -flto -fstack-protector-strong -o binaries/${ARCH}-gcc-stack-protector-lto $SRC
+build() { $1 $2 -o binaries/${ARCH}-$1-$3 $4; }
+build_strip() { $1 $2 -o binaries/${ARCH}-$1-$3 $4 && strip binaries/${ARCH}-$1-$3; }
 
-clang -fstack-protector-strong -o binaries/${ARCH}-clang-stack-protector-strong $SRC
-clang -fstack-protector-all -o binaries/${ARCH}-clang-stack-protector-all $SRC
-clang -fno-stack-protector -o binaries/${ARCH}-clang-no-stack-protector $SRC
-clang -fstack-protector-strong -o binaries/${ARCH}-clang-stack-protector-stripped $SRC
-strip binaries/${ARCH}-clang-stack-protector-stripped
-clang -fstack-protector-strong -static -o binaries/${ARCH}-clang-stack-protector-static $SRC || echo "static linking not supported"
-clang -fstack-protector-strong -static -o binaries/${ARCH}-clang-stack-protector-static-stripped $SRC && \
-  strip binaries/${ARCH}-clang-stack-protector-static-stripped || echo "static linking not supported"
-clang -flto -fstack-protector-strong -o binaries/${ARCH}-clang-stack-protector-lto $SRC
+build gcc -fstack-protector-strong stack-protector-strong $SRC
+build gcc -fstack-protector-all stack-protector-all $SRC
+build gcc -fstack-protector stack-protector $SRC
+build gcc -fno-stack-protector no-stack-protector $SRC
+build gcc -fstack-protector stack-protector-simple $SIMPLE
+build gcc -fstack-protector-all stack-protector-all-simple $SIMPLE
+build_strip gcc -fstack-protector-strong stack-protector-stripped $SRC
+build gcc "-fstack-protector-strong -static" stack-protector-static $SRC
+build_strip gcc "-fstack-protector-strong -static" stack-protector-static-stripped $SRC
+build gcc "-flto -fstack-protector-strong" stack-protector-lto $SRC
+
+build clang -fstack-protector-strong stack-protector-strong $SRC
+build clang -fstack-protector-all stack-protector-all $SRC
+build clang -fno-stack-protector no-stack-protector $SRC
+build_strip clang -fstack-protector-strong stack-protector-stripped $SRC
+build clang "-fstack-protector-strong -static" stack-protector-static $SRC
+build_strip clang "-fstack-protector-strong -static" stack-protector-static-stripped $SRC
+build clang "-flto -fstack-protector-strong" stack-protector-lto $SRC
 
 ls -la binaries/
-rm -f /tmp/vulnerable.c /tmp/simple.c
+rm -f /tmp/vulnerable.c
