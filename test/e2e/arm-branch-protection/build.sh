@@ -1,7 +1,8 @@
 #!/bin/sh
 set -ex
 
-SRC=test/e2e/testdata/main.c
+C_SRC=test/e2e/testdata/main.c
+RUST_SRC=test/e2e/testdata/main.rs
 mkdir -p binaries
 
 . test/e2e/testdata/log-env.sh
@@ -12,8 +13,8 @@ if [ "$ARCH" != "aarch64" ]; then
     exit 1
 fi
 
-build_c() { $1 -mbranch-protection=$2 -o binaries/$1-$3 $SRC; }
-build_c_strip() { $1 -mbranch-protection=$2 -o binaries/$1-$3 $SRC && strip binaries/$1-$3; }
+build_c() { $1 -mbranch-protection=$2 -o binaries/$1-$3 $C_SRC; }
+build_c_strip() { $1 -mbranch-protection=$2 -o binaries/$1-$3 $C_SRC && strip binaries/$1-$3; }
 
 build_c gcc standard branch-protection-standard
 build_c gcc pac-ret branch-protection-pac-ret
@@ -26,5 +27,7 @@ build_c clang pac-ret branch-protection-pac-ret
 build_c clang bti branch-protection-bti
 build_c clang none no-branch-protection
 build_c_strip clang standard branch-protection-stripped
+
+rustc -o binaries/rustc-no-branch-protection $RUST_SRC
 
 ls -la binaries/

@@ -8,6 +8,8 @@ jobs:
     runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v4
+      - name: Install Rust
+        run: rustup update stable
       - name: Build binaries
         run: sh test/e2e/safe-stack/build.sh x86_64
       - uses: actions/upload-artifact@v4
@@ -19,6 +21,8 @@ jobs:
     runs-on: ubuntu-24.04-arm
     steps:
       - uses: actions/checkout@v4
+      - name: Install Rust
+        run: rustup update stable
       - name: Build binaries
         run: sh test/e2e/safe-stack/build.sh aarch64
       - uses: actions/upload-artifact@v4

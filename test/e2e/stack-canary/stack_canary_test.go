@@ -64,5 +64,12 @@ func TestStackCanaryRule(t *testing.T) {
 		{Binary: "armv7-clang-stack-protector-static", Expect: e2e.Pass},
 		{Binary: "armv7-clang-stack-protector-static-stripped", Expect: e2e.Fail},
 		{Binary: "armv7-clang-stack-protector-lto", Expect: e2e.Pass},
+
+		{Binary: "x86_64-rustc-stack-protector", Expect: e2e.Skip},
+		{Binary: "x86_64-rustc-stack-protector-stripped", Expect: e2e.Skip},
+		{Binary: "aarch64-rustc-stack-protector", Expect: e2e.Skip},
+		{Binary: "aarch64-rustc-stack-protector-stripped", Expect: e2e.Skip},
+		{Binary: "armv7-rustc-stack-protector", Expect: e2e.Skip},
+		{Binary: "armv7-rustc-stack-protector-stripped", Expect: e2e.Skip},
 	})
 }

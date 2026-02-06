@@ -1,8 +1,8 @@
 /crack
-dist/
-coverage/
-*.exe
-*.exe~
-*.dll
-*.so
-*.dylib
+/dist/
+/coverage/
+/*.exe
+/*.exe~
+/*.dll
+/*.so
+/*.dylib

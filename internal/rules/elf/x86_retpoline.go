@@ -26,6 +26,7 @@ func (r X86RetpolineRule) Applicability() rule.Applicability {
 	return rule.Applicability{
 		Platform: binary.PlatformAllX86,
 		Compilers: map[toolchain.Compiler]rule.CompilerRequirement{
+			// rustc: nightly-only via -Z retpoline
 			toolchain.CompilerGCC:   {MinVersion: toolchain.Version{Major: 7, Minor: 3}, Flag: "-mindirect-branch=thunk -mfunction-return=thunk"},
 			toolchain.CompilerClang: {MinVersion: toolchain.Version{Major: 6, Minor: 0}, Flag: "-mretpoline"},
 		},

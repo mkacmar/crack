@@ -66,6 +66,7 @@ const (
 	CompilerUnknown Compiler = iota
 	CompilerGCC
 	CompilerClang
+	CompilerRustc
 )
 
 func (c Compiler) String() string {
@@ -74,6 +75,8 @@ func (c Compiler) String() string {
 		return "gcc"
 	case CompilerClang:
 		return "clang"
+	case CompilerRustc:
+		return "rustc"
 	default:
 		return "unknown"
 	}
@@ -85,13 +88,15 @@ func ParseCompiler(s string) (Compiler, bool) {
 		return CompilerGCC, true
 	case "clang":
 		return CompilerClang, true
+	case "rustc":
+		return CompilerRustc, true
 	default:
 		return CompilerUnknown, false
 	}
 }
 
 func ValidCompilerNames() []string {
-	return []string{"gcc", "clang"}
+	return []string{"gcc", "clang", "rustc"}
 }
 
 type Toolchain struct {
@@ -107,7 +112,9 @@ func ParseToolchain(info string) Toolchain {
 	lower := strings.ToLower(info)
 
 	var compiler Compiler
-	if strings.Contains(lower, "gcc") || strings.Contains(lower, "gnu c") || strings.Contains(lower, "gnu gimple") {
+	if strings.Contains(lower, "rustc") {
+		compiler = CompilerRustc
+	} else if strings.Contains(lower, "gcc") || strings.Contains(lower, "gnu c") || strings.Contains(lower, "gnu gimple") {
 		compiler = CompilerGCC
 	} else if strings.Contains(lower, "clang") {
 		compiler = CompilerClang

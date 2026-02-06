@@ -26,6 +26,10 @@ jobs:
         with:
           platforms: arm
 
+      - name: Install Rust
+        if: ${{ !matrix.qemu }}
+        run: rustup update stable
+
       - name: Build binaries (native)
         if: ${{ !matrix.qemu }}
         run: sh test/e2e/separate-code/build.sh ${{ matrix.arch }}
@@ -36,7 +40,7 @@ jobs:
           docker run --rm --platform linux/arm/v7 \
             -v ${{ github.workspace }}:/workspace \
             -w /workspace \
-            alpine:latest sh -c 'apk add --no-cache gcc clang musl-dev binutils && sh test/e2e/separate-code/build.sh ${{ matrix.arch }}'
+            alpine:latest sh -c 'apk add --no-cache gcc clang musl-dev binutils rust && sh test/e2e/separate-code/build.sh ${{ matrix.arch }}'
 
       - uses: actions/upload-artifact@v4
         with:
@@ -97,5 +101,3 @@ jobs:
         with:
           name: separate-code-binaries
           path: all-binaries/
-
-

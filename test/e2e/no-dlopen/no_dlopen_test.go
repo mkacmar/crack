@@ -37,5 +37,20 @@ func TestNoDLOpenRule(t *testing.T) {
 		{Binary: "armv7-clang-nodlopen-stripped.so", Expect: e2e.Pass},
 		{Binary: "armv7-clang-default.so", Expect: e2e.Fail},
 		{Binary: "armv7-clang-pie-executable", Expect: e2e.Skip},
+
+		{Binary: "x86_64-rustc-executable", Expect: e2e.Skip},
+		{Binary: "x86_64-rustc-nodlopen.so", Expect: e2e.Pass},
+		{Binary: "x86_64-rustc-nodlopen-stripped.so", Expect: e2e.Pass},
+		{Binary: "x86_64-rustc-default.so", Expect: e2e.Fail},
+
+		{Binary: "aarch64-rustc-executable", Expect: e2e.Skip},
+		{Binary: "aarch64-rustc-nodlopen.so", Expect: e2e.Pass},
+		{Binary: "aarch64-rustc-nodlopen-stripped.so", Expect: e2e.Pass},
+		{Binary: "aarch64-rustc-default.so", Expect: e2e.Fail},
+
+		{Binary: "armv7-rustc-executable", Expect: e2e.Skip},
+		{Binary: "armv7-rustc-nodlopen.so", Expect: e2e.Pass},
+		{Binary: "armv7-rustc-nodlopen-stripped.so", Expect: e2e.Pass},
+		{Binary: "armv7-rustc-default.so", Expect: e2e.Fail},
 	})
 }

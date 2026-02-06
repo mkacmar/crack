@@ -30,6 +30,9 @@ func relroCases(partialExpect e2e.Expectation) []e2e.TestCase {
 		{Binary: "x86_64-clang-full-relro-stripped", Expect: e2e.Pass},
 		{Binary: "x86_64-clang-relocatable.o", Expect: e2e.Skip},
 
+		{Binary: "x86_64-rustc-relro", Expect: e2e.Pass},
+		{Binary: "x86_64-rustc-relro-stripped", Expect: e2e.Pass},
+
 		{Binary: "aarch64-gcc-partial-relro", Expect: partialExpect},
 		{Binary: "aarch64-gcc-full-relro", Expect: e2e.Pass},
 		{Binary: "aarch64-gcc-no-relro", Expect: e2e.Fail},
@@ -44,6 +47,9 @@ func relroCases(partialExpect e2e.Expectation) []e2e.TestCase {
 		{Binary: "aarch64-clang-full-relro-stripped", Expect: e2e.Pass},
 		{Binary: "aarch64-clang-relocatable.o", Expect: e2e.Skip},
 
+		{Binary: "aarch64-rustc-relro", Expect: e2e.Pass},
+		{Binary: "aarch64-rustc-relro-stripped", Expect: e2e.Pass},
+
 		{Binary: "armv7-gcc-partial-relro", Expect: partialExpect},
 		{Binary: "armv7-gcc-full-relro", Expect: e2e.Pass},
 		{Binary: "armv7-gcc-no-relro", Expect: e2e.Fail},
@@ -57,5 +63,8 @@ func relroCases(partialExpect e2e.Expectation) []e2e.TestCase {
 		{Binary: "armv7-clang-no-relro", Expect: e2e.Fail},
 		{Binary: "armv7-clang-full-relro-stripped", Expect: e2e.Pass},
 		{Binary: "armv7-clang-relocatable.o", Expect: e2e.Skip},
+
+		{Binary: "armv7-rustc-relro", Expect: e2e.Pass},
+		{Binary: "armv7-rustc-relro-stripped", Expect: e2e.Pass},
 	}
 }

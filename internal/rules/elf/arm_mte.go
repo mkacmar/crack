@@ -23,7 +23,8 @@ func (r ARMMTERule) Applicability() rule.Applicability {
 	return rule.Applicability{
 		Platform: binary.PlatformARM64v8_5,
 		Compilers: map[toolchain.Compiler]rule.CompilerRequirement{
-			// GCC supports MTE intrinsics, but they can't be easily detected.
+			// gcc: MTE intrinsics supported but not easily detectable
+			// rustc: nightly-only via -Z sanitizer=memtag
 			toolchain.CompilerClang: {MinVersion: toolchain.Version{Major: 12, Minor: 0}, Flag: "-march=armv8.5-a+memtag -fsanitize=memtag"},
 		},
 	}

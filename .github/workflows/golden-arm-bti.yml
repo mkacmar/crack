@@ -8,7 +8,8 @@ jobs:
     runs-on: ubuntu-24.04-arm
     steps:
       - uses: actions/checkout@v4
-
+      - name: Install Rust
+        run: rustup update stable
       - name: Build binaries
         run: sh test/e2e/arm-bti/build.sh glibc
 
@@ -25,7 +26,7 @@ jobs:
       - name: Build binaries in Alpine container
         run: |
           docker run --rm -v "$PWD:/workspace" -w /workspace alpine:latest sh -c '
-            apk add --no-cache gcc clang musl-dev binutils
+            apk add --no-cache gcc clang musl-dev binutils rust
             sh test/e2e/arm-bti/build.sh musl
           '
 

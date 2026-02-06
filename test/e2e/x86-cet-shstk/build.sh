@@ -1,7 +1,8 @@
 #!/bin/sh
 set -ex
 
-SRC=test/e2e/testdata/main.c
+C_SRC=test/e2e/testdata/main.c
+RUST_SRC=test/e2e/testdata/main.rs
 mkdir -p binaries
 
 . test/e2e/testdata/log-env.sh
@@ -12,8 +13,8 @@ if [ "$ARCH" != "x86_64" ]; then
     exit 1
 fi
 
-build_c() { $1 -fcf-protection=$2 -o binaries/$1-cet-$2 $SRC; }
-build_c_strip() { $1 -fcf-protection=$2 -o binaries/$1-cet-$3 $SRC && strip binaries/$1-cet-$3; }
+build_c() { $1 -fcf-protection=$2 -o binaries/$1-cet-$2 $C_SRC; }
+build_c_strip() { $1 -fcf-protection=$2 -o binaries/$1-cet-$3 $C_SRC && strip binaries/$1-cet-$3; }
 
 build_c gcc full
 build_c gcc return
@@ -23,5 +24,7 @@ build_c_strip gcc full full-stripped
 build_c clang full
 build_c clang return
 build_c clang none
+
+rustc -o binaries/rustc-default $RUST_SRC
 
 ls -la binaries/

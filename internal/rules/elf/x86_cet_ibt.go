@@ -22,6 +22,7 @@ func (r X86CETIBTRule) Applicability() rule.Applicability {
 	return rule.Applicability{
 		Platform: binary.PlatformAllX86,
 		Compilers: map[toolchain.Compiler]rule.CompilerRequirement{
+			// rustc: nightly-only via -Z cf-protection
 			toolchain.CompilerGCC:   {MinVersion: toolchain.Version{Major: 8, Minor: 1}, Flag: "-fcf-protection=full"},
 			toolchain.CompilerClang: {MinVersion: toolchain.Version{Major: 10, Minor: 0}, Flag: "-fcf-protection=full"},
 		},

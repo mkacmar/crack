@@ -2,6 +2,7 @@
 set -ex
 
 ARCH=$1
+RUST_SRC=test/e2e/testdata/main.rs
 mkdir -p binaries
 
 . test/e2e/testdata/log-env.sh
@@ -17,10 +18,10 @@ int main(void) {
 }
 EOF
 
-SRC=/tmp/cfi.c
+C_SRC=/tmp/cfi.c
 
-build_c() { $1 $2 -o binaries/${ARCH}-$1-$3 $SRC; }
-build_c_strip() { $1 $2 -o binaries/${ARCH}-$1-$3 $SRC && strip binaries/${ARCH}-$1-$3; }
+build_c() { $1 $2 -o binaries/${ARCH}-$1-$3 $C_SRC; }
+build_c_strip() { $1 $2 -o binaries/${ARCH}-$1-$3 $C_SRC && strip binaries/${ARCH}-$1-$3; }
 
 CFI_FLAGS="-fsanitize=cfi -fsanitize-cfi-cross-dso -flto -fvisibility=hidden -fuse-ld=lld"
 
@@ -32,6 +33,8 @@ build_c_strip clang "" no-cfi-stripped
 
 build_c gcc "" no-cfi
 build_c_strip gcc "" no-cfi-stripped
+
+rustc -o binaries/${ARCH}-rustc-no-cfi $RUST_SRC
 
 ls -la binaries/
 rm -f /tmp/cfi.c

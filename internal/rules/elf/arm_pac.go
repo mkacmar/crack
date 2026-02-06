@@ -24,6 +24,7 @@ func (r ARMPACRule) Applicability() rule.Applicability {
 	return rule.Applicability{
 		Platform: binary.PlatformARM64v8_3,
 		Compilers: map[toolchain.Compiler]rule.CompilerRequirement{
+			// rustc: nightly-only via -Z branch-protection=pac-ret
 			toolchain.CompilerGCC:   {MinVersion: toolchain.Version{Major: 10, Minor: 1}, Flag: "-mbranch-protection=pac-ret"},
 			toolchain.CompilerClang: {MinVersion: toolchain.Version{Major: 12, Minor: 0}, Flag: "-mbranch-protection=pac-ret"},
 		},

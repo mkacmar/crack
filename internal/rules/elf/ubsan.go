@@ -25,6 +25,7 @@ func (r UBSanRule) Applicability() rule.Applicability {
 	return rule.Applicability{
 		Platform: binary.PlatformAll,
 		Compilers: map[toolchain.Compiler]rule.CompilerRequirement{
+			// rustc: different mechanism, compile-time checks rather than runtime sanitizer
 			toolchain.CompilerGCC:   {MinVersion: toolchain.Version{Major: 5, Minor: 1}, Flag: "-fsanitize=undefined"},
 			toolchain.CompilerClang: {MinVersion: toolchain.Version{Major: 3, Minor: 4}, Flag: "-fsanitize=undefined"},
 		},

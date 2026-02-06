@@ -28,6 +28,7 @@ func (r NoInsecureRUNPATHRule) Applicability() rule.Applicability {
 		Compilers: map[toolchain.Compiler]rule.CompilerRequirement{
 			toolchain.CompilerGCC:   {MinVersion: toolchain.Version{Major: 4, Minor: 1}, DefaultVersion: toolchain.Version{Major: 6, Minor: 1}, Flag: "-Wl,--enable-new-dtags -Wl,-rpath,/absolute/path"},
 			toolchain.CompilerClang: {MinVersion: toolchain.Version{Major: 3, Minor: 4}, DefaultVersion: toolchain.Version{Major: 4, Minor: 0}, Flag: "-Wl,--enable-new-dtags -Wl,-rpath,/absolute/path"},
+			toolchain.CompilerRustc: {MinVersion: toolchain.Version{Major: 1, Minor: 74}, Flag: "-C link-arg=--enable-new-dtags -C link-arg=-rpath -C link-arg=/absolute/path"},
 		},
 	}
 }

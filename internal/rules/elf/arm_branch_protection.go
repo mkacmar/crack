@@ -24,6 +24,7 @@ func (r ARMBranchProtectionRule) Applicability() rule.Applicability {
 	return rule.Applicability{
 		Platform: binary.PlatformARM64v8_5,
 		Compilers: map[toolchain.Compiler]rule.CompilerRequirement{
+			// rustc: nightly-only via -Z branch-protection=bti,pac-ret
 			toolchain.CompilerGCC:   {MinVersion: toolchain.Version{Major: 10, Minor: 1}, Flag: "-mbranch-protection=standard"},
 			toolchain.CompilerClang: {MinVersion: toolchain.Version{Major: 12, Minor: 0}, Flag: "-mbranch-protection=standard"},
 		},

@@ -40,5 +40,12 @@ func TestNXBitRule(t *testing.T) {
 		{Binary: "armv7-clang-no-nx", Expect: e2e.Fail},
 		{Binary: "armv7-clang-nx-stripped", Expect: e2e.Pass},
 		{Binary: "armv7-clang-relocatable.o", Expect: e2e.Skip},
+
+		{Binary: "x86_64-rustc-nx", Expect: e2e.Pass},
+		{Binary: "x86_64-rustc-nx-stripped", Expect: e2e.Pass},
+		{Binary: "aarch64-rustc-nx", Expect: e2e.Pass},
+		{Binary: "aarch64-rustc-nx-stripped", Expect: e2e.Pass},
+		{Binary: "armv7-rustc-nx", Expect: e2e.Pass},
+		{Binary: "armv7-rustc-nx-stripped", Expect: e2e.Pass},
 	})
 }

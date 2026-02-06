@@ -26,6 +26,7 @@ func (r FullRELRORule) Applicability() rule.Applicability {
 		Compilers: map[toolchain.Compiler]rule.CompilerRequirement{
 			toolchain.CompilerGCC:   {MinVersion: toolchain.Version{Major: 4, Minor: 1}, DefaultVersion: toolchain.Version{Major: 6, Minor: 1}, Flag: "-Wl,-z,relro,-z,now"},
 			toolchain.CompilerClang: {MinVersion: toolchain.Version{Major: 3, Minor: 4}, DefaultVersion: toolchain.Version{Major: 4, Minor: 0}, Flag: "-Wl,-z,relro,-z,now"},
+			toolchain.CompilerRustc: {MinVersion: toolchain.Version{Major: 1, Minor: 21}, DefaultVersion: toolchain.Version{Major: 1, Minor: 21}, Flag: "-C link-arg=-z -C link-arg=relro -C link-arg=-z -C link-arg=now"},
 		},
 	}
 }

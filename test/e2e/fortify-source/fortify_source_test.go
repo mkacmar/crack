@@ -62,5 +62,9 @@ func TestFortifySourceRule(t *testing.T) {
 		{Binary: "armv7-clang-fortify2-O0", Expect: e2e.Skip},
 		{Binary: "armv7-clang-fortify2-stripped", Expect: e2e.Skip},
 		{Binary: "armv7-clang-fortify2-lto", Expect: e2e.Skip},
+
+		{Binary: "x86_64-rustc-no-fortify", Expect: e2e.Skip},
+		{Binary: "aarch64-rustc-no-fortify", Expect: e2e.Skip},
+		{Binary: "armv7-rustc-no-fortify", Expect: e2e.Skip},
 	})
 }

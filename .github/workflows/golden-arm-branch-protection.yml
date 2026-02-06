@@ -14,7 +14,7 @@ jobs:
       - uses: actions/checkout@v4
 
       - name: Install build tools
-        run: dnf install -y gcc clang binutils
+        run: dnf install -y gcc clang binutils rust
 
       - name: Build binaries
         run: sh test/e2e/arm-branch-protection/build.sh
@@ -23,4 +23,3 @@ jobs:
         with:
           name: arm-branch-protection-binaries
           path: binaries/
-

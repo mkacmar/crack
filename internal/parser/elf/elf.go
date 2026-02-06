@@ -63,20 +63,32 @@ func isNotELFError(err error) bool {
 		strings.Contains(msg, "invalid argument")
 }
 
+// detectToolchain returns highest priority compiler (rustc > clang > gcc) to ignore GCC from glibc.
 func (p *Parser) detectToolchain(f *elf.File) toolchain.Toolchain {
-	compilerInfo := p.extractCompilerInfo(f)
-	return toolchain.ParseToolchain(compilerInfo)
+	comments := p.extractCompilerComments(f)
+
+	var best toolchain.Toolchain
+	for _, comment := range comments {
+		tc := toolchain.ParseToolchain(comment)
+		if tc.Compiler == toolchain.CompilerUnknown {
+			continue
+		}
+		if best.Compiler == toolchain.CompilerUnknown || tc.Compiler > best.Compiler {
+			best = tc
+		}
+	}
+	return best
 }
 
-func (p *Parser) extractCompilerInfo(f *elf.File) string {
+func (p *Parser) extractCompilerComments(f *elf.File) []string {
 	section := f.Section(".comment")
 	if section == nil {
-		return ""
+		return nil
 	}
 
 	data, err := section.Data()
 	if err != nil {
-		return ""
+		return nil
 	}
 
 	return parseComments(data)
@@ -106,21 +118,20 @@ func (p *Parser) extractBuildID(f *elf.File) string {
 	return fmt.Sprintf("%x", data[descOffset:descOffset+int(descsz)])
 }
 
-// parseComments extracts compiler info from .comment section.
-// Returns the last comment, which is typically from the compiler that built the user's code (earlier entries come from linked system libraries).
-func parseComments(data []byte) string {
-	var last string
+// parseComments extracts all compiler info strings from .comment section.
+func parseComments(data []byte) []string {
+	var comments []string
 	for len(data) > 0 {
 		idx := bytes.IndexByte(data, 0)
 		if idx == -1 {
 			break
 		}
 		if idx > 0 {
-			last = string(data[:idx])
+			comments = append(comments, string(data[:idx]))
 		}
 		data = data[idx+1:]
 	}
-	return last
+	return comments
 }
 
 func parseArchitecture(machine elf.Machine) binary.Architecture {

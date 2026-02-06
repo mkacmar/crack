@@ -26,6 +26,7 @@ func (r SeparateCodeRule) Applicability() rule.Applicability {
 		Compilers: map[toolchain.Compiler]rule.CompilerRequirement{
 			toolchain.CompilerGCC:   {MinVersion: toolchain.Version{Major: 8, Minor: 1}, DefaultVersion: toolchain.Version{Major: 8, Minor: 1}, Flag: "-Wl,-z,separate-code"},
 			toolchain.CompilerClang: {MinVersion: toolchain.Version{Major: 6, Minor: 0}, DefaultVersion: toolchain.Version{Major: 6, Minor: 0}, Flag: "-Wl,-z,separate-code"},
+			toolchain.CompilerRustc: {MinVersion: toolchain.Version{Major: 1, Minor: 31}, Flag: "-C link-arg=-z -C link-arg=separate-code"},
 		},
 	}
 }

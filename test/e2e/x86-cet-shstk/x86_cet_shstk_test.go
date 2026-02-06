@@ -15,5 +15,6 @@ func TestX86CETShadowStackRule(t *testing.T) {
 		{Binary: "clang-cet-full", Expect: e2e.Pass},
 		{Binary: "clang-cet-return", Expect: e2e.Pass},
 		{Binary: "clang-cet-none", Expect: e2e.Fail},
+		{Binary: "rustc-default", Expect: e2e.Skip},
 	})
 }

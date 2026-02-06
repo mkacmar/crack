@@ -2,6 +2,7 @@
 set -ex
 
 ARCH=$1
+RUST_SRC=test/e2e/testdata/main.rs
 mkdir -p binaries
 
 . test/e2e/testdata/log-env.sh
@@ -16,10 +17,10 @@ int main(void) {
 }
 EOF
 
-SRC=/tmp/ubsan.c
+C_SRC=/tmp/ubsan.c
 
-build_c() { $1 $2 -o binaries/${ARCH}-$1-$3 $SRC; }
-build_c_strip() { $1 $2 -o binaries/${ARCH}-$1-$3 $SRC && strip binaries/${ARCH}-$1-$3; }
+build_c() { $1 $2 -o binaries/${ARCH}-$1-$3 $C_SRC; }
+build_c_strip() { $1 $2 -o binaries/${ARCH}-$1-$3 $C_SRC && strip binaries/${ARCH}-$1-$3; }
 
 build_c gcc "-fsanitize=undefined" ubsan
 build_c_strip gcc "-fsanitize=undefined" ubsan-stripped
@@ -29,6 +30,8 @@ build_c_strip clang "-fsanitize=undefined" ubsan-stripped
 
 build_c gcc "" no-ubsan
 build_c clang "" no-ubsan
+
+rustc -o binaries/${ARCH}-rustc-no-ubsan $RUST_SRC
 
 ls -la binaries/
 rm -f /tmp/ubsan.c

@@ -8,6 +8,8 @@ jobs:
     runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v4
+      - name: Install Rust
+        run: rustup update stable
       - name: Build binaries
         run: sh test/e2e/asan/build.sh x86_64
       - uses: actions/upload-artifact@v4
@@ -19,6 +21,8 @@ jobs:
     runs-on: ubuntu-24.04-arm
     steps:
       - uses: actions/checkout@v4
+      - name: Install Rust
+        run: rustup update stable
       - name: Build binaries
         run: sh test/e2e/asan/build.sh aarch64
       - uses: actions/upload-artifact@v4
@@ -39,7 +43,7 @@ jobs:
           docker run --rm --platform linux/arm/v7 \
             -v ${{ github.workspace }}:/workspace \
             -w /workspace \
-            debian:bookworm sh -c 'apt-get update && apt-get install -y gcc clang binutils && sh test/e2e/asan/build.sh armv7'
+            debian:bookworm sh -c 'apt-get update && apt-get install -y gcc clang binutils rustc && sh test/e2e/asan/build.sh armv7'
       - uses: actions/upload-artifact@v4
         with:
           name: binaries-armv7

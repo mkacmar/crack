@@ -37,5 +37,9 @@ func TestNoDumpRule(t *testing.T) {
 		{Binary: "armv7-clang-nodump-stripped", Expect: e2e.Pass},
 		{Binary: "armv7-clang-default", Expect: e2e.Fail},
 		{Binary: "armv7-clang-relocatable.o", Expect: e2e.Skip},
+
+		{Binary: "x86_64-rustc-default", Expect: e2e.Skip},
+		{Binary: "aarch64-rustc-default", Expect: e2e.Skip},
+		{Binary: "armv7-rustc-default", Expect: e2e.Skip},
 	})
 }

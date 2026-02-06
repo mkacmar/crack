@@ -43,6 +43,7 @@ func (r CFIRule) Applicability() rule.Applicability {
 	return rule.Applicability{
 		Platform: binary.PlatformAll,
 		Compilers: map[toolchain.Compiler]rule.CompilerRequirement{
+			// rustc: nightly-only via -Z sanitizer=cfi
 			toolchain.CompilerClang: {MinVersion: toolchain.Version{Major: 6, Minor: 0}, Flag: "-fsanitize=cfi -flto -fvisibility=hidden"},
 		},
 	}

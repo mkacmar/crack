@@ -52,5 +52,15 @@ func TestASLRRule(t *testing.T) {
 		{Binary: "armv7-clang-no-pie", Expect: e2e.Fail},
 		{Binary: "armv7-clang-execstack", Expect: e2e.Fail},
 		{Binary: "armv7-clang-static-no-pie", Expect: e2e.Fail},
+
+		{Binary: "x86_64-rustc-pie", Expect: e2e.Pass},
+		{Binary: "x86_64-rustc-no-pie", Expect: e2e.Fail},
+		{Binary: "x86_64-rustc-stripped", Expect: e2e.Pass},
+		{Binary: "aarch64-rustc-pie", Expect: e2e.Pass},
+		{Binary: "aarch64-rustc-no-pie", Expect: e2e.Fail},
+		{Binary: "aarch64-rustc-stripped", Expect: e2e.Pass},
+		{Binary: "armv7-rustc-pie", Expect: e2e.Pass},
+		{Binary: "armv7-rustc-no-pie", Expect: e2e.Fail},
+		{Binary: "armv7-rustc-stripped", Expect: e2e.Pass},
 	})
 }
