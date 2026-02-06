@@ -2,6 +2,7 @@ package cli
 
 import (
 	"context"
+	"errors"
 	"flag"
 	"fmt"
 	"io"
@@ -13,16 +14,28 @@ import (
 
 	"github.com/mkacmar/crack/internal/analyzer"
 	elfanalyzer "github.com/mkacmar/crack/internal/analyzer/elf"
+	"github.com/mkacmar/crack/internal/binary"
 	"github.com/mkacmar/crack/internal/debuginfo"
 	"github.com/mkacmar/crack/internal/output"
 	"github.com/mkacmar/crack/internal/preset"
 	"github.com/mkacmar/crack/internal/rule"
 	elfrules "github.com/mkacmar/crack/internal/rules/elf"
 	"github.com/mkacmar/crack/internal/scanner"
+	"github.com/mkacmar/crack/internal/toolchain"
 )
 
 func init() {
 	elfrules.RegisterRules()
+}
+
+var errNoPathsSpecified = fmt.Errorf("no paths specified")
+
+type outputOptions struct {
+	aggregate      bool
+	includePassed  bool
+	includeSkipped bool
+	exitZero       bool
+	sarifOutput    string
 }
 
 func (a *App) printAnalyzeUsage(prog string) {
@@ -34,10 +47,18 @@ Options:
   -i, --input string          Read file paths from file, one path per line (use "-" for stdin, mutually exclusive with positional args)
   -p, --parallel int          Number of files to analyze in parallel (default %d)
   -r, --recursive             Recursively scan directories
-      --rules string          Comma-separated list of rule IDs to run
 
-Output options:
-  -a, --aggregate             Aggregate findings into actionable recommendations
+`, prog, runtime.NumCPU())
+
+	fmt.Fprintf(os.Stderr, `Rule selection:
+      --rules string              Comma-separated list of rule IDs to run
+      --target-compiler string    Only run rules available for these compilers: %s
+      --target-platform string    Only run rules available for these platforms: %s
+
+`, strings.Join(toolchain.ValidCompilerNames(), ", "), strings.Join(binary.ValidArchitectureNames(), ", "))
+
+	fmt.Fprint(os.Stderr, `Output options:
+      --aggregate             Aggregate findings into actionable recommendations
       --exit-zero             Exit with 0 even when findings are detected
       --include-passed        Include passing checks in output
       --include-skipped       Include skipped checks in output
@@ -47,13 +68,68 @@ Logging options:
       --log string            Log output file (default stderr)
       --log-level string      Log level: none, debug, info, warn, error (default "error")
 
-Debuginfod options:
+`)
+
+	fmt.Fprintf(os.Stderr, `Debuginfod options:
       --debuginfod                  Fetch debug symbols from debuginfod servers
       --debuginfod-cache string     Debuginfod cache directory (default "%s")
       --debuginfod-retries int      Debuginfod max retries per server (default %d)
       --debuginfod-servers string   Comma-separated debuginfod server URLs (default %q)
       --debuginfod-timeout duration Debuginfod HTTP timeout (default %v)
-`, prog, runtime.NumCPU(), debuginfo.DefaultCacheDir(), debuginfo.DefaultRetries, debuginfo.DefaultServerURL, debuginfo.DefaultTimeout)
+`, debuginfo.DefaultCacheDir(), debuginfo.DefaultRetries, debuginfo.DefaultServerURL, debuginfo.DefaultTimeout)
+}
+
+func parseRules(rulesFlag, targetPlatform, targetCompiler string) ([]string, error) {
+	var ruleIDs []string
+	if rulesFlag != "" {
+		ruleIDs = strings.Split(rulesFlag, ",")
+		for i, id := range ruleIDs {
+			ruleIDs[i] = strings.TrimSpace(id)
+		}
+		for _, id := range ruleIDs {
+			if rule.Get(id) == nil {
+				return nil, fmt.Errorf("unknown rule %q", id)
+			}
+		}
+	} else {
+		ruleIDs = preset.DefaultRules
+	}
+
+	if targetPlatform != "" || targetCompiler != "" {
+		filter, err := rule.ParseTargetFilter(targetPlatform, targetCompiler)
+		if err != nil {
+			return nil, err
+		}
+		ruleIDs = rule.FilterRules(ruleIDs, filter)
+		if len(ruleIDs) == 0 {
+			return nil, fmt.Errorf("no rules match the specified target filter")
+		}
+	}
+
+	return ruleIDs, nil
+}
+
+func parsePaths(fs *flag.FlagSet, inputFile string) ([]string, error) {
+	if fs.NArg() == 0 && inputFile == "" {
+		return nil, errNoPathsSpecified
+	}
+
+	if fs.NArg() > 0 && inputFile != "" {
+		return nil, fmt.Errorf("--input and positional arguments are mutually exclusive")
+	}
+
+	if inputFile != "" {
+		paths, err := readPathsFromInput(inputFile)
+		if err != nil {
+			return nil, err
+		}
+		if len(paths) == 0 {
+			return nil, fmt.Errorf("no paths found in input")
+		}
+		return paths, nil
+	}
+
+	return fs.Args(), nil
 }
 
 func (a *App) runAnalyze(prog string, args []string) int {
@@ -64,6 +140,8 @@ func (a *App) runAnalyze(prog string, args []string) int {
 
 	var (
 		rulesFlag         string
+		targetPlatform    string
+		targetCompiler    string
 		inputFile         string
 		sarifOutput       string
 		aggregate         bool
@@ -82,6 +160,8 @@ func (a *App) runAnalyze(prog string, args []string) int {
 	)
 
 	fs.StringVar(&rulesFlag, "rules", "", "")
+	fs.StringVar(&targetPlatform, "target-platform", "", "")
+	fs.StringVar(&targetCompiler, "target-compiler", "", "")
 	fs.StringVar(&inputFile, "input", "", "")
 	fs.StringVar(&inputFile, "i", "", "")
 	fs.StringVar(&sarifOutput, "sarif", "", "")
@@ -110,46 +190,20 @@ func (a *App) runAnalyze(prog string, args []string) int {
 		return ExitError
 	}
 
-	var ruleIDs []string
-	if rulesFlag != "" {
-		ruleIDs = strings.Split(rulesFlag, ",")
-		for i, id := range ruleIDs {
-			ruleIDs[i] = strings.TrimSpace(id)
-		}
-		for _, id := range ruleIDs {
-			if rule.Get(id) == nil {
-				fmt.Fprintf(os.Stderr, "Error: unknown rule %q\n", id)
-				return ExitError
-			}
-		}
-	} else {
-		ruleIDs = preset.DefaultRules
-	}
-
-	if fs.NArg() == 0 && inputFile == "" {
-		fs.Usage()
+	ruleIDs, err := parseRules(rulesFlag, targetPlatform, targetCompiler)
+	if err != nil {
+		fmt.Fprintf(os.Stderr, "Error: %v\n", err)
 		return ExitError
 	}
 
-	if fs.NArg() > 0 && inputFile != "" {
-		fmt.Fprintf(os.Stderr, "Error: --input and positional arguments are mutually exclusive\n")
-		return ExitError
-	}
-
-	var paths []string
-	if inputFile != "" {
-		var err error
-		paths, err = readPathsFromInput(inputFile)
-		if err != nil {
+	paths, err := parsePaths(fs, inputFile)
+	if err != nil {
+		if errors.Is(err, errNoPathsSpecified) {
+			fs.Usage()
+		} else {
 			fmt.Fprintf(os.Stderr, "Error: %v\n", err)
-			return ExitError
 		}
-		if len(paths) == 0 {
-			fmt.Fprintf(os.Stderr, "Error: no paths found in input\n")
-			return ExitError
-		}
-	} else {
-		paths = fs.Args()
+		return ExitError
 	}
 
 	if parallel < 1 {
@@ -212,13 +266,21 @@ func (a *App) runAnalyze(prog string, args []string) int {
 		WorkingDir:  workingDir,
 	}
 
-	if needsFullReport {
-		return a.processFullReport(resultsChan, aggregate, includePassed, includeSkipped, sarifOutput, invocation, exitZero)
+	opts := outputOptions{
+		aggregate:      aggregate,
+		includePassed:  includePassed,
+		includeSkipped: includeSkipped,
+		exitZero:       exitZero,
+		sarifOutput:    sarifOutput,
 	}
-	return a.processStreaming(resultsChan, includePassed, includeSkipped, exitZero)
+
+	if needsFullReport {
+		return a.processFullReport(resultsChan, opts, invocation)
+	}
+	return a.processStreaming(resultsChan, opts)
 }
 
-func (a *App) processFullReport(resultsChan <-chan analyzer.Result, aggregate, includePassed, includeSkipped bool, sarifOutput string, invocation *output.InvocationInfo, exitZero bool) int {
+func (a *App) processFullReport(resultsChan <-chan analyzer.Result, opts outputOptions, invocation *output.InvocationInfo) int {
 	var results []analyzer.Result
 	var totalFailed int
 
@@ -232,29 +294,29 @@ func (a *App) processFullReport(resultsChan <-chan analyzer.Result, aggregate, i
 
 	report := &analyzer.Results{Results: results}
 
-	if aggregate {
+	if opts.aggregate {
 		agg := output.AggregateFindings(report)
 		fmt.Print(output.FormatAggregated(agg))
 	} else {
-		textFormatter, _ := output.GetFormatter("text", output.FormatterOptions{IncludePassed: includePassed, IncludeSkipped: includeSkipped})
+		textFormatter, _ := output.GetFormatter("text", output.FormatterOptions{IncludePassed: opts.includePassed, IncludeSkipped: opts.includeSkipped})
 		if err := textFormatter.Format(report, os.Stdout); err != nil {
 			a.logger.Error("failed to format output", slog.Any("error", err))
 			return ExitError
 		}
 	}
 
-	if sarifOutput != "" {
+	if opts.sarifOutput != "" {
 		invocation.EndTime = time.Now()
 		invocation.Successful = totalFailed == 0
 
 		sarifFormatter, _ := output.GetFormatter("sarif", output.FormatterOptions{
-			IncludePassed:  includePassed,
-			IncludeSkipped: includeSkipped,
+			IncludePassed:  opts.includePassed,
+			IncludeSkipped: opts.includeSkipped,
 			Invocation:     invocation,
 		})
-		f, err := os.Create(sarifOutput)
+		f, err := os.Create(opts.sarifOutput)
 		if err != nil {
-			a.logger.Error("failed to create SARIF file", slog.String("path", sarifOutput), slog.Any("error", err))
+			a.logger.Error("failed to create SARIF file", slog.String("path", opts.sarifOutput), slog.Any("error", err))
 			return ExitError
 		}
 		defer f.Close()
@@ -262,18 +324,18 @@ func (a *App) processFullReport(resultsChan <-chan analyzer.Result, aggregate, i
 			a.logger.Error("failed to write SARIF report", slog.Any("error", err))
 			return ExitError
 		}
-		a.logger.Info("SARIF report saved", slog.String("path", sarifOutput))
+		a.logger.Info("SARIF report saved", slog.String("path", opts.sarifOutput))
 	}
 
-	if totalFailed > 0 && !exitZero {
+	if totalFailed > 0 && !opts.exitZero {
 		return ExitFindings
 	}
 	return ExitSuccess
 }
 
-func (a *App) processStreaming(resultsChan <-chan analyzer.Result, includePassed, includeSkipped bool, exitZero bool) int {
+func (a *App) processStreaming(resultsChan <-chan analyzer.Result, opts outputOptions) int {
 	var totalFailed int
-	textFormatter, _ := output.GetFormatter("text", output.FormatterOptions{IncludePassed: includePassed, IncludeSkipped: includeSkipped})
+	textFormatter, _ := output.GetFormatter("text", output.FormatterOptions{IncludePassed: opts.includePassed, IncludeSkipped: opts.includeSkipped})
 
 	for res := range resultsChan {
 		if res.Skipped {
@@ -286,7 +348,7 @@ func (a *App) processStreaming(resultsChan <-chan analyzer.Result, includePassed
 		}
 	}
 
-	if totalFailed > 0 && !exitZero {
+	if totalFailed > 0 && !opts.exitZero {
 		return ExitFindings
 	}
 	return ExitSuccess

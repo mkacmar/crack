@@ -4,6 +4,8 @@ import (
 	"debug/elf"
 	"errors"
 	"fmt"
+	"strconv"
+	"strings"
 
 	"github.com/mkacmar/crack/internal/toolchain"
 )
@@ -49,22 +51,49 @@ func (a Architecture) String() string {
 	case ArchX86:
 		return "x86"
 	case ArchX86_64:
-		return "x86_64"
+		return "amd64"
 	case ArchARM:
-		return "ARM"
+		return "arm"
 	case ArchARM64:
-		return "ARM64"
+		return "arm64"
 	case ArchRISCV:
-		return "RISC-V"
+		return "riscv"
 	case ArchPPC64:
-		return "PPC64"
+		return "ppc64"
 	case ArchMIPS:
-		return "MIPS"
+		return "mips"
 	case ArchS390X:
 		return "s390x"
 	default:
-		return "Unknown"
+		return "unknown"
 	}
+}
+
+func ParseArchitecture(s string) (Architecture, bool) {
+	switch s {
+	case "x86":
+		return ArchX86, true
+	case "amd64":
+		return ArchX86_64, true
+	case "arm":
+		return ArchARM, true
+	case "arm64":
+		return ArchARM64, true
+	case "riscv":
+		return ArchRISCV, true
+	case "ppc64":
+		return ArchPPC64, true
+	case "mips":
+		return ArchMIPS, true
+	case "s390x":
+		return ArchS390X, true
+	default:
+		return ArchUnknown, false
+	}
+}
+
+func ValidArchitectureNames() []string {
+	return []string{"x86", "amd64", "arm", "arm64", "riscv", "ppc64", "mips", "s390x"}
 }
 
 func (a Architecture) Matches(target Architecture) bool {
@@ -78,9 +107,8 @@ type ISA struct {
 
 // https://developer.arm.com/documentation/ddi0487/latest
 var (
-	ARM64v8_0 = ISA{Major: 8, Minor: 0}
-	ARM64v8_3 = ISA{Major: 8, Minor: 3} // PAC (Pointer Authentication)
-	ARM64v8_5 = ISA{Major: 8, Minor: 5} // BTI (Branch Target Identification), MTE
+	ARM64v8_3 = ISA{Major: 8, Minor: 3}
+	ARM64v8_5 = ISA{Major: 8, Minor: 5}
 )
 
 // https://gitlab.com/x86-psABIs/x86-64-ABI
@@ -96,6 +124,29 @@ func (i ISA) String() string {
 		return fmt.Sprintf("v%d.%d", i.Major, i.Minor)
 	}
 	return fmt.Sprintf("v%d", i.Major)
+}
+
+func ParseISA(s string) (ISA, error) {
+	s = strings.TrimPrefix(s, "v")
+	parts := strings.Split(s, ".")
+	if len(parts) == 0 || len(parts) > 2 {
+		return ISA{}, fmt.Errorf("invalid ISA format: %s", s)
+	}
+
+	major, err := strconv.Atoi(parts[0])
+	if err != nil {
+		return ISA{}, fmt.Errorf("invalid ISA major version: %s", parts[0])
+	}
+
+	var minor int
+	if len(parts) == 2 {
+		minor, err = strconv.Atoi(parts[1])
+		if err != nil {
+			return ISA{}, fmt.Errorf("invalid ISA minor version: %s", parts[1])
+		}
+	}
+
+	return ISA{Major: major, Minor: minor}, nil
 }
 
 func (i ISA) IsAtLeast(required ISA) bool {
@@ -119,15 +170,11 @@ func (p Platform) String() string {
 
 var (
 	PlatformAll    = Platform{Architecture: ArchAll}
-	PlatformX86    = Platform{Architecture: ArchX86}
-	PlatformX86_64 = Platform{Architecture: ArchX86_64}
 	PlatformAllX86 = Platform{Architecture: ArchAllX86}
-	PlatformARM    = Platform{Architecture: ArchARM}
-	PlatformARM64  = Platform{Architecture: ArchARM64}
 	PlatformAllARM = Platform{Architecture: ArchAllARM}
 
-	PlatformARM64v8_3 = Platform{Architecture: ArchARM64, MinISA: ARM64v8_3} // PAC
-	PlatformARM64v8_5 = Platform{Architecture: ArchARM64, MinISA: ARM64v8_5} // BTI, MTE
+	PlatformARM64v8_3 = Platform{Architecture: ArchARM64, MinISA: ARM64v8_3}
+	PlatformARM64v8_5 = Platform{Architecture: ArchARM64, MinISA: ARM64v8_5}
 )
 
 type BitWidth uint8

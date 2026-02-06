@@ -79,6 +79,21 @@ func (c Compiler) String() string {
 	}
 }
 
+func ParseCompiler(s string) (Compiler, bool) {
+	switch s {
+	case "gcc":
+		return CompilerGCC, true
+	case "clang":
+		return CompilerClang, true
+	default:
+		return CompilerUnknown, false
+	}
+}
+
+func ValidCompilerNames() []string {
+	return []string{"gcc", "clang"}
+}
+
 type Toolchain struct {
 	Compiler Compiler
 	Version  Version
