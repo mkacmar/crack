@@ -21,28 +21,46 @@ Or download pre-built binaries from [Releases](https://github.com/mkacmar/crack/
 ## Usage
 
 ```sh
-# Analyze a binary
-crack analyze /usr/bin/ls
-crack analyze /usr/bin/*
-
-# Analyze a directory recursively
-crack analyze --recursive /usr/bin/
-
-# Analyze paths from file, one path per line (or stdin with "-")
-crack analyze --input files.txt
-
-# Analyze with specific rules, comma-separated (see wiki for rule IDs)
-crack analyze --rules pie,relro,stack-canary /usr/bin/ls
-
-# Analyze and generate SARIF output
-crack analyze --sarif results.sarif /usr/bin/ls
-
-# Analyze with debug symbols from debuginfod (comma-separated URLs)
-crack analyze --debuginfod /usr/bin/ls
-crack analyze --debuginfod --debuginfod-urls https://debuginfod.archlinux.org /usr/bin/ls
+crack analyze [options] [<path>...]
 ```
 
-Use `crack analyze --help` for all options.
+### Input Options
+
+- `<path>...` - Files or directories to analyze (supports glob patterns)
+- `--recursive` - Recursively scan directories
+- `--input <file>` - Read paths from file, one per line (use `-` for stdin)
+- `--parallel <n>` - Number of files to analyze in parallel
+
+### Rule Selection
+
+See [Rules Reference](https://github.com/mkacmar/crack/wiki/Rules) for available rules.
+
+- `--rules <ids>` - Comma-separated list of rule IDs to run
+- `--target-compiler <spec>` - Only run rules available for these compilers (e.g., `gcc`, `clang:15`)
+- `--target-platform <spec>` - Only run rules available for these platforms (e.g., `arm64`, `amd64`)
+
+### Output Options
+
+- `--include-passed` - Include passing checks in output
+- `--include-skipped` - Include skipped checks in output
+- `--sarif <file>` - Save detailed SARIF report to file
+- `--aggregate` - Aggregate findings into actionable recommendations
+- `--exit-zero` - Exit with 0 even when findings are detected
+
+### Logging Options
+
+- `--log <file>` - Write logs to file
+- `--log-level <level>` - Log level: `none`, `debug`, `info`, `warn`, `error`
+
+### Debuginfod Options
+
+Fetch debug symbols from [debuginfod](https://sourceware.org/elfutils/Debuginfod.html) servers.
+
+- `--debuginfod` - Enable debuginfod integration
+- `--debuginfod-servers <urls>` - Comma-separated server URLs
+- `--debuginfod-cache <dir>` - Cache directory for downloaded symbols
+- `--debuginfod-timeout <duration>` - HTTP timeout
+- `--debuginfod-retries <n>` - Max retries per server
 
 ## Documentation
 
