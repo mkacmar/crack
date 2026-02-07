@@ -15,5 +15,4 @@ var DefaultRules = []string{
 	elf.RELRORuleID,
 	elf.SeparateCodeRuleID,
 	elf.StackCanaryRuleID,
-	elf.WXorXRuleID,
 }

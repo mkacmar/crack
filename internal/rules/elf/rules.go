@@ -8,7 +8,6 @@ var allRules = []rule.ELFRule{
 	RELRORule{},
 	FullRELRORule{},
 	ASLRRule{},
-	WXorXRule{},
 	StackCanaryRule{},
 	SafeStackRule{},
 	StackLimitRule{},
