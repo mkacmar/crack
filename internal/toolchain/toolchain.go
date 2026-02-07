@@ -60,43 +60,33 @@ func ParseVersion(s string) (Version, error) {
 	return Version{Major: major, Minor: minor, Patch: patch}, nil
 }
 
-type Compiler int
+type Compiler string
 
 const (
-	CompilerUnknown Compiler = iota
-	CompilerGCC
-	CompilerClang
-	CompilerRustc
+	CompilerUnknown Compiler = ""
+	CompilerGCC     Compiler = "gcc"
+	CompilerClang   Compiler = "clang"
+	CompilerRustc   Compiler = "rustc"
 )
 
 func (c Compiler) String() string {
-	switch c {
-	case CompilerGCC:
-		return "gcc"
-	case CompilerClang:
-		return "clang"
-	case CompilerRustc:
-		return "rustc"
-	default:
+	if c == "" {
 		return "unknown"
 	}
-}
-
-func ParseCompiler(s string) (Compiler, bool) {
-	switch s {
-	case "gcc":
-		return CompilerGCC, true
-	case "clang":
-		return CompilerClang, true
-	case "rustc":
-		return CompilerRustc, true
-	default:
-		return CompilerUnknown, false
-	}
+	return string(c)
 }
 
 func ValidCompilerNames() []string {
-	return []string{"gcc", "clang", "rustc"}
+	return []string{string(CompilerGCC), string(CompilerClang), string(CompilerRustc)}
+}
+
+func ParseCompiler(s string) (Compiler, bool) {
+	switch Compiler(s) {
+	case CompilerGCC, CompilerClang, CompilerRustc:
+		return Compiler(s), true
+	default:
+		return CompilerUnknown, false
+	}
 }
 
 type Toolchain struct {

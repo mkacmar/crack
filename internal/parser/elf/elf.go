@@ -63,7 +63,13 @@ func isNotELFError(err error) bool {
 		strings.Contains(msg, "invalid argument")
 }
 
-// detectToolchain returns highest priority compiler (rustc > clang > gcc) to ignore GCC from glibc.
+// compilerPriority resolves conflicts when multiple .comment entries exist (e.g., glibc embeds GCC).
+var compilerPriority = map[toolchain.Compiler]int{
+	toolchain.CompilerGCC:   1,
+	toolchain.CompilerClang: 2,
+	toolchain.CompilerRustc: 3,
+}
+
 func (p *Parser) detectToolchain(f *elf.File) toolchain.Toolchain {
 	comments := p.extractCompilerComments(f)
 
@@ -73,7 +79,7 @@ func (p *Parser) detectToolchain(f *elf.File) toolchain.Toolchain {
 		if tc.Compiler == toolchain.CompilerUnknown {
 			continue
 		}
-		if best.Compiler == toolchain.CompilerUnknown || tc.Compiler > best.Compiler {
+		if best.Compiler == toolchain.CompilerUnknown || compilerPriority[tc.Compiler] > compilerPriority[best.Compiler] {
 			best = tc
 		}
 	}
