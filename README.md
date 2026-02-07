@@ -39,6 +39,10 @@ See [Rules Reference](https://github.com/mkacmar/crack/wiki/Rules) for available
 - `--target-compiler <spec>` - Only run rules available for these compilers (e.g., `gcc`, `clang:15`)
 - `--target-platform <spec>` - Only run rules available for these platforms (e.g., `arm64`, `amd64`)
 
+The `--target-compiler` and `--target-platform` flags filter which rules are loaded based on their applicability.
+At runtime, the tool also detects the actual compiler from binary metadata and skips rules that don't apply to the detected compiler.
+For stripped binaries where detection fails, all loaded rules run.
+
 ### Output Options
 
 - `--include-passed` - Include passing checks in output
