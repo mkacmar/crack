@@ -3,12 +3,13 @@
 > **Work in Progress**: This project is under active development. Functionality may change without notice.
 
 A tool to analyze ELF binaries for security hardening features.
+Supports binaries compiled with `gcc`, `clang`, and `rustc` (stable).
 
 Based on recommendations from:
-- [OpenSSF Compiler Options Hardening Guide for C and C++](https://best.openssf.org/Compiler-Hardening-Guides/Compiler-Options-Hardening-Guide-for-C-and-C++.html)
+- [OpenSSF Compiler Options Hardening Guide](https://best.openssf.org/Compiler-Hardening-Guides/Compiler-Options-Hardening-Guide-for-C-and-C++.html)
 - [Gentoo Hardened Toolchain](https://wiki.gentoo.org/wiki/Hardened/Toolchain)
 - [Debian Hardening](https://wiki.debian.org/Hardening)
-- [Ubuntu Toolchain Compiler Flags](https://wiki.ubuntu.com/ToolChain/CompilerFlags)
+
 
 ## Installation
 
@@ -33,7 +34,7 @@ crack analyze [options] [<path>...]
 
 ### Rule Selection
 
-See [Rules Reference](https://github.com/mkacmar/crack/wiki/Rules) for available rules.
+See [rules reference](https://github.com/mkacmar/crack/wiki/Rules) for available rules.
 
 - `--rules <ids>` - Comma-separated list of rule IDs to run
 - `--target-compiler <spec>` - Only run rules available for these compilers (e.g., `gcc`, `clang:15`)
@@ -66,9 +67,6 @@ Fetch debug symbols from [debuginfod](https://sourceware.org/elfutils/Debuginfod
 - `--debuginfod-timeout <duration>` - HTTP timeout
 - `--debuginfod-retries <n>` - Max retries per server
 
-## Documentation
-
-- [Rules Reference](https://github.com/mkacmar/crack/wiki/Rules)
 
 ## License
 
