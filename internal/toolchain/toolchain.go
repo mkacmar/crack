@@ -140,21 +140,17 @@ type CompilerInfo struct {
 	Toolchain Toolchain
 }
 
-type LibC int
+type LibC string
 
 const (
-	LibCUnknown LibC = iota
-	LibCGlibc
-	LibCMusl
+	LibCUnknown LibC = ""
+	LibCGlibc   LibC = "glibc"
+	LibCMusl    LibC = "musl"
 )
 
 func (l LibC) String() string {
-	switch l {
-	case LibCGlibc:
-		return "glibc"
-	case LibCMusl:
-		return "musl"
-	default:
+	if l == "" {
 		return "unknown"
 	}
+	return string(l)
 }

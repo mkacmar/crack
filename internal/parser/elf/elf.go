@@ -172,10 +172,10 @@ func (p *Parser) detectLibC(f *elf.File) toolchain.LibC {
 			}
 			interp := string(bytes.TrimRight(data, "\x00"))
 
-			if bytes.Contains([]byte(interp), []byte("ld-musl")) {
+			if strings.Contains(interp, "ld-musl") {
 				return toolchain.LibCMusl
 			}
-			if bytes.Contains([]byte(interp), []byte("ld-linux")) {
+			if strings.Contains(interp, "ld-linux") {
 				return toolchain.LibCGlibc
 			}
 		}
