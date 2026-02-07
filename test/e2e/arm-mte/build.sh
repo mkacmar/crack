@@ -7,7 +7,7 @@ if [ -z "$NDK_DIR" ] || [ ! -d "$NDK_DIR" ]; then
     exit 1
 fi
 
-SRC=test/e2e/testdata/main.c
+C_SRC=test/e2e/testdata/main.c
 mkdir -p binaries
 
 CLANG=${NDK_DIR}/toolchains/llvm/prebuilt/linux-x86_64/bin/clang
@@ -17,10 +17,10 @@ TARGET=aarch64-linux-android35
 
 $CLANG --version
 
-$CLANG --target=$TARGET -march=armv8.5-a+memtag -fsanitize=memtag-stack,memtag-heap -o binaries/clang-mte $SRC
-$CLANG --target=$TARGET -march=armv8.5-a+memtag -fsanitize=memtag-stack,memtag-heap -o binaries/clang-mte-stripped $SRC
+$CLANG --target=$TARGET -march=armv8.5-a+memtag -fsanitize=memtag-stack,memtag-heap -o binaries/clang-mte $C_SRC
+$CLANG --target=$TARGET -march=armv8.5-a+memtag -fsanitize=memtag-stack,memtag-heap -o binaries/clang-mte-stripped $C_SRC
 $STRIP binaries/clang-mte-stripped
 
-$CLANG --target=$TARGET -o binaries/clang-no-mte $SRC
+$CLANG --target=$TARGET -o binaries/clang-no-mte $C_SRC
 
 ls -la binaries/

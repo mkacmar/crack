@@ -1,4 +1,4 @@
-package armmte_test
+package arm_mte_test
 
 import (
 	"testing"

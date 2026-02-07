@@ -27,7 +27,7 @@ build_c clang "-static -fno-pie -no-pie" static-no-pie
 gcc -fPIE -pie -Wl,-z,noexecstack -o binaries/${ARCH}-gcc-textrel-patched $C_SRC
 go run test/e2e/aslr/add-textrel.go binaries/${ARCH}-gcc-textrel-patched
 
-gcc -c -o binaries/${ARCH}-gcc-object-file $C_SRC
+gcc -c -o binaries/${ARCH}-gcc-relocatable.o $C_SRC
 
 rustc -C relocation-model=pic -o binaries/${ARCH}-rustc-pie $RUST_SRC
 rustc -C relocation-model=static -o binaries/${ARCH}-rustc-no-pie $RUST_SRC

@@ -1,4 +1,4 @@
-package stacklimit_test
+package stack_limit_test
 
 import (
 	"testing"

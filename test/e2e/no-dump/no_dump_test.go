@@ -1,4 +1,4 @@
-package nodump_test
+package no_dump_test
 
 import (
 	"testing"

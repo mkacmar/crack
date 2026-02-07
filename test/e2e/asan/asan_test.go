@@ -31,5 +31,9 @@ func TestASANRule(t *testing.T) {
 		{Binary: "armv7-clang-asan", Expect: e2e.Pass},
 		{Binary: "armv7-clang-asan-stripped", Expect: e2e.Pass},
 		{Binary: "armv7-clang-no-asan", Expect: e2e.Fail},
+
+		{Binary: "x86_64-rustc-no-asan", Expect: e2e.Skip},
+		{Binary: "aarch64-rustc-no-asan", Expect: e2e.Skip},
+		{Binary: "armv7-rustc-no-asan", Expect: e2e.Skip},
 	})
 }

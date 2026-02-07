@@ -41,12 +41,11 @@ func RunRuleTests(t *testing.T, rule string, cases []TestCase) {
 		t.Skipf("crack binary not found, run 'make build' first")
 	}
 
+	validateBinaries(t, binariesDir, cases)
+
 	for _, tc := range cases {
 		t.Run(tc.Binary, func(t *testing.T) {
 			binaryPath := filepath.Join(binariesDir, tc.Binary)
-			if _, err := os.Stat(binaryPath); os.IsNotExist(err) {
-				t.Skipf("binary %q not found", tc.Binary)
-			}
 
 			sarifPath := filepath.Join(t.TempDir(), "result.sarif")
 			cmd := exec.Command(
@@ -65,6 +64,46 @@ func RunRuleTests(t *testing.T, rule string, cases []TestCase) {
 				t.Errorf("expected %s, got %s", tc.Expect, state)
 			}
 		})
+	}
+}
+
+func validateBinaries(t *testing.T, binariesDir string, cases []TestCase) {
+	t.Helper()
+
+	expected := make(map[string]bool)
+	for _, tc := range cases {
+		expected[tc.Binary] = true
+	}
+
+	entries, err := os.ReadDir(binariesDir)
+	if err != nil {
+		t.Fatalf("failed to read binaries directory: %v", err)
+	}
+
+	actual := make(map[string]bool)
+	for _, entry := range entries {
+		if !entry.IsDir() {
+			actual[entry.Name()] = true
+		}
+	}
+
+	var missing, extra []string
+	for name := range expected {
+		if !actual[name] {
+			missing = append(missing, name)
+		}
+	}
+	for name := range actual {
+		if !expected[name] {
+			extra = append(extra, name)
+		}
+	}
+
+	if len(missing) > 0 {
+		t.Errorf("missing binaries: %v", missing)
+	}
+	if len(extra) > 0 {
+		t.Errorf("extra binaries not covered by tests: %v", extra)
 	}
 }
 

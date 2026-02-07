@@ -22,5 +22,8 @@ func TestCFIRule(t *testing.T) {
 		{Binary: "x86_64-gcc-no-cfi-stripped", Expect: e2e.Skip},
 		{Binary: "aarch64-clang-no-cfi-stripped", Expect: e2e.Skip},
 		{Binary: "aarch64-gcc-no-cfi-stripped", Expect: e2e.Skip},
+
+		{Binary: "x86_64-rustc-no-cfi", Expect: e2e.Skip},
+		{Binary: "aarch64-rustc-no-cfi", Expect: e2e.Skip},
 	})
 }

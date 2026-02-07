@@ -1,4 +1,4 @@
-package nodlopen_test
+package no_dlopen_test
 
 import (
 	"testing"

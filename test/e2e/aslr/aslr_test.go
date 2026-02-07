@@ -16,7 +16,7 @@ func TestASLRRule(t *testing.T) {
 		{Binary: "x86_64-gcc-aslr-stripped", Expect: e2e.Pass},
 		{Binary: "x86_64-gcc-static-no-pie", Expect: e2e.Fail},
 		{Binary: "x86_64-gcc-textrel-patched", Expect: e2e.Fail},
-		{Binary: "x86_64-gcc-object-file", Expect: e2e.Skip},
+		{Binary: "x86_64-gcc-relocatable.o", Expect: e2e.Skip},
 
 		{Binary: "x86_64-clang-aslr-full", Expect: e2e.Pass},
 		{Binary: "x86_64-clang-no-pie", Expect: e2e.Fail},
@@ -33,6 +33,7 @@ func TestASLRRule(t *testing.T) {
 		{Binary: "aarch64-gcc-aslr-stripped", Expect: e2e.Pass},
 		{Binary: "aarch64-gcc-static-no-pie", Expect: e2e.Fail},
 		{Binary: "aarch64-gcc-textrel-patched", Expect: e2e.Fail},
+		{Binary: "aarch64-gcc-relocatable.o", Expect: e2e.Skip},
 
 		{Binary: "aarch64-clang-aslr-full", Expect: e2e.Pass},
 		{Binary: "aarch64-clang-no-pie", Expect: e2e.Fail},
@@ -47,6 +48,7 @@ func TestASLRRule(t *testing.T) {
 		{Binary: "armv7-gcc-aslr-stripped", Expect: e2e.Pass},
 		{Binary: "armv7-gcc-static-no-pie", Expect: e2e.Fail},
 		{Binary: "armv7-gcc-textrel-patched", Expect: e2e.Fail},
+		{Binary: "armv7-gcc-relocatable.o", Expect: e2e.Skip},
 
 		{Binary: "armv7-clang-aslr-full", Expect: e2e.Pass},
 		{Binary: "armv7-clang-no-pie", Expect: e2e.Fail},
