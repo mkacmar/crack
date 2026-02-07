@@ -3,10 +3,11 @@ package elf
 import (
 	"bytes"
 	"debug/elf"
+	"encoding/binary"
 	"fmt"
 	"strings"
 
-	"github.com/mkacmar/crack/internal/binary"
+	elfbinary "github.com/mkacmar/crack/internal/binary"
 	"github.com/mkacmar/crack/internal/toolchain"
 )
 
@@ -16,28 +17,28 @@ func NewParser() *Parser {
 	return &Parser{}
 }
 
-func (p *Parser) Parse(path string) (*binary.ELFBinary, error) {
+func (p *Parser) Parse(path string) (*elfbinary.ELFBinary, error) {
 	f, err := elf.Open(path)
 	if err != nil {
 		if isNotELFError(err) {
-			return nil, binary.ErrUnsupportedFormat
+			return nil, elfbinary.ErrUnsupportedFormat
 		}
 		return nil, fmt.Errorf("failed to open ELF file: %w", err)
 	}
 
-	bin := &binary.ELFBinary{
-		Binary: binary.Binary{
+	bin := &elfbinary.ELFBinary{
+		Binary: elfbinary.Binary{
 			Path:   path,
-			Format: binary.FormatELF,
+			Format: elfbinary.FormatELF,
 		},
 		File: f,
 	}
 
 	bin.Architecture = parseArchitecture(f.Machine)
 	if f.Class == elf.ELFCLASS64 {
-		bin.Bits = binary.Bits64
+		bin.Bits = elfbinary.Bits64
 	} else {
-		bin.Bits = binary.Bits32
+		bin.Bits = elfbinary.Bits32
 	}
 
 	bin.Build = toolchain.CompilerInfo{
@@ -97,35 +98,6 @@ func (p *Parser) extractCompilerComments(f *elf.File) []string {
 		return nil
 	}
 
-	return parseComments(data)
-}
-
-func (p *Parser) extractBuildID(f *elf.File) string {
-	section := f.Section(".note.gnu.build-id")
-	if section == nil {
-		return ""
-	}
-
-	data, err := section.Data()
-	if err != nil || len(data) < 16 {
-		return ""
-	}
-
-	// ELF note structure:
-	// namesz (4), descsz (4), type (4), name (aligned), desc (build-id)
-	namesz := uint32(data[0]) | uint32(data[1])<<8 | uint32(data[2])<<16 | uint32(data[3])<<24
-	descsz := uint32(data[4]) | uint32(data[5])<<8 | uint32(data[6])<<16 | uint32(data[7])<<24
-
-	descOffset := 12 + int((namesz+3)&^3)
-	if descOffset+int(descsz) > len(data) {
-		return ""
-	}
-
-	return fmt.Sprintf("%x", data[descOffset:descOffset+int(descsz)])
-}
-
-// parseComments extracts all compiler info strings from .comment section.
-func parseComments(data []byte) []string {
 	var comments []string
 	for len(data) > 0 {
 		idx := bytes.IndexByte(data, 0)
@@ -140,26 +112,59 @@ func parseComments(data []byte) []string {
 	return comments
 }
 
-func parseArchitecture(machine elf.Machine) binary.Architecture {
+// extractBuildID parses the .note.gnu.build-id section.
+// https://man7.org/linux/man-pages/man5/elf.5.html
+func (p *Parser) extractBuildID(f *elf.File) string {
+	section := f.Section(".note.gnu.build-id")
+	if section == nil {
+		return ""
+	}
+
+	data, err := section.Data()
+	if err != nil {
+		return ""
+	}
+
+	// namesz (4) + descsz (4) + type (4)
+	const noteHeaderSize = 12
+	if len(data) < noteHeaderSize {
+		return ""
+	}
+
+	namesz := binary.LittleEndian.Uint32(data[0:4])
+	descsz := binary.LittleEndian.Uint32(data[4:8])
+
+	const align = 4
+	nameAligned := (namesz + align - 1) &^ (align - 1)
+
+	descOffset := noteHeaderSize + int(nameAligned)
+	if descOffset+int(descsz) > len(data) {
+		return ""
+	}
+
+	return fmt.Sprintf("%x", data[descOffset:descOffset+int(descsz)])
+}
+
+func parseArchitecture(machine elf.Machine) elfbinary.Architecture {
 	switch machine {
 	case elf.EM_386:
-		return binary.ArchX86
+		return elfbinary.ArchX86
 	case elf.EM_X86_64:
-		return binary.ArchX86_64
+		return elfbinary.ArchAMD64
 	case elf.EM_ARM:
-		return binary.ArchARM
+		return elfbinary.ArchARM
 	case elf.EM_AARCH64:
-		return binary.ArchARM64
+		return elfbinary.ArchARM64
 	case elf.EM_RISCV:
-		return binary.ArchRISCV
+		return elfbinary.ArchRISCV
 	case elf.EM_PPC64:
-		return binary.ArchPPC64
+		return elfbinary.ArchPPC64
 	case elf.EM_MIPS:
-		return binary.ArchMIPS
+		return elfbinary.ArchMIPS
 	case elf.EM_S390:
-		return binary.ArchS390X
+		return elfbinary.ArchS390X
 	default:
-		return binary.ArchUnknown
+		return elfbinary.ArchUnknown
 	}
 }
 
@@ -170,12 +175,12 @@ func (p *Parser) detectLibC(f *elf.File) toolchain.LibC {
 			if _, err := prog.ReadAt(data, 0); err != nil {
 				continue
 			}
-			interp := string(bytes.TrimRight(data, "\x00"))
+			interpreter := string(bytes.TrimRight(data, "\x00"))
 
-			if strings.Contains(interp, "ld-musl") {
+			if strings.Contains(interpreter, "ld-musl") {
 				return toolchain.LibCMusl
 			}
-			if strings.Contains(interp, "ld-linux") {
+			if strings.Contains(interpreter, "ld-linux") {
 				return toolchain.LibCGlibc
 			}
 		}
