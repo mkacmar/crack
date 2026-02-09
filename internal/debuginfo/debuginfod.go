@@ -79,10 +79,6 @@ func NewClient(opts Options) (*Client, error) {
 		maxRetries: maxRetries,
 	}
 
-	opts.Logger.Debug("debuginfod client initialized",
-		slog.Any("servers", opts.ServerURLs),
-		slog.String("cache", cacheDir))
-
 	return client, nil
 }
 
@@ -171,37 +167,39 @@ func (c *Client) fetchFromServer(ctx context.Context, serverURL, buildID, destPa
 		return "", fmt.Errorf("failed to create cache directory: %w", err)
 	}
 
+	if err := downloadToFile(resp.Body, destPath); err != nil {
+		return "", err
+	}
+
+	return destPath, nil
+}
+
+func downloadToFile(r io.Reader, destPath string) error {
 	tmpPath := destPath + ".tmp"
-	cleanup := true
-	defer func() {
-		if cleanup {
-			os.Remove(tmpPath)
-		}
-	}()
 
 	tmpFile, err := os.Create(tmpPath)
 	if err != nil {
-		return "", fmt.Errorf("failed to create temp file: %w", err)
+		return fmt.Errorf("failed to create temp file: %w", err)
 	}
 
-	written, err := io.Copy(tmpFile, resp.Body)
-	if err != nil {
-		tmpFile.Close()
-		return "", fmt.Errorf("download failed: %w", err)
-	}
+	_, copyErr := io.Copy(tmpFile, r)
+	closeErr := tmpFile.Close()
 
-	if err := tmpFile.Close(); err != nil {
-		return "", fmt.Errorf("failed to close temp file: %w", err)
+	if copyErr != nil {
+		os.Remove(tmpPath)
+		return fmt.Errorf("download failed: %w", copyErr)
+	}
+	if closeErr != nil {
+		os.Remove(tmpPath)
+		return fmt.Errorf("failed to close temp file: %w", closeErr)
 	}
 
 	if err := os.Rename(tmpPath, destPath); err != nil {
-		return "", fmt.Errorf("failed to move file: %w", err)
+		os.Remove(tmpPath)
+		return fmt.Errorf("failed to move file: %w", err)
 	}
 
-	cleanup = false
-	c.logger.Debug("downloaded debug symbols", slog.Int64("size", written), slog.String("path", destPath))
-
-	return destPath, nil
+	return nil
 }
 
 func (c *Client) getCachePath(buildID string) string {

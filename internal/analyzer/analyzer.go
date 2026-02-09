@@ -3,24 +3,30 @@ package analyzer
 import (
 	"context"
 
-	"github.com/mkacmar/crack/internal/binary"
-	"github.com/mkacmar/crack/internal/rule"
-	"github.com/mkacmar/crack/internal/toolchain"
+	"github.com/mkacmar/crack/binary"
+	"github.com/mkacmar/crack/rule"
+	"github.com/mkacmar/crack/toolchain"
 )
 
-type Result struct {
-	Path      string
-	Format    binary.Format
-	Toolchain toolchain.Toolchain
-	SHA256    string
-	Results   []rule.ProcessedResult
-	Error     error
-	Skipped   bool
+// FindingWithSuggestion extends rule.Finding with a fix suggestion.
+type FindingWithSuggestion struct {
+	rule.Finding
+	Suggestion string
 }
 
-func (r *Result) PassedRules() int {
+type FileResult struct {
+	Path     string
+	Format   binary.Format
+	Build    toolchain.BuildInfo
+	SHA256   string
+	Findings []FindingWithSuggestion
+	Error    error
+	Skipped  bool
+}
+
+func (r *FileResult) PassedRules() int {
 	count := 0
-	for _, res := range r.Results {
+	for _, res := range r.Findings {
 		if res.Status == rule.StatusPassed {
 			count++
 		}
@@ -28,9 +34,9 @@ func (r *Result) PassedRules() int {
 	return count
 }
 
-func (r *Result) FailedRules() int {
+func (r *FileResult) FailedRules() int {
 	count := 0
-	for _, res := range r.Results {
+	for _, res := range r.Findings {
 		if res.Status == rule.StatusFailed {
 			count++
 		}
@@ -38,10 +44,10 @@ func (r *Result) FailedRules() int {
 	return count
 }
 
-type Results struct {
-	Results []Result
+type Report struct {
+	Results []FileResult
 }
 
 type FileAnalyzer interface {
-	Analyze(ctx context.Context, path string) Result
+	Analyze(ctx context.Context, path string) FileResult
 }

@@ -7,45 +7,50 @@ import (
 	"strings"
 
 	"github.com/mkacmar/crack/internal/analyzer"
-	"github.com/mkacmar/crack/internal/rule"
-	"github.com/mkacmar/crack/internal/toolchain"
+	"github.com/mkacmar/crack/rule"
+	"github.com/mkacmar/crack/toolchain"
 )
 
 type AggregatedReport struct {
-	Upgrades  map[toolchain.Compiler]map[string]map[string]bool // compiler -> version -> paths
-	Flags     map[string]map[string]bool                        // flag -> paths
+	Upgrades  map[string]map[string]map[string]bool // compiler name -> version -> paths
+	Flags     map[string]map[string]bool            // flag -> paths
 	PassedAll []string
 }
 
 func NewAggregatedReport() *AggregatedReport {
 	return &AggregatedReport{
-		Upgrades: make(map[toolchain.Compiler]map[string]map[string]bool),
+		Upgrades: make(map[string]map[string]map[string]bool),
 		Flags:    make(map[string]map[string]bool),
 	}
 }
 
-func AggregateFindings(report *analyzer.Results) *AggregatedReport {
+func AggregateFindings(report *analyzer.Report, rules []rule.ELFRule) *AggregatedReport {
 	agg := NewAggregatedReport()
 
+	rulesMap := make(map[string]rule.ELFRule, len(rules))
+	for _, r := range rules {
+		rulesMap[r.ID()] = r
+	}
+
 	for _, res := range report.Results {
-		processResult(agg, res)
+		processResult(agg, res, rulesMap)
 	}
 
 	slices.Sort(agg.PassedAll)
 	return agg
 }
 
-func processResult(agg *AggregatedReport, result analyzer.Result) {
+func processResult(agg *AggregatedReport, result analyzer.FileResult, rules map[string]rule.ELFRule) {
 	if result.Error != nil {
 		return
 	}
 
-	var failedResults []rule.ProcessedResult
+	var failedFindings []analyzer.FindingWithSuggestion
 	allPassed := true
 
-	for _, res := range result.Results {
-		if res.Status == rule.StatusFailed {
-			failedResults = append(failedResults, res)
+	for _, f := range result.Findings {
+		if f.Status == rule.StatusFailed {
+			failedFindings = append(failedFindings, f)
 			allPassed = false
 		}
 	}
@@ -55,13 +60,13 @@ func processResult(agg *AggregatedReport, result analyzer.Result) {
 		return
 	}
 
-	for _, res := range failedResults {
-		processFailedResult(agg, res, result.Path, result.Toolchain.Compiler)
+	for _, f := range failedFindings {
+		processFailedFinding(agg, f, result.Path, result.Build.Compiler, rules)
 	}
 }
 
-func processFailedResult(agg *AggregatedReport, res rule.ProcessedResult, path string, detectedCompiler toolchain.Compiler) {
-	r := rule.Get(res.RuleID)
+func processFailedFinding(agg *AggregatedReport, f analyzer.FindingWithSuggestion, path string, detectedCompiler toolchain.Compiler, rules map[string]rule.ELFRule) {
+	r := rules[f.RuleID]
 	if r == nil {
 		return
 	}
@@ -69,12 +74,12 @@ func processFailedResult(agg *AggregatedReport, res rule.ProcessedResult, path s
 	applicability := r.Applicability()
 
 	for compiler, req := range applicability.Compilers {
-		processRequirement(agg, compiler, req, path, detectedCompiler)
+		processRequirement(agg, compiler.String(), req, path, detectedCompiler)
 	}
 }
 
-func processRequirement(agg *AggregatedReport, compiler toolchain.Compiler, req rule.CompilerRequirement, path string, detectedCompiler toolchain.Compiler) {
-	if detectedCompiler != toolchain.CompilerUnknown && compiler != detectedCompiler {
+func processRequirement(agg *AggregatedReport, compilerName string, req rule.CompilerRequirement, path string, detectedCompiler toolchain.Compiler) {
+	if detectedCompiler != toolchain.Unknown && compilerName != detectedCompiler.String() {
 		return
 	}
 
@@ -83,31 +88,31 @@ func processRequirement(agg *AggregatedReport, compiler toolchain.Compiler, req 
 		ver = req.MinVersion
 	}
 	if ver != (toolchain.Version{}) {
-		addToUpgrades(agg, compiler, ver.String(), path)
+		agg.addUpgrade(compilerName, ver.String(), path)
 	}
 
 	if req.Flag == "" {
 		return
 	}
 
-	addToFlags(agg.Flags, req.Flag, path)
+	agg.addFlag(req.Flag, path)
 }
 
-func addToUpgrades(agg *AggregatedReport, compiler toolchain.Compiler, version, path string) {
-	if agg.Upgrades[compiler] == nil {
-		agg.Upgrades[compiler] = make(map[string]map[string]bool)
+func (agg *AggregatedReport) addUpgrade(compilerName, version, path string) {
+	if agg.Upgrades[compilerName] == nil {
+		agg.Upgrades[compilerName] = make(map[string]map[string]bool)
 	}
-	if agg.Upgrades[compiler][version] == nil {
-		agg.Upgrades[compiler][version] = make(map[string]bool)
+	if agg.Upgrades[compilerName][version] == nil {
+		agg.Upgrades[compilerName][version] = make(map[string]bool)
 	}
-	agg.Upgrades[compiler][version][path] = true
+	agg.Upgrades[compilerName][version][path] = true
 }
 
-func addToFlags(flags map[string]map[string]bool, flag, path string) {
-	if flags[flag] == nil {
-		flags[flag] = make(map[string]bool)
+func (agg *AggregatedReport) addFlag(flag, path string) {
+	if agg.Flags[flag] == nil {
+		agg.Flags[flag] = make(map[string]bool)
 	}
-	flags[flag][path] = true
+	agg.Flags[flag][path] = true
 }
 
 func mapKeys(m map[string]bool) []string {
@@ -117,8 +122,8 @@ func mapKeys(m map[string]bool) []string {
 func FormatAggregated(agg *AggregatedReport) string {
 	var sb strings.Builder
 
-	gccUpgrades := agg.Upgrades[toolchain.CompilerGCC]
-	clangUpgrades := agg.Upgrades[toolchain.CompilerClang]
+	gccUpgrades := agg.Upgrades[toolchain.GCC.String()]
+	clangUpgrades := agg.Upgrades[toolchain.Clang.String()]
 
 	gccVer := getHighestVersion(gccUpgrades)
 	clangVer := getHighestVersion(clangUpgrades)
@@ -137,15 +142,15 @@ func FormatAggregated(agg *AggregatedReport) string {
 				}
 				sb.WriteString("\n")
 			} else {
-				formatCompilerUpgrades(&sb, toolchain.CompilerGCC, gccVer, gccBinaries)
-				formatCompilerUpgrades(&sb, toolchain.CompilerClang, clangVer, clangBinaries)
+				formatCompilerUpgrades(&sb, toolchain.GCC.String(), gccVer, gccBinaries)
+				formatCompilerUpgrades(&sb, toolchain.Clang.String(), clangVer, clangBinaries)
 			}
 		} else {
 			if gccVer != "" {
-				formatCompilerUpgrades(&sb, toolchain.CompilerGCC, gccVer, mapKeys(gccUpgrades[gccVer]))
+				formatCompilerUpgrades(&sb, toolchain.GCC.String(), gccVer, mapKeys(gccUpgrades[gccVer]))
 			}
 			if clangVer != "" {
-				formatCompilerUpgrades(&sb, toolchain.CompilerClang, clangVer, mapKeys(clangUpgrades[clangVer]))
+				formatCompilerUpgrades(&sb, toolchain.Clang.String(), clangVer, mapKeys(clangUpgrades[clangVer]))
 			}
 		}
 	}
@@ -201,11 +206,11 @@ func collectAllBinaries(flags map[string]map[string]bool) map[string]bool {
 	return all
 }
 
-func formatCompilerUpgrades(sb *strings.Builder, compiler toolchain.Compiler, ver string, binaries []string) {
+func formatCompilerUpgrades(sb *strings.Builder, compilerName string, ver string, binaries []string) {
 	if ver == "" || len(binaries) == 0 {
 		return
 	}
-	sb.WriteString(fmt.Sprintf("  %s %s+:\n", compiler.String(), ver))
+	sb.WriteString(fmt.Sprintf("  %s %s+:\n", compilerName, ver))
 	for _, b := range binaries {
 		sb.WriteString(fmt.Sprintf("    %s\n", b))
 	}

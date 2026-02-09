@@ -35,7 +35,7 @@ func NewScanner(fileAnalyzer analyzer.FileAnalyzer, opts Options) *Scanner {
 	}
 }
 
-func (s *Scanner) ScanPaths(ctx context.Context, paths []string, recursive bool) <-chan analyzer.Result {
+func (s *Scanner) ScanPaths(ctx context.Context, paths []string, recursive bool) <-chan analyzer.FileResult {
 	var filesToScan []string
 
 	for _, path := range paths {
@@ -52,8 +52,8 @@ func (s *Scanner) ScanPaths(ctx context.Context, paths []string, recursive bool)
 	return s.scanFilesParallel(ctx, filesToScan)
 }
 
-func (s *Scanner) scanFilesParallel(ctx context.Context, files []string) <-chan analyzer.Result {
-	results := make(chan analyzer.Result)
+func (s *Scanner) scanFilesParallel(ctx context.Context, files []string) <-chan analyzer.FileResult {
+	results := make(chan analyzer.FileResult)
 
 	if len(files) == 0 {
 		close(results)
@@ -88,7 +88,7 @@ func (s *Scanner) scanFilesParallel(ctx context.Context, files []string) <-chan 
 	return results
 }
 
-func (s *Scanner) scanFile(ctx context.Context, path string) analyzer.Result {
+func (s *Scanner) scanFile(ctx context.Context, path string) analyzer.FileResult {
 	s.logger.Debug("scanning file", slog.String("path", path))
 
 	res := s.analyzer.Analyze(ctx, path)

@@ -7,8 +7,8 @@ import (
 	"log/slog"
 	"strings"
 
-	"github.com/mkacmar/crack/internal/binary"
-	"github.com/mkacmar/crack/internal/toolchain"
+	"github.com/mkacmar/crack/binary"
+	"github.com/mkacmar/crack/toolchain"
 )
 
 func EnhanceWithDebugInfo(bin *binary.ELFBinary, debugPath string, logger *slog.Logger) error {
@@ -40,10 +40,12 @@ func EnhanceWithDebugInfo(bin *binary.ELFBinary, debugPath string, logger *slog.
 		return nil
 	}
 
-	newToolchain := toolchain.ParseToolchain(compilerInfo)
-	if bin.Build.Toolchain.Compiler == toolchain.CompilerUnknown && newToolchain.Compiler != toolchain.CompilerUnknown {
-		bin.Build.Toolchain = newToolchain
-		logger.Debug("updated toolchain from DWARF", slog.String("compiler", newToolchain.Compiler.String()), slog.String("version", newToolchain.Version.String()))
+	detector := toolchain.ELFCommentDetector{}
+	newCompiler, newVersion := detector.Detect(compilerInfo)
+	if bin.Build.Compiler == toolchain.Unknown && newCompiler != toolchain.Unknown {
+		bin.Build.Compiler = newCompiler
+		bin.Build.Version = newVersion
+		logger.Debug("updated toolchain from DWARF", slog.String("compiler", newCompiler.String()), slog.String("version", newVersion.String()))
 	}
 
 	return nil

@@ -14,19 +14,13 @@ import (
 
 	"github.com/mkacmar/crack/internal/analyzer"
 	elfanalyzer "github.com/mkacmar/crack/internal/analyzer/elf"
-	"github.com/mkacmar/crack/internal/binary"
 	"github.com/mkacmar/crack/internal/debuginfo"
 	"github.com/mkacmar/crack/internal/output"
 	"github.com/mkacmar/crack/internal/preset"
-	"github.com/mkacmar/crack/internal/rule"
-	elfrules "github.com/mkacmar/crack/internal/rules/elf"
+	"github.com/mkacmar/crack/internal/rules"
 	"github.com/mkacmar/crack/internal/scanner"
-	"github.com/mkacmar/crack/internal/toolchain"
+	"github.com/mkacmar/crack/rule"
 )
-
-func init() {
-	elfrules.RegisterRules()
-}
 
 var errNoPathsSpecified = fmt.Errorf("no paths specified")
 
@@ -36,6 +30,22 @@ type outputOptions struct {
 	includeSkipped bool
 	exitZero       bool
 	sarifOutput    string
+}
+
+type analyzeConfig struct {
+	rulesFlag         string
+	targetPlatform    string
+	targetCompiler    string
+	inputFile         string
+	recursive         bool
+	logFile           string
+	logLevel          string
+	parallel          int
+	useDebuginfod     bool
+	debuginfodServers string
+	debuginfodCache   string
+	debuginfodTimeout time.Duration
+	debuginfodRetries int
 }
 
 func (a *App) printAnalyzeUsage(prog string) {
@@ -55,7 +65,7 @@ Options:
       --target-compiler string    Only run rules available for these compilers: %s
       --target-platform string    Only run rules available for these platforms: %s
 
-`, strings.Join(toolchain.ValidCompilerNames(), ", "), strings.Join(binary.ValidArchitectureNames(), ", "))
+`, strings.Join(validCompilerNames(), ", "), strings.Join(validArchitectureNames(), ", "))
 
 	fmt.Fprint(os.Stderr, `Output options:
       --aggregate             Aggregate findings into actionable recommendations
@@ -79,34 +89,34 @@ Logging options:
 `, debuginfo.DefaultCacheDir(), debuginfo.DefaultRetries, debuginfo.DefaultServerURL, debuginfo.DefaultTimeout)
 }
 
-func parseRules(rulesFlag, targetPlatform, targetCompiler string) ([]string, error) {
-	var ruleIDs []string
+func parseRules(rulesFlag, targetPlatform, targetCompiler string) ([]rule.ELFRule, error) {
+	var selectedRules []rule.ELFRule
 	if rulesFlag != "" {
-		ruleIDs = strings.Split(rulesFlag, ",")
-		for i, id := range ruleIDs {
-			ruleIDs[i] = strings.TrimSpace(id)
-		}
-		for _, id := range ruleIDs {
-			if rule.Get(id) == nil {
+		ids := strings.Split(rulesFlag, ",")
+		for _, id := range ids {
+			id = strings.TrimSpace(id)
+			r := rules.Get(id)
+			if r == nil {
 				return nil, fmt.Errorf("unknown rule %q", id)
 			}
+			selectedRules = append(selectedRules, r)
 		}
 	} else {
-		ruleIDs = preset.DefaultRules
+		selectedRules = preset.Default()
 	}
 
 	if targetPlatform != "" || targetCompiler != "" {
-		filter, err := rule.ParseTargetFilter(targetPlatform, targetCompiler)
+		filter, err := ParseTargetFilter(targetPlatform, targetCompiler)
 		if err != nil {
 			return nil, err
 		}
-		ruleIDs = rule.FilterRules(ruleIDs, filter)
-		if len(ruleIDs) == 0 {
+		selectedRules = rule.FilterRules(selectedRules, filter)
+		if len(selectedRules) == 0 {
 			return nil, fmt.Errorf("no rules match the specified target filter")
 		}
 	}
 
-	return ruleIDs, nil
+	return selectedRules, nil
 }
 
 func parsePaths(fs *flag.FlagSet, inputFile string) ([]string, error) {
@@ -136,67 +146,18 @@ func (a *App) runAnalyze(prog string, args []string) int {
 	startTime := time.Now()
 	workingDir, _ := os.Getwd()
 
-	fs := flag.NewFlagSet("analyze", flag.ExitOnError)
-
-	var (
-		rulesFlag         string
-		targetPlatform    string
-		targetCompiler    string
-		inputFile         string
-		sarifOutput       string
-		aggregate         bool
-		recursive         bool
-		logFile           string
-		logLevel          string
-		includePassed     bool
-		includeSkipped    bool
-		parallel          int
-		exitZero          bool
-		useDebuginfod     bool
-		debuginfodServers string
-		debuginfodCache   string
-		debuginfodTimeout time.Duration
-		debuginfodRetries int
-	)
-
-	fs.StringVar(&rulesFlag, "rules", "", "")
-	fs.StringVar(&targetPlatform, "target-platform", "", "")
-	fs.StringVar(&targetCompiler, "target-compiler", "", "")
-	fs.StringVar(&inputFile, "input", "", "")
-	fs.StringVar(&inputFile, "i", "", "")
-	fs.StringVar(&sarifOutput, "sarif", "", "")
-	fs.BoolVar(&aggregate, "aggregate", false, "")
-	fs.BoolVar(&aggregate, "a", false, "")
-	fs.BoolVar(&recursive, "recursive", false, "")
-	fs.BoolVar(&recursive, "r", false, "")
-	fs.StringVar(&logFile, "log", "", "")
-	fs.StringVar(&logLevel, "log-level", "error", "")
-	fs.BoolVar(&includePassed, "include-passed", false, "")
-	fs.BoolVar(&includeSkipped, "include-skipped", false, "")
-	fs.IntVar(&parallel, "parallel", runtime.NumCPU(), "")
-	fs.IntVar(&parallel, "p", runtime.NumCPU(), "")
-	fs.BoolVar(&exitZero, "exit-zero", false, "")
-	fs.BoolVar(&useDebuginfod, "debuginfod", false, "")
-	fs.StringVar(&debuginfodServers, "debuginfod-servers", debuginfo.DefaultServerURL, "")
-	fs.StringVar(&debuginfodCache, "debuginfod-cache", "", "")
-	fs.DurationVar(&debuginfodTimeout, "debuginfod-timeout", debuginfo.DefaultTimeout, "")
-	fs.IntVar(&debuginfodRetries, "debuginfod-retries", debuginfo.DefaultRetries, "")
-
-	fs.Usage = func() {
-		a.printAnalyzeUsage(prog)
-	}
-
+	fs, opts, cfg := a.setupAnalyzeFlags(prog)
 	if err := fs.Parse(args); err != nil {
 		return ExitError
 	}
 
-	ruleIDs, err := parseRules(rulesFlag, targetPlatform, targetCompiler)
+	selectedRules, err := parseRules(cfg.rulesFlag, cfg.targetPlatform, cfg.targetCompiler)
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "Error: %v\n", err)
 		return ExitError
 	}
 
-	paths, err := parsePaths(fs, inputFile)
+	paths, err := parsePaths(fs, cfg.inputFile)
 	if err != nil {
 		if errors.Is(err, errNoPathsSpecified) {
 			fs.Usage()
@@ -206,58 +167,37 @@ func (a *App) runAnalyze(prog string, args []string) int {
 		return ExitError
 	}
 
-	if parallel < 1 {
+	if cfg.parallel < 1 {
 		fmt.Fprintf(os.Stderr, "Error: --parallel must be at least 1\n")
 		return ExitError
 	}
 
-	var logOutput io.Writer = os.Stderr
-	if logFile != "" {
-		f, err := os.Create(logFile)
-		if err != nil {
-			fmt.Fprintf(os.Stderr, "Error: failed to open log file: %v\n", err)
-			return ExitError
-		}
-		defer f.Close()
-		logOutput = f
-	}
-	a.logger = setupLogger(logLevel, logOutput)
-
-	var debuginfodClient *debuginfo.Client
-	if useDebuginfod {
-		client, err := debuginfo.NewClient(debuginfo.Options{
-			ServerURLs: parseURLList(debuginfodServers),
-			CacheDir:   debuginfodCache,
-			Timeout:    debuginfodTimeout,
-			MaxRetries: debuginfodRetries,
-			Logger:     a.logger,
-		})
-		if err != nil {
-			fmt.Fprintf(os.Stderr, "Error: failed to initialize debuginfod client: %v\n", err)
-			return ExitError
-		}
-		debuginfodClient = client
+	if err := a.setupLogging(cfg.logFile, cfg.logLevel); err != nil {
+		fmt.Fprintf(os.Stderr, "Error: %v\n", err)
+		return ExitError
 	}
 
-	analyzer := elfanalyzer.NewAnalyzer(elfanalyzer.Options{
-		RuleIDs:          ruleIDs,
+	debuginfodClient, err := a.setupDebuginfod(cfg)
+	if err != nil {
+		fmt.Fprintf(os.Stderr, "Error: %v\n", err)
+		return ExitError
+	}
+
+	elfAnalyzer := elfanalyzer.NewAnalyzer(elfanalyzer.Options{
+		Rules:            selectedRules,
 		DebuginfodClient: debuginfodClient,
 		Logger:           a.logger,
 	})
 
-	scannerOpts := scanner.Options{
+	scan := scanner.NewScanner(elfAnalyzer, scanner.Options{
 		Logger:  a.logger,
-		Workers: parallel,
-	}
-	scan := scanner.NewScanner(analyzer, scannerOpts)
+		Workers: cfg.parallel,
+	})
 
 	ctx := context.Background()
+	a.logger.Info("starting scan", slog.Int("paths", len(paths)), slog.Bool("recursive", cfg.recursive))
 
-	a.logger.Info("starting scan", slog.Int("paths", len(paths)), slog.Bool("recursive", recursive))
-
-	resultsChan := scan.ScanPaths(ctx, paths, recursive)
-
-	needsFullReport := aggregate || sarifOutput != ""
+	resultsChan := scan.ScanPaths(ctx, paths, cfg.recursive)
 
 	invocation := &output.InvocationInfo{
 		CommandLine: strings.Join(append([]string{prog}, args...), " "),
@@ -266,22 +206,69 @@ func (a *App) runAnalyze(prog string, args []string) int {
 		WorkingDir:  workingDir,
 	}
 
-	opts := outputOptions{
-		aggregate:      aggregate,
-		includePassed:  includePassed,
-		includeSkipped: includeSkipped,
-		exitZero:       exitZero,
-		sarifOutput:    sarifOutput,
-	}
-
-	if needsFullReport {
-		return a.processFullReport(resultsChan, opts, invocation)
+	if opts.aggregate || opts.sarifOutput != "" {
+		return a.processFullReport(resultsChan, opts, invocation, selectedRules)
 	}
 	return a.processStreaming(resultsChan, opts)
 }
 
-func (a *App) processFullReport(resultsChan <-chan analyzer.Result, opts outputOptions, invocation *output.InvocationInfo) int {
-	var results []analyzer.Result
+func (a *App) setupAnalyzeFlags(prog string) (*flag.FlagSet, *outputOptions, *analyzeConfig) {
+	fs := flag.NewFlagSet("analyze", flag.ExitOnError)
+	opts := &outputOptions{}
+	cfg := &analyzeConfig{}
+
+	fs.StringVar(&cfg.rulesFlag, "rules", "", "")
+	fs.StringVar(&cfg.targetPlatform, "target-platform", "", "")
+	fs.StringVar(&cfg.targetCompiler, "target-compiler", "", "")
+	fs.StringVar(&cfg.inputFile, "input", "", "")
+	fs.StringVar(&opts.sarifOutput, "sarif", "", "")
+	fs.BoolVar(&opts.aggregate, "aggregate", false, "")
+	fs.BoolVar(&cfg.recursive, "recursive", false, "")
+	fs.StringVar(&cfg.logFile, "log", "", "")
+	fs.StringVar(&cfg.logLevel, "log-level", "error", "")
+	fs.BoolVar(&opts.includePassed, "include-passed", false, "")
+	fs.BoolVar(&opts.includeSkipped, "include-skipped", false, "")
+	fs.IntVar(&cfg.parallel, "parallel", runtime.NumCPU(), "")
+	fs.BoolVar(&opts.exitZero, "exit-zero", false, "")
+	fs.BoolVar(&cfg.useDebuginfod, "debuginfod", false, "")
+	fs.StringVar(&cfg.debuginfodServers, "debuginfod-servers", debuginfo.DefaultServerURL, "")
+	fs.StringVar(&cfg.debuginfodCache, "debuginfod-cache", "", "")
+	fs.DurationVar(&cfg.debuginfodTimeout, "debuginfod-timeout", debuginfo.DefaultTimeout, "")
+	fs.IntVar(&cfg.debuginfodRetries, "debuginfod-retries", debuginfo.DefaultRetries, "")
+
+	fs.Usage = func() { a.printAnalyzeUsage(prog) }
+
+	return fs, opts, cfg
+}
+
+func (a *App) setupLogging(logFile, logLevel string) error {
+	var logOutput io.Writer = os.Stderr
+	if logFile != "" {
+		f, err := os.Create(logFile)
+		if err != nil {
+			return fmt.Errorf("failed to open log file: %w", err)
+		}
+		logOutput = f
+	}
+	a.logger = setupLogger(logLevel, logOutput)
+	return nil
+}
+
+func (a *App) setupDebuginfod(cfg *analyzeConfig) (*debuginfo.Client, error) {
+	if !cfg.useDebuginfod {
+		return nil, nil
+	}
+	return debuginfo.NewClient(debuginfo.Options{
+		ServerURLs: strings.Split(cfg.debuginfodServers, ","),
+		CacheDir:   cfg.debuginfodCache,
+		Timeout:    cfg.debuginfodTimeout,
+		MaxRetries: cfg.debuginfodRetries,
+		Logger:     a.logger,
+	})
+}
+
+func (a *App) processFullReport(resultsChan <-chan analyzer.FileResult, opts *outputOptions, invocation *output.InvocationInfo, rules []rule.ELFRule) int {
+	var results []analyzer.FileResult
 	var totalFailed int
 
 	for res := range resultsChan {
@@ -292,10 +279,10 @@ func (a *App) processFullReport(resultsChan <-chan analyzer.Result, opts outputO
 		totalFailed += res.FailedRules()
 	}
 
-	report := &analyzer.Results{Results: results}
+	report := &analyzer.Report{Results: results}
 
 	if opts.aggregate {
-		agg := output.AggregateFindings(report)
+		agg := output.AggregateFindings(report, rules)
 		fmt.Print(output.FormatAggregated(agg))
 	} else {
 		textFormatter, _ := output.GetFormatter("text", output.FormatterOptions{IncludePassed: opts.includePassed, IncludeSkipped: opts.includeSkipped})
@@ -333,7 +320,7 @@ func (a *App) processFullReport(resultsChan <-chan analyzer.Result, opts outputO
 	return ExitSuccess
 }
 
-func (a *App) processStreaming(resultsChan <-chan analyzer.Result, opts outputOptions) int {
+func (a *App) processStreaming(resultsChan <-chan analyzer.FileResult, opts *outputOptions) int {
 	var totalFailed int
 	textFormatter, _ := output.GetFormatter("text", output.FormatterOptions{IncludePassed: opts.includePassed, IncludeSkipped: opts.includeSkipped})
 
@@ -342,7 +329,7 @@ func (a *App) processStreaming(resultsChan <-chan analyzer.Result, opts outputOp
 			continue
 		}
 		totalFailed += res.FailedRules()
-		singleReport := &analyzer.Results{Results: []analyzer.Result{res}}
+		singleReport := &analyzer.Report{Results: []analyzer.FileResult{res}}
 		if err := textFormatter.Format(singleReport, os.Stdout); err != nil {
 			a.logger.Error("failed to format output", slog.Any("error", err))
 		}

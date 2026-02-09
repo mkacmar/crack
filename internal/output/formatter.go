@@ -5,11 +5,11 @@ import (
 	"io"
 
 	"github.com/mkacmar/crack/internal/analyzer"
-	"github.com/mkacmar/crack/internal/rule"
+	"github.com/mkacmar/crack/rule"
 )
 
 type Formatter interface {
-	Format(report *analyzer.Results, w io.Writer) error
+	Format(report *analyzer.Report, w io.Writer) error
 }
 
 type TextFormatter struct {
@@ -17,28 +17,28 @@ type TextFormatter struct {
 	IncludeSkipped bool
 }
 
-func (f *TextFormatter) Format(report *analyzer.Results, w io.Writer) error {
+func (f *TextFormatter) Format(report *analyzer.Report, w io.Writer) error {
 	for _, result := range report.Results {
 		if result.Error != nil {
 			fmt.Fprintf(w, "ERROR = %s: %v\n", result.Path, result.Error)
 			continue
 		}
 
-		for _, check := range result.Results {
-			switch check.Status {
+		for _, finding := range result.Findings {
+			switch finding.Status {
 			case rule.StatusPassed:
 				if f.IncludePassed {
-					fmt.Fprintf(w, "PASS = %s @ %s: %s\n", check.RuleID, result.Path, check.Message)
+					fmt.Fprintf(w, "PASS = %s @ %s: %s\n", finding.RuleID, result.Path, finding.Message)
 				}
 			case rule.StatusFailed:
-				if check.Suggestion != "" {
-					fmt.Fprintf(w, "FAIL = %s @ %s: %s %s\n", check.RuleID, result.Path, check.Message, check.Suggestion)
+				if finding.Suggestion != "" {
+					fmt.Fprintf(w, "FAIL = %s @ %s: %s %s\n", finding.RuleID, result.Path, finding.Message, finding.Suggestion)
 				} else {
-					fmt.Fprintf(w, "FAIL = %s @ %s: %s\n", check.RuleID, result.Path, check.Message)
+					fmt.Fprintf(w, "FAIL = %s @ %s: %s\n", finding.RuleID, result.Path, finding.Message)
 				}
 			case rule.StatusSkipped:
 				if f.IncludeSkipped {
-					fmt.Fprintf(w, "SKIP = %s @ %s: %s\n", check.RuleID, result.Path, check.Message)
+					fmt.Fprintf(w, "SKIP = %s @ %s: %s\n", finding.RuleID, result.Path, finding.Message)
 				}
 			}
 		}

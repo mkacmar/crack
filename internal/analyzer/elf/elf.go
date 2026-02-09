@@ -4,46 +4,54 @@ import (
 	"context"
 	"errors"
 	"log/slog"
+	"os"
 
+	"github.com/mkacmar/crack/binary"
 	"github.com/mkacmar/crack/internal/analyzer"
-	"github.com/mkacmar/crack/internal/binary"
 	"github.com/mkacmar/crack/internal/debuginfo"
-	"github.com/mkacmar/crack/internal/parser/elf"
 	"github.com/mkacmar/crack/internal/rules"
+	"github.com/mkacmar/crack/rule"
 )
 
 type Analyzer struct {
 	engine           *rules.Engine
-	parser           *elf.Parser
 	debuginfodClient *debuginfo.Client
 	logger           *slog.Logger
 }
 
 type Options struct {
-	RuleIDs          []string
+	Rules            []rule.ELFRule
 	DebuginfodClient *debuginfo.Client
 	Logger           *slog.Logger
 }
 
 func NewAnalyzer(opts Options) *Analyzer {
-
-	engine := rules.NewEngine(opts.Logger)
-	engine.LoadRules(opts.RuleIDs)
+	ruleList := make([]rule.Rule, len(opts.Rules))
+	for i, r := range opts.Rules {
+		ruleList[i] = r
+	}
 
 	return &Analyzer{
-		engine:           engine,
-		parser:           elf.NewParser(),
+		engine:           rules.NewEngine(ruleList, opts.Logger),
 		debuginfodClient: opts.DebuginfodClient,
 		logger:           opts.Logger.With(slog.String("component", "elf-analyzer")),
 	}
 }
 
-func (a *Analyzer) Analyze(ctx context.Context, path string) analyzer.Result {
-	res := analyzer.Result{
+func (a *Analyzer) Analyze(ctx context.Context, path string) analyzer.FileResult {
+	res := analyzer.FileResult{
 		Path: path,
 	}
 
-	bin, err := a.parser.Parse(path)
+	f, err := os.Open(path)
+	if err != nil {
+		a.logger.Warn("failed to open file", slog.String("path", path), slog.Any("error", err))
+		res.Error = err
+		return res
+	}
+	defer f.Close()
+
+	bin, err := binary.ParseELF(f)
 	if err != nil {
 		if errors.Is(err, binary.ErrUnsupportedFormat) {
 			a.logger.Debug("skipping non-ELF file", slog.String("path", path))
@@ -53,10 +61,6 @@ func (a *Analyzer) Analyze(ctx context.Context, path string) analyzer.Result {
 		a.logger.Warn("failed to parse binary", slog.String("path", path), slog.Any("error", err))
 		res.Error = err
 		return res
-	}
-
-	if bin.File != nil {
-		defer bin.File.Close()
 	}
 
 	res.Format = bin.Format
@@ -84,8 +88,8 @@ func (a *Analyzer) Analyze(ctx context.Context, path string) analyzer.Result {
 		}
 	}
 
-	res.Toolchain = bin.Build.Toolchain
-	res.Results = a.engine.ExecuteRules(bin)
+	res.Build = bin.Build
+	res.Findings = a.engine.ExecuteRules(bin)
 
 	a.logger.Debug("analysis complete",
 		slog.String("path", path),

@@ -7,16 +7,6 @@ import (
 	"strings"
 )
 
-func parseURLList(s string) []string {
-	var urls []string
-	for _, url := range strings.Split(s, ",") {
-		if url = strings.TrimSpace(url); url != "" {
-			urls = append(urls, url)
-		}
-	}
-	return urls
-}
-
 func readPathsFromInput(input string) ([]string, error) {
 	var reader *bufio.Scanner
 	if input == "-" {

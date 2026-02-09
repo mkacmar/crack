@@ -3,9 +3,10 @@ package rules
 import (
 	"log/slog"
 
-	"github.com/mkacmar/crack/internal/binary"
-	"github.com/mkacmar/crack/internal/rule"
-	"github.com/mkacmar/crack/internal/toolchain"
+	"github.com/mkacmar/crack/binary"
+	"github.com/mkacmar/crack/internal/analyzer"
+	"github.com/mkacmar/crack/rule"
+	"github.com/mkacmar/crack/toolchain"
 )
 
 type Engine struct {
@@ -13,84 +14,71 @@ type Engine struct {
 	logger *slog.Logger
 }
 
-func NewEngine(logger *slog.Logger) *Engine {
+func NewEngine(rules []rule.Rule, logger *slog.Logger) *Engine {
 	return &Engine{
-		rules:  make([]rule.Rule, 0),
+		rules:  rules,
 		logger: logger.With(slog.String("component", "rules-engine")),
 	}
 }
 
-func (e *Engine) LoadRules(ruleIDs []string) {
-	e.rules = make([]rule.Rule, 0)
-
-	for _, id := range ruleIDs {
-		r := rule.Get(id)
-		if r == nil {
-			e.logger.Warn("unknown rule ID, skipping", slog.String("rule_id", id))
-			continue
-		}
-		e.rules = append(e.rules, r)
-	}
-}
-
-func skipResult(r rule.Rule, message string) rule.ProcessedResult {
-	return rule.ProcessedResult{
-		ExecuteResult: rule.ExecuteResult{
-			Status:  rule.StatusSkipped,
-			Message: message,
+func skipFinding(r rule.Rule, message string) analyzer.FindingWithSuggestion {
+	return analyzer.FindingWithSuggestion{
+		Finding: rule.Finding{
+			Result: rule.Result{
+				Status:  rule.StatusSkipped,
+				Message: message,
+			},
+			RuleID: r.ID(),
+			Name:   r.Name(),
 		},
-		RuleID: r.ID(),
-		Name:   r.Name(),
 	}
 }
 
-func (e *Engine) ExecuteRules(bin *binary.ELFBinary) []rule.ProcessedResult {
-	if len(e.rules) == 0 {
-		e.logger.Warn("no rules loaded, call LoadRules() first")
-		return nil
-	}
-
-	results := make([]rule.ProcessedResult, 0, len(e.rules))
+func (e *Engine) ExecuteRules(bin *binary.ELFBinary) []analyzer.FindingWithSuggestion {
+	findings := make([]analyzer.FindingWithSuggestion, 0, len(e.rules))
 
 	for _, r := range e.rules {
+		elfRule, ok := r.(rule.ELFRule)
+		if !ok {
+			continue
+		}
+
 		applicability := r.Applicability()
 		if !bin.Architecture.Matches(applicability.Platform.Architecture) {
-			results = append(results, skipResult(r, "rule not applicable to "+bin.Architecture.String()+" architecture"))
+			findings = append(findings, skipFinding(r, "rule not applicable to "+bin.Architecture.String()+" architecture"))
 			continue
 		}
 
-		if len(applicability.Compilers) > 0 && bin.Build.Toolchain.Compiler != toolchain.CompilerUnknown {
-			if _, ok := applicability.Compilers[bin.Build.Toolchain.Compiler]; !ok {
-				results = append(results, skipResult(r, "rule not applicable to "+bin.Build.Toolchain.Compiler.String()+" binaries"))
+		if len(applicability.Compilers) > 0 && bin.Build.Compiler != toolchain.Unknown {
+			hasCompiler := false
+			for comp := range applicability.Compilers {
+				if comp == bin.Build.Compiler {
+					hasCompiler = true
+					break
+				}
+			}
+			if !hasCompiler {
+				findings = append(findings, skipFinding(r, "rule not applicable to "+bin.Build.Compiler.String()+" binaries"))
 				continue
 			}
 		}
 
-		var result rule.ExecuteResult
+		result := elfRule.Execute(bin)
 
-		switch typedRule := r.(type) {
-		case rule.ELFRule:
-			if bin.Format != binary.FormatELF {
-				results = append(results, skipResult(r, "rule not applicable to "+bin.Format.String()+" format"))
-				continue
-			}
-			result = typedRule.Execute(bin)
-		default:
-			continue
-		}
-
-		evaluated := rule.ProcessedResult{
-			ExecuteResult: result,
-			RuleID:        r.ID(),
-			Name:          r.Name(),
+		finding := analyzer.FindingWithSuggestion{
+			Finding: rule.Finding{
+				Result: result,
+				RuleID: r.ID(),
+				Name:   r.Name(),
+			},
 		}
 
 		if result.Status == rule.StatusFailed {
-			evaluated.Suggestion = buildSuggestion(bin.Build.Toolchain, applicability)
+			finding.Suggestion = buildSuggestion(bin.Build, applicability)
 		}
 
-		results = append(results, evaluated)
+		findings = append(findings, finding)
 	}
 
-	return results
+	return findings
 }

@@ -7,8 +7,8 @@ import (
 	"time"
 
 	"github.com/mkacmar/crack/internal/analyzer"
-	"github.com/mkacmar/crack/internal/rule"
-	"github.com/mkacmar/crack/internal/toolchain"
+	"github.com/mkacmar/crack/rule"
+	"github.com/mkacmar/crack/toolchain"
 )
 
 func TestSARIFResultKind(t *testing.T) {
@@ -30,14 +30,16 @@ func TestSARIFResultKind(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			report := &analyzer.Results{
-				Results: []analyzer.Result{{
-					Path:      "/usr/bin/test",
-					Toolchain: toolchain.Toolchain{},
-					Results: []rule.ProcessedResult{{
-						ExecuteResult: rule.ExecuteResult{Status: tt.status, Message: "test message"},
-						RuleID:        "test-rule",
-						Name:          "Test Rule",
+			report := &analyzer.Report{
+				Results: []analyzer.FileResult{{
+					Path:  "/usr/bin/test",
+					Build: toolchain.BuildInfo{},
+					Findings: []analyzer.FindingWithSuggestion{{
+						Finding: rule.Finding{
+							Result: rule.Result{Status: tt.status, Message: "test message"},
+							RuleID: "test-rule",
+							Name:   "Test Rule",
+						},
 					}},
 				}},
 			}
@@ -81,14 +83,16 @@ func TestSARIFInvocation(t *testing.T) {
 	startTime := time.Date(2026, 1, 23, 10, 0, 0, 0, time.UTC)
 	endTime := time.Date(2026, 1, 23, 10, 5, 0, 0, time.UTC)
 
-	report := &analyzer.Results{
-		Results: []analyzer.Result{{
-			Path:      "/usr/bin/test",
-			Toolchain: toolchain.Toolchain{},
-			Results: []rule.ProcessedResult{{
-				ExecuteResult: rule.ExecuteResult{Status: rule.StatusPassed, Message: "test passed"},
-				RuleID:        "test-rule",
-				Name:          "Test Rule",
+	report := &analyzer.Report{
+		Results: []analyzer.FileResult{{
+			Path:  "/usr/bin/test",
+			Build: toolchain.BuildInfo{},
+			Findings: []analyzer.FindingWithSuggestion{{
+				Finding: rule.Finding{
+					Result: rule.Result{Status: rule.StatusPassed, Message: "test passed"},
+					RuleID: "test-rule",
+					Name:   "Test Rule",
+				},
 			}},
 		}},
 	}

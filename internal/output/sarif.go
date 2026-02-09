@@ -9,8 +9,8 @@ import (
 	"time"
 
 	"github.com/mkacmar/crack/internal/analyzer"
-	"github.com/mkacmar/crack/internal/rule"
 	"github.com/mkacmar/crack/internal/version"
+	"github.com/mkacmar/crack/rule"
 )
 
 type SARIFReport struct {
@@ -109,7 +109,7 @@ type SARIFFormatter struct {
 	Invocation     *InvocationInfo
 }
 
-func (f *SARIFFormatter) Format(report *analyzer.Results, w io.Writer) error {
+func (f *SARIFFormatter) Format(report *analyzer.Report, w io.Writer) error {
 	output := f.convertToSARIF(report)
 
 	encoder := json.NewEncoder(w)
@@ -118,7 +118,7 @@ func (f *SARIFFormatter) Format(report *analyzer.Results, w io.Writer) error {
 	return encoder.Encode(output)
 }
 
-func (f *SARIFFormatter) convertToSARIF(report *analyzer.Results) SARIFReport {
+func (f *SARIFFormatter) convertToSARIF(report *analyzer.Report) SARIFReport {
 	rules, ruleIndex := f.buildRules(report)
 	artifacts, artifactIndex := f.buildArtifacts(report)
 	results, notifications := f.buildResults(report, ruleIndex, artifactIndex)
@@ -147,12 +147,12 @@ func (f *SARIFFormatter) convertToSARIF(report *analyzer.Results) SARIFReport {
 	}
 }
 
-func (f *SARIFFormatter) buildRules(report *analyzer.Results) ([]SARIFRule, map[string]int) {
-	ruleMap := make(map[string]rule.ProcessedResult)
+func (f *SARIFFormatter) buildRules(report *analyzer.Report) ([]SARIFRule, map[string]int) {
+	ruleMap := make(map[string]analyzer.FindingWithSuggestion)
 	for _, res := range report.Results {
-		for _, check := range res.Results {
-			if _, exists := ruleMap[check.RuleID]; !exists {
-				ruleMap[check.RuleID] = check
+		for _, finding := range res.Findings {
+			if _, exists := ruleMap[finding.RuleID]; !exists {
+				ruleMap[finding.RuleID] = finding
 			}
 		}
 	}
@@ -166,18 +166,18 @@ func (f *SARIFFormatter) buildRules(report *analyzer.Results) ([]SARIFRule, map[
 	rules := make([]SARIFRule, 0, len(ruleMap))
 	ruleIndex := make(map[string]int)
 	for i, id := range ruleIDs {
-		check := ruleMap[id]
+		finding := ruleMap[id]
 		ruleIndex[id] = i
 		r := SARIFRule{
-			ID:      check.RuleID,
-			Name:    check.Name,
-			HelpUri: ruleHelpURL(check.Name, check.RuleID),
+			ID:      finding.RuleID,
+			Name:    finding.Name,
+			HelpUri: ruleHelpURL(finding.Name, finding.RuleID),
 			DefaultConfiguration: SARIFConfiguration{
 				Level: "warning",
 			},
 		}
-		if check.Message != "" && check.Message != check.Name {
-			r.FullDescription = SARIFMessage{Text: check.Message}
+		if finding.Message != "" && finding.Message != finding.Name {
+			r.FullDescription = SARIFMessage{Text: finding.Message}
 		}
 		rules = append(rules, r)
 	}
@@ -185,7 +185,7 @@ func (f *SARIFFormatter) buildRules(report *analyzer.Results) ([]SARIFRule, map[
 	return rules, ruleIndex
 }
 
-func (f *SARIFFormatter) buildResults(report *analyzer.Results, ruleIndex, artifactIndex map[string]int) ([]SARIFResult, []SARIFNotification) {
+func (f *SARIFFormatter) buildResults(report *analyzer.Report, ruleIndex, artifactIndex map[string]int) ([]SARIFResult, []SARIFNotification) {
 	sarifResults := make([]SARIFResult, 0)
 	notifications := make([]SARIFNotification, 0)
 
@@ -207,16 +207,16 @@ func (f *SARIFFormatter) buildResults(report *analyzer.Results, ruleIndex, artif
 			continue
 		}
 
-		for _, check := range res.Results {
-			if check.Status == rule.StatusPassed && !f.IncludePassed {
+		for _, finding := range res.Findings {
+			if finding.Status == rule.StatusPassed && !f.IncludePassed {
 				continue
 			}
-			if check.Status == rule.StatusSkipped && !f.IncludeSkipped {
+			if finding.Status == rule.StatusSkipped && !f.IncludeSkipped {
 				continue
 			}
 
 			var kind, level string
-			switch check.Status {
+			switch finding.Status {
 			case rule.StatusPassed:
 				kind = "pass"
 			case rule.StatusSkipped:
@@ -226,13 +226,13 @@ func (f *SARIFFormatter) buildResults(report *analyzer.Results, ruleIndex, artif
 				level = "warning"
 			}
 
-			message := check.Message
-			if check.Suggestion != "" {
-				message = message + " " + check.Suggestion
+			message := finding.Message
+			if finding.Suggestion != "" {
+				message = message + " " + finding.Suggestion
 			}
 
 			sarifResult := SARIFResult{
-				RuleIndex: ruleIndex[check.RuleID],
+				RuleIndex: ruleIndex[finding.RuleID],
 				Kind:      kind,
 				Level:     level,
 				Message:   SARIFMessage{Text: message},
@@ -250,7 +250,7 @@ func (f *SARIFFormatter) buildResults(report *analyzer.Results, ruleIndex, artif
 	return sarifResults, notifications
 }
 
-func (f *SARIFFormatter) buildArtifacts(report *analyzer.Results) ([]SARIFArtifact, map[string]int) {
+func (f *SARIFFormatter) buildArtifacts(report *analyzer.Report) ([]SARIFArtifact, map[string]int) {
 	artifactHashes := make(map[string]string)
 	for _, res := range report.Results {
 		fileURI := toFileURI(res.Path)

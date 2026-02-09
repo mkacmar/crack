@@ -6,60 +6,6 @@ import (
 	"testing"
 )
 
-func TestParseURLList(t *testing.T) {
-	tests := []struct {
-		name     string
-		input    string
-		expected []string
-	}{
-		{
-			name:     "single URL",
-			input:    "https://example.com",
-			expected: []string{"https://example.com"},
-		},
-		{
-			name:     "multiple URLs",
-			input:    "https://a.com,https://b.com,https://c.com",
-			expected: []string{"https://a.com", "https://b.com", "https://c.com"},
-		},
-		{
-			name:     "URLs with spaces",
-			input:    "https://a.com , https://b.com , https://c.com",
-			expected: []string{"https://a.com", "https://b.com", "https://c.com"},
-		},
-		{
-			name:     "empty string",
-			input:    "",
-			expected: nil,
-		},
-		{
-			name:     "only commas",
-			input:    ",,,",
-			expected: nil,
-		},
-		{
-			name:     "trailing comma",
-			input:    "https://a.com,",
-			expected: []string{"https://a.com"},
-		},
-	}
-
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			result := parseURLList(tt.input)
-			if len(result) != len(tt.expected) {
-				t.Errorf("parseURLList(%q) = %v, want %v", tt.input, result, tt.expected)
-				return
-			}
-			for i := range result {
-				if result[i] != tt.expected[i] {
-					t.Errorf("parseURLList(%q)[%d] = %q, want %q", tt.input, i, result[i], tt.expected[i])
-				}
-			}
-		})
-	}
-}
-
 func TestReadPathsFromInput(t *testing.T) {
 	tests := []struct {
 		name      string
