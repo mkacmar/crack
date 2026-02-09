@@ -30,7 +30,7 @@ func RunRuleTests(t *testing.T, rule string, cases []TestCase) {
 	_, thisFile, _, _ := runtime.Caller(0)
 	e2eDir := filepath.Dir(thisFile)
 	rootDir := filepath.Join(e2eDir, "..", "..")
-	binariesDir := filepath.Join(e2eDir, rule, "binaries")
+	binariesDir := filepath.Join(e2eDir, "elf", rule, "binaries")
 	crackBin := filepath.Join(rootDir, "crack")
 
 	if _, err := os.Stat(binariesDir); os.IsNotExist(err) {

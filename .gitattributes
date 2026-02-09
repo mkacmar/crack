@@ -1,1 +1,1 @@
-test/e2e/*/binaries/* filter=lfs diff=lfs merge=lfs -text
+test/e2e/**/binaries/* filter=lfs diff=lfs merge=lfs -text
