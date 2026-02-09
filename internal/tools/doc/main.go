@@ -1,5 +1,3 @@
-//go:build ignore
-
 package main
 
 import (
@@ -7,24 +5,22 @@ import (
 	"sort"
 	"strings"
 
-	"github.com/mkacmar/crack/internal/binary"
-	"github.com/mkacmar/crack/internal/rule"
-	elfrules "github.com/mkacmar/crack/internal/rules/elf"
-	"github.com/mkacmar/crack/internal/toolchain"
+	"github.com/mkacmar/crack/binary"
+	"github.com/mkacmar/crack/internal/rules"
+	"github.com/mkacmar/crack/rule"
+	"github.com/mkacmar/crack/toolchain"
 )
 
 func main() {
-	elfrules.RegisterRules()
-
-	rules := rule.GetAll()
-	sort.Slice(rules, func(i, j int) bool {
-		return rules[i].ID() < rules[j].ID()
+	allRules := rules.All()
+	sort.Slice(allRules, func(i, j int) bool {
+		return allRules[i].ID() < allRules[j].ID()
 	})
 
-	fmt.Print(generateDoc(rules))
+	fmt.Print(generateDoc(allRules))
 }
 
-func generateDoc(rules []rule.Rule) string {
+func generateDoc(rules []rule.ELFRule) string {
 	var sb strings.Builder
 
 	for i, r := range rules {
@@ -37,7 +33,7 @@ func generateDoc(rules []rule.Rule) string {
 	return sb.String()
 }
 
-func generateRuleDoc(r rule.Rule) string {
+func generateRuleDoc(r rule.ELFRule) string {
 	var sb strings.Builder
 
 	sb.WriteString(fmt.Sprintf("## %s (`%s`)\n\n", r.Name(), r.ID()))
@@ -83,17 +79,8 @@ func generateRuleDoc(r rule.Rule) string {
 }
 
 func formatPlatform(p binary.Platform) string {
-	arch := p.Architecture.String()
-	switch p.Architecture {
-	case binary.ArchAll:
-		arch = "All architectures"
-	case binary.ArchAllX86:
-		arch = "x86, x86_64"
-	case binary.ArchAllARM:
-		arch = "ARM, ARM64"
-	}
 	if p.MinISA == (binary.ISA{}) {
-		return arch
+		return p.Architecture.String()
 	}
-	return fmt.Sprintf("%s (requires ISA %s+)", arch, p.MinISA.String())
+	return fmt.Sprintf("%s (requires ISA %s+)", p.Architecture.String(), p.MinISA.String())
 }

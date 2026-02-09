@@ -1,4 +1,4 @@
-.PHONY: build build-release test test-unit test-e2e test-e2e-coverage clean lint fmt install-tools
+.PHONY: build build-release test test-unit test-e2e test-e2e-coverage clean lint fmt install-tools doc
 
 BINARY = crack
 ENTRYPOINT = ./cmd/crack
@@ -59,3 +59,6 @@ fmt:
 install-tools:
 	go install golang.org/x/tools/cmd/goimports@latest
 	go install honnef.co/go/tools/cmd/staticcheck@latest
+
+doc:
+	go run ./internal/tools/doc
