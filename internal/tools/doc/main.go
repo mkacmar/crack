@@ -1,9 +1,13 @@
 package main
 
 import (
+	"bytes"
+	_ "embed"
 	"fmt"
+	"os"
+	"reflect"
 	"sort"
-	"strings"
+	"text/template"
 
 	"github.com/mkacmar/crack/binary"
 	"github.com/mkacmar/crack/internal/rules"
@@ -11,71 +15,99 @@ import (
 	"github.com/mkacmar/crack/toolchain"
 )
 
+//go:embed rules.md.tpl
+var templateContent string
+
+var docTemplate = template.Must(template.New("doc").Parse(templateContent))
+
+type docData struct {
+	Rules []ruleData
+}
+
+type ruleData struct {
+	ID          string
+	Name        string
+	StructName  string
+	Description string
+	Platform    string
+	Compilers   []compilerData
+}
+
+type compilerData struct {
+	Name           string
+	MinVersion     string
+	DefaultVersion string
+	Flag           string
+}
+
 func main() {
 	allRules := rules.All()
 	sort.Slice(allRules, func(i, j int) bool {
 		return allRules[i].ID() < allRules[j].ID()
 	})
 
-	fmt.Print(generateDoc(allRules))
+	doc, err := generateDoc(allRules)
+	if err != nil {
+		_, _ = fmt.Fprintf(os.Stderr, "error generating documentation: %v\n", err)
+		os.Exit(1)
+	}
+	fmt.Print(doc)
 }
 
-func generateDoc(rules []rule.ELFRule) string {
-	var sb strings.Builder
+func generateDoc(rules []rule.Rule) (string, error) {
+	data := docData{Rules: make([]ruleData, 0, len(rules))}
 
-	for i, r := range rules {
-		sb.WriteString(generateRuleDoc(r))
-		if i < len(rules)-1 {
-			sb.WriteString("\n---\n\n")
-		}
+	for _, r := range rules {
+		data.Rules = append(data.Rules, toRuleData(r))
 	}
 
-	return sb.String()
+	var buf bytes.Buffer
+	if err := docTemplate.Execute(&buf, data); err != nil {
+		return "", err
+	}
+	return buf.String(), nil
 }
 
-func generateRuleDoc(r rule.ELFRule) string {
-	var sb strings.Builder
-
-	sb.WriteString(fmt.Sprintf("## %s (`%s`)\n\n", r.Name(), r.ID()))
-	sb.WriteString(fmt.Sprintf("%s\n\n", r.Description()))
-
+func toRuleData(r rule.Rule) ruleData {
 	applicability := r.Applicability()
 
-	sb.WriteString("### Platform\n\n")
-	sb.WriteString(formatPlatform(applicability.Platform))
-	sb.WriteString("\n\n")
+	compilers := make([]toolchain.Compiler, 0, len(applicability.Compilers))
+	for c := range applicability.Compilers {
+		compilers = append(compilers, c)
+	}
+	sort.Slice(compilers, func(i, j int) bool {
+		return compilers[i].String() < compilers[j].String()
+	})
 
-	sb.WriteString("### Toolchain\n\n")
-	if len(applicability.Compilers) == 0 {
-		sb.WriteString("No specific compiler requirements.\n")
-	} else {
-		sb.WriteString("| Compiler | Minimal Version | Default Version | Flag |\n")
-		sb.WriteString("|:---------|:----------------|:----------------|:-----|\n")
-
-		compilers := make([]toolchain.Compiler, 0, len(applicability.Compilers))
-		for c := range applicability.Compilers {
-			compilers = append(compilers, c)
+	compilerList := make([]compilerData, 0, len(compilers))
+	for _, c := range compilers {
+		req := applicability.Compilers[c]
+		defaultVer := "-"
+		if req.DefaultVersion != (toolchain.Version{}) {
+			defaultVer = req.DefaultVersion.String()
 		}
-		sort.Slice(compilers, func(i, j int) bool {
-			return compilers[i].String() < compilers[j].String()
-		})
-
-		for _, compiler := range compilers {
-			req := applicability.Compilers[compiler]
-			defaultVer := "-"
-			if req.DefaultVersion != (toolchain.Version{}) {
-				defaultVer = req.DefaultVersion.String()
-			}
-			sb.WriteString(fmt.Sprintf("| %s | %s | %s | `%s` |\n",
-				compiler.String(),
-				req.MinVersion.String(),
-				defaultVer,
-				req.Flag,
-			))
-		}
+		compilerList = append(compilerList, toCompilerData(c, req, defaultVer))
 	}
 
-	return sb.String()
+	structName := reflect.TypeOf(r).Name()
+
+	return ruleData{
+		ID:          r.ID(),
+		Name:        r.Name(),
+		StructName:  structName,
+		Description: r.Description(),
+		Platform:    formatPlatform(applicability.Platform),
+		Compilers:   compilerList,
+	}
+}
+
+func toCompilerData(c toolchain.Compiler, req rule.CompilerRequirement, defaultVer string) compilerData {
+	return compilerData{
+		Name:           c.String(),
+		MinVersion:     req.MinVersion.String(),
+		DefaultVersion: defaultVer,
+		Flag:           req.Flag,
+	}
 }
 
 func formatPlatform(p binary.Platform) string {
