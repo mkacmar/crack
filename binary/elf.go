@@ -3,7 +3,6 @@ package binary
 import (
 	"bytes"
 	"debug/elf"
-	"encoding/binary"
 	"errors"
 	"fmt"
 	"io"
@@ -302,13 +301,17 @@ func extractBuildID(f *elf.File) string {
 		return ""
 	}
 
-	namesz := binary.LittleEndian.Uint32(data[0:4])
-	descsz := binary.LittleEndian.Uint32(data[4:8])
+	namesz := f.ByteOrder.Uint32(data[0:4])
+	descsz := f.ByteOrder.Uint32(data[4:8])
 
-	const align = 4
-	nameAligned := (namesz + align - 1) &^ (align - 1)
+	align := 4
+	if f.Class == elf.ELFCLASS64 {
+		align = 8
+	}
 
-	descOffset := noteHeaderSize + int(nameAligned)
+	alignedNamesz := (int(namesz) + align - 1) &^ (align - 1)
+	descOffset := noteHeaderSize + alignedNamesz
+
 	if descOffset+int(descsz) > len(data) {
 		return ""
 	}
