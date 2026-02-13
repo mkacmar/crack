@@ -271,8 +271,16 @@ func (a *App) setupDebuginfod(cfg *analyzeConfig) (*debuginfo.Client, error) {
 	if !cfg.useDebuginfod {
 		return nil, nil
 	}
+	servers := strings.Split(cfg.debuginfodServers, ",")
+	var filtered []string
+	for _, s := range servers {
+		if s = strings.TrimSpace(s); s != "" {
+			filtered = append(filtered, s)
+		}
+	}
+
 	return debuginfo.NewClient(debuginfo.Options{
-		ServerURLs:  strings.Split(cfg.debuginfodServers, ","),
+		ServerURLs:  filtered,
 		CacheDir:    cfg.debuginfodCache,
 		Timeout:     cfg.debuginfodTimeout,
 		MaxRetries:  cfg.debuginfodRetries,
