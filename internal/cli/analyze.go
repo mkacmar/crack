@@ -294,7 +294,7 @@ func (a *App) processFullReport(resultsChan <-chan analyzer.FileResult, opts *ou
 
 	if opts.aggregate {
 		agg := output.AggregateFindings(report, rules)
-		fmt.Print(output.FormatAggregated(agg))
+		fmt.Print(agg.Format())
 	} else {
 		textFormatter, _ := output.GetFormatter("text", output.FormatterOptions{IncludePassed: opts.includePassed, IncludeSkipped: opts.includeSkipped})
 		if err := textFormatter.Format(report, os.Stdout); err != nil {
