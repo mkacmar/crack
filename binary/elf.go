@@ -208,7 +208,7 @@ func (b *ELFBinary) HasGNUProperty(propertyType, featureFlag uint32) bool {
 					propType := b.file.ByteOrder.Uint32(data[propOffset : propOffset+4])
 					propSize := b.file.ByteOrder.Uint32(data[propOffset+4 : propOffset+8])
 
-					if propType == propertyType && propSize >= 4 {
+					if propType == propertyType && propSize >= 4 && propOffset+12 <= propEnd {
 						features := b.file.ByteOrder.Uint32(data[propOffset+8 : propOffset+12])
 						if features&featureFlag != 0 {
 							return true
