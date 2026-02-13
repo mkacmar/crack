@@ -4,6 +4,7 @@ import (
 	"debug/dwarf"
 	"debug/elf"
 	"fmt"
+	"io"
 	"log/slog"
 	"strings"
 
@@ -11,8 +12,8 @@ import (
 	"github.com/mkacmar/crack/toolchain"
 )
 
-func EnhanceWithDebugInfo(bin *binary.ELFBinary, debugPath string, logger *slog.Logger) error {
-	debugFile, err := elf.Open(debugPath)
+func ApplyDebugInfo(bin *binary.ELFBinary, r io.ReaderAt, logger *slog.Logger) error {
+	debugFile, err := elf.NewFile(r)
 	if err != nil {
 		return fmt.Errorf("failed to open debug file: %w", err)
 	}
@@ -32,9 +33,9 @@ func EnhanceWithDebugInfo(bin *binary.ELFBinary, debugPath string, logger *slog.
 		return fmt.Errorf("failed to extract DWARF data: %w", err)
 	}
 
-	compilerInfo := extractCompilerFromDWARF(dwarfData, logger)
+	compilerInfo := extractCompilerFromDWARF(dwarfData)
 	if compilerInfo == "" {
-		logger.Debug("no DW_AT_producer found in DWARF data", slog.String("debug_path", debugPath))
+		logger.Debug("no DW_AT_producer found in DWARF data")
 		return nil
 	}
 
@@ -84,7 +85,7 @@ func hasDwarfSections(f *elf.File) bool {
 	return false
 }
 
-func extractCompilerFromDWARF(d *dwarf.Data, logger *slog.Logger) string {
+func extractCompilerFromDWARF(d *dwarf.Data) string {
 	reader := d.Reader()
 
 	for {
@@ -95,7 +96,6 @@ func extractCompilerFromDWARF(d *dwarf.Data, logger *slog.Logger) string {
 
 		if entry.Tag == dwarf.TagCompileUnit {
 			if producer, ok := entry.Val(dwarf.AttrProducer).(string); ok && producer != "" {
-				logger.Debug("found DW_AT_producer in DWARF", slog.String("producer", producer))
 				return producer
 			}
 		}

@@ -46,6 +46,7 @@ type analyzeConfig struct {
 	debuginfodCache   string
 	debuginfodTimeout time.Duration
 	debuginfodRetries int
+	debuginfodMaxSize int64
 }
 
 func (a *App) printAnalyzeUsage(prog string) {
@@ -80,13 +81,15 @@ Logging options:
 
 `)
 
+	defaultCacheDir, _ := debuginfo.DefaultCacheDir()
 	fmt.Fprintf(os.Stderr, `Debuginfod options:
       --debuginfod                  Fetch debug symbols from debuginfod servers
       --debuginfod-cache string     Debuginfod cache directory (default "%s")
+      --debuginfod-max-size bytes   Max debug file size per download (default %d)
       --debuginfod-retries int      Debuginfod max retries per server (default %d)
       --debuginfod-servers string   Comma-separated debuginfod server URLs (default %q)
       --debuginfod-timeout duration Debuginfod HTTP timeout (default %v)
-`, debuginfo.DefaultCacheDir(), debuginfo.DefaultRetries, debuginfo.DefaultServerURL, debuginfo.DefaultTimeout)
+`, defaultCacheDir, debuginfo.DefaultMaxFileSize, debuginfo.DefaultRetries, debuginfo.DefaultServerURL, debuginfo.DefaultTimeout)
 }
 
 func parseRules(rulesFlag, targetPlatform, targetCompiler string) ([]rule.ELFRule, error) {
@@ -240,6 +243,7 @@ func (a *App) setupAnalyzeFlags(prog string) (*flag.FlagSet, *outputOptions, *an
 	fs.StringVar(&cfg.debuginfodCache, "debuginfod-cache", "", "")
 	fs.DurationVar(&cfg.debuginfodTimeout, "debuginfod-timeout", debuginfo.DefaultTimeout, "")
 	fs.IntVar(&cfg.debuginfodRetries, "debuginfod-retries", debuginfo.DefaultRetries, "")
+	fs.Int64Var(&cfg.debuginfodMaxSize, "debuginfod-max-size", debuginfo.DefaultMaxFileSize, "")
 
 	fs.Usage = func() { a.printAnalyzeUsage(prog) }
 
@@ -264,11 +268,12 @@ func (a *App) setupDebuginfod(cfg *analyzeConfig) (*debuginfo.Client, error) {
 		return nil, nil
 	}
 	return debuginfo.NewClient(debuginfo.Options{
-		ServerURLs: strings.Split(cfg.debuginfodServers, ","),
-		CacheDir:   cfg.debuginfodCache,
-		Timeout:    cfg.debuginfodTimeout,
-		MaxRetries: cfg.debuginfodRetries,
-		Logger:     a.logger,
+		ServerURLs:  strings.Split(cfg.debuginfodServers, ","),
+		CacheDir:    cfg.debuginfodCache,
+		Timeout:     cfg.debuginfodTimeout,
+		MaxRetries:  cfg.debuginfodRetries,
+		MaxFileSize: cfg.debuginfodMaxSize,
+		Logger:      a.logger,
 	})
 }
 

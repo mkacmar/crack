@@ -2,6 +2,7 @@ package debuginfo
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"io"
 	"math/rand/v2"
@@ -13,18 +14,38 @@ import (
 
 	"log/slog"
 
+	"golang.org/x/sync/singleflight"
+
 	"github.com/mkacmar/crack/internal/version"
 )
 
 const (
-	DefaultServerURL = "https://debuginfod.elfutils.org"
-	DefaultTimeout   = 30 * time.Second
-	DefaultRetries   = 3
+	DefaultServerURL     = "https://debuginfod.elfutils.org"
+	DefaultTimeout       = 30 * time.Second
+	DefaultRetries       = 3
+	DefaultMaxFileSize   = 2 * 1024 * 1024 * 1024 // 2GB
 )
 
-func DefaultCacheDir() string {
-	cacheDir, _ := os.UserCacheDir()
-	return filepath.Join(cacheDir, "crack", "debuginfo")
+type nonRetryableError struct{ err error }
+
+func (e *nonRetryableError) Error() string { return e.err.Error() }
+func (e *nonRetryableError) Unwrap() error { return e.err }
+
+func isNonRetryable(statusCode int) bool {
+	switch statusCode {
+	case 400, 403, 404, 405, 410:
+		return true
+	default:
+		return false
+	}
+}
+
+func DefaultCacheDir() (string, error) {
+	cacheDir, err := os.UserCacheDir()
+	if err != nil {
+		return "", fmt.Errorf("failed to determine user cache directory: %w", err)
+	}
+	return filepath.Join(cacheDir, "crack", "debuginfo"), nil
 }
 
 func userAgent() string {
@@ -32,19 +53,22 @@ func userAgent() string {
 }
 
 type Client struct {
-	serverURLs []string
-	cacheDir   string
-	httpClient *http.Client
-	maxRetries int
-	logger     *slog.Logger
+	serverURLs  []string
+	cacheDir    string
+	httpClient  *http.Client
+	maxRetries  int
+	maxFileSize int64
+	logger      *slog.Logger
+	inflight    singleflight.Group
 }
 
 type Options struct {
-	ServerURLs []string
-	CacheDir   string
-	Timeout    time.Duration
-	MaxRetries int
-	Logger     *slog.Logger
+	ServerURLs      []string
+	CacheDir        string
+	Timeout         time.Duration
+	MaxRetries      int
+	MaxFileSize     int64
+	Logger          *slog.Logger
 }
 
 func NewClient(opts Options) (*Client, error) {
@@ -54,7 +78,11 @@ func NewClient(opts Options) (*Client, error) {
 
 	cacheDir := opts.CacheDir
 	if cacheDir == "" {
-		cacheDir = DefaultCacheDir()
+		var err error
+		cacheDir, err = DefaultCacheDir()
+		if err != nil {
+			return nil, err
+		}
 	}
 
 	if err := os.MkdirAll(cacheDir, 0755); err != nil {
@@ -71,12 +99,18 @@ func NewClient(opts Options) (*Client, error) {
 		maxRetries = DefaultRetries
 	}
 
+	maxFileSize := opts.MaxFileSize
+	if maxFileSize <= 0 {
+		maxFileSize = DefaultMaxFileSize
+	}
+
 	client := &Client{
-		serverURLs: opts.ServerURLs,
-		cacheDir:   cacheDir,
-		httpClient: &http.Client{Timeout: timeout},
-		logger:     opts.Logger.With(slog.String("component", "debuginfod")),
-		maxRetries: maxRetries,
+		serverURLs:  opts.ServerURLs,
+		cacheDir:    cacheDir,
+		httpClient:  &http.Client{Timeout: timeout},
+		logger:      opts.Logger.With(slog.String("component", "debuginfod")),
+		maxRetries:  maxRetries,
+		maxFileSize: maxFileSize,
 	}
 
 	return client, nil
@@ -87,6 +121,16 @@ func (c *Client) FetchDebugInfo(ctx context.Context, buildID string) (string, er
 		return "", fmt.Errorf("build-id is empty")
 	}
 
+	result, err, _ := c.inflight.Do(buildID, func() (interface{}, error) {
+		return c.fetchDebugInfo(ctx, buildID)
+	})
+	if err != nil {
+		return "", err
+	}
+	return result.(string), nil
+}
+
+func (c *Client) fetchDebugInfo(ctx context.Context, buildID string) (string, error) {
 	cachedPath := c.getCachePath(buildID)
 
 	if _, err := os.Stat(cachedPath); err == nil {
@@ -116,6 +160,11 @@ func (c *Client) fetchFromServerWithRetry(ctx context.Context, serverURL, buildI
 		}
 
 		lastErr = err
+
+		var nonRetryable *nonRetryableError
+		if errors.As(err, &nonRetryable) {
+			return "", err
+		}
 
 		if attempt < c.maxRetries {
 			backoff := c.calculateBackoff(attempt)
@@ -160,21 +209,25 @@ func (c *Client) fetchFromServer(ctx context.Context, serverURL, buildID, destPa
 	defer resp.Body.Close()
 
 	if resp.StatusCode != http.StatusOK {
-		return "", fmt.Errorf("server returned %d", resp.StatusCode)
+		err := fmt.Errorf("server returned %d", resp.StatusCode)
+		if isNonRetryable(resp.StatusCode) {
+			return "", &nonRetryableError{err: err}
+		}
+		return "", err
 	}
 
 	if err := os.MkdirAll(filepath.Dir(destPath), 0755); err != nil {
 		return "", fmt.Errorf("failed to create cache directory: %w", err)
 	}
 
-	if err := downloadToFile(resp.Body, destPath); err != nil {
+	if err := downloadToFile(resp.Body, destPath, c.maxFileSize); err != nil {
 		return "", err
 	}
 
 	return destPath, nil
 }
 
-func downloadToFile(r io.Reader, destPath string) error {
+func downloadToFile(r io.Reader, destPath string, maxSize int64) error {
 	tmpPath := destPath + ".tmp"
 
 	tmpFile, err := os.Create(tmpPath)
@@ -182,7 +235,7 @@ func downloadToFile(r io.Reader, destPath string) error {
 		return fmt.Errorf("failed to create temp file: %w", err)
 	}
 
-	_, copyErr := io.Copy(tmpFile, r)
+	_, copyErr := io.Copy(tmpFile, io.LimitReader(r, maxSize))
 	closeErr := tmpFile.Close()
 
 	if copyErr != nil {

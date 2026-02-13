@@ -3,6 +3,7 @@ package analyzer
 import (
 	"context"
 	"log/slog"
+	"os"
 
 	"github.com/mkacmar/crack/binary"
 	"github.com/mkacmar/crack/internal/debuginfo"
@@ -41,8 +42,8 @@ func (a *ELFAnalyzer) Analyze(ctx context.Context, bin *binary.ELFBinary) []rule
 		if err != nil {
 			a.logger.Debug("debug symbols not available", slog.Any("error", err))
 		} else {
-			if err := debuginfo.EnhanceWithDebugInfo(bin, debugPath, a.logger); err != nil {
-				a.logger.Warn("failed to enhance with debug info", slog.Any("error", err))
+			if err := a.applyDebugInfo(bin, debugPath); err != nil {
+				a.logger.Warn("failed to apply debug info", slog.Any("error", err))
 			}
 		}
 	}
@@ -50,4 +51,13 @@ func (a *ELFAnalyzer) Analyze(ctx context.Context, bin *binary.ELFBinary) []rule
 	return rule.Check(a.rules, bin.Info, func(r rule.ELFRule) rule.Result {
 		return r.Execute(bin)
 	})
+}
+
+func (a *ELFAnalyzer) applyDebugInfo(bin *binary.ELFBinary, path string) error {
+	f, err := os.Open(path)
+	if err != nil {
+		return err
+	}
+	defer f.Close()
+	return debuginfo.ApplyDebugInfo(bin, f, a.logger)
 }
