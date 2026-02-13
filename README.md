@@ -10,7 +10,6 @@ Based on recommendations from:
 - [Gentoo Hardened Toolchain](https://wiki.gentoo.org/wiki/Hardened/Toolchain)
 - [Debian Hardening](https://wiki.debian.org/Hardening)
 
-
 ## Installation
 
 ```sh
@@ -30,7 +29,7 @@ crack analyze [options] [<path>...]
 - `<path>...` - Files or directories to analyze (supports glob patterns)
 - `--recursive` - Recursively scan directories
 - `--input <file>` - Read paths from file, one per line (use `-` for stdin)
-- `--parallel <n>` - Number of files to analyze in parallel
+- `--parallel <n>` - Number of files to analyze in parallel (default: number of CPUs)
 
 ### Rule Selection
 
@@ -70,13 +69,13 @@ Fetch debug symbols from [debuginfod](https://sourceware.org/elfutils/Debuginfod
 - `--debuginfod-cache <dir>` - Cache directory for downloaded symbols
 - `--debuginfod-timeout <duration>` - HTTP timeout
 - `--debuginfod-retries <n>` - Max retries per server
+- `--debuginfod-max-size <bytes>` - Max debug file size per download
 
 ### Exit Codes
 
 - `0` - Success (no findings, or `--exit-zero` specified)
 - `1` - Error (invalid arguments, file errors, etc.)
 - `2` - Findings detected
-
 
 ## Programmatic Usage
 
