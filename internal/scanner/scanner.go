@@ -42,7 +42,7 @@ func (s *Scanner) ScanPaths(ctx context.Context, paths []string, recursive bool)
 	for _, path := range paths {
 		files, err := s.collectFiles(path, recursive)
 		if err != nil {
-			s.logger.Error("failed to collect files", slog.String("path", path), slog.Any("error", err))
+			s.logger.Warn("failed to collect files", slog.String("path", path), slog.Any("error", err))
 			continue
 		}
 		filesToScan = append(filesToScan, files...)

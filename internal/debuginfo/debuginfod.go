@@ -103,7 +103,7 @@ func (c *Client) FetchDebugInfo(ctx context.Context, buildID string) (string, er
 		c.logger.Debug("server failed", slog.String("server", serverURL), slog.Any("error", err))
 	}
 
-	return "", fmt.Errorf("debug symbols not found on any server")
+	return "", fmt.Errorf("debug symbols not found on any server for build-id %s", buildID)
 }
 
 func (c *Client) fetchFromServerWithRetry(ctx context.Context, serverURL, buildID, destPath string) (string, error) {

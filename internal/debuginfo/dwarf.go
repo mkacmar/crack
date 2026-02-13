@@ -12,8 +12,6 @@ import (
 )
 
 func EnhanceWithDebugInfo(bin *binary.ELFBinary, debugPath string, logger *slog.Logger) error {
-	logger = logger.With(slog.String("component", "dwarf"))
-
 	debugFile, err := elf.Open(debugPath)
 	if err != nil {
 		return fmt.Errorf("failed to open debug file: %w", err)
