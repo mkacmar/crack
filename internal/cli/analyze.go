@@ -81,7 +81,10 @@ Logging options:
 
 `)
 
-	defaultCacheDir, _ := debuginfo.DefaultCacheDir()
+	defaultCacheDir, err := debuginfo.DefaultCacheDir()
+	if err != nil {
+		defaultCacheDir = "(unavailable)"
+	}
 	fmt.Fprintf(os.Stderr, `Debuginfod options:
       --debuginfod                  Fetch debug symbols from debuginfod servers
       --debuginfod-cache string     Debuginfod cache directory (default "%s")
