@@ -296,7 +296,7 @@ func (a *App) processFullReport(resultsChan <-chan analyzer.FileResult, opts *ou
 		agg := output.AggregateFindings(report, rules)
 		fmt.Print(agg.Format())
 	} else {
-		textFormatter, _ := output.GetFormatter("text", output.FormatterOptions{IncludePassed: opts.includePassed, IncludeSkipped: opts.includeSkipped})
+		textFormatter := &output.TextFormatter{IncludePassed: opts.includePassed, IncludeSkipped: opts.includeSkipped}
 		if err := textFormatter.Format(report, os.Stdout); err != nil {
 			a.logger.Error("failed to format output", slog.Any("error", err))
 			return ExitError
@@ -307,11 +307,11 @@ func (a *App) processFullReport(resultsChan <-chan analyzer.FileResult, opts *ou
 		invocation.EndTime = time.Now()
 		invocation.Successful = totalFailed == 0
 
-		sarifFormatter, _ := output.GetFormatter("sarif", output.FormatterOptions{
+		sarifFormatter := &output.SARIFFormatter{
 			IncludePassed:  opts.includePassed,
 			IncludeSkipped: opts.includeSkipped,
 			Invocation:     invocation,
-		})
+		}
 		f, err := os.Create(opts.sarifOutput)
 		if err != nil {
 			a.logger.Error("failed to create SARIF file", slog.String("path", opts.sarifOutput), slog.Any("error", err))
@@ -333,7 +333,7 @@ func (a *App) processFullReport(resultsChan <-chan analyzer.FileResult, opts *ou
 
 func (a *App) processStreaming(resultsChan <-chan analyzer.FileResult, opts *outputOptions) int {
 	var totalFailed int
-	textFormatter, _ := output.GetFormatter("text", output.FormatterOptions{IncludePassed: opts.includePassed, IncludeSkipped: opts.includeSkipped})
+	textFormatter := &output.TextFormatter{IncludePassed: opts.includePassed, IncludeSkipped: opts.includeSkipped}
 
 	for res := range resultsChan {
 		if res.Skipped {
