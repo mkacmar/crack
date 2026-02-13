@@ -1,25 +1,16 @@
 package analyzer
 
 import (
-	"context"
-
 	"github.com/mkacmar/crack/binary"
 	"github.com/mkacmar/crack/rule"
-	"github.com/mkacmar/crack/toolchain"
 )
 
-// FindingWithSuggestion extends rule.Finding with a fix suggestion.
-type FindingWithSuggestion struct {
-	rule.Finding
-	Suggestion string
-}
-
+// FileResult contains analysis results for a single file (or arch slice for fat binaries).
 type FileResult struct {
 	Path     string
-	Format   binary.Format
-	Build    toolchain.BuildInfo
+	Info     binary.Info
 	SHA256   string
-	Findings []FindingWithSuggestion
+	Findings []rule.Finding
 	Error    error
 	Skipped  bool
 }
@@ -46,8 +37,4 @@ func (r *FileResult) FailedRules() int {
 
 type Report struct {
 	Results []FileResult
-}
-
-type FileAnalyzer interface {
-	Analyze(ctx context.Context, path string) FileResult
 }

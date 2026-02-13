@@ -1,12 +1,44 @@
-package rules
+// Package suggestions provides presentation-layer decoration of findings with fix suggestions.
+package suggestions
 
 import (
 	"fmt"
 	"strings"
 
+	"github.com/mkacmar/crack/binary"
+	"github.com/mkacmar/crack/internal/rules"
 	"github.com/mkacmar/crack/rule"
 	"github.com/mkacmar/crack/toolchain"
 )
+
+// DecoratedFinding extends rule.Finding with a fix suggestion.
+type DecoratedFinding struct {
+	rule.Finding
+	Suggestion string
+}
+
+// Decorate enriches findings with suggestions based on rule applicability and build info.
+// Only failed findings get suggestions.
+func Decorate(findings []rule.Finding, info binary.Info) []DecoratedFinding {
+	result := make([]DecoratedFinding, len(findings))
+
+	for i, f := range findings {
+		result[i] = DecoratedFinding{Finding: f}
+
+		if f.Status != rule.StatusFailed {
+			continue
+		}
+
+		r, ok := rules.Find[rule.Rule](rules.ByID(f.RuleID))
+		if !ok {
+			continue
+		}
+
+		result[i].Suggestion = buildSuggestion(info.Build, r.Applicability())
+	}
+
+	return result
+}
 
 func buildSuggestion(build toolchain.BuildInfo, applicability rule.Applicability) string {
 	if build.Compiler == toolchain.Unknown {

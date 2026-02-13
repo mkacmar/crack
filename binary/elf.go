@@ -36,7 +36,7 @@ type DynEntry struct {
 
 // ELFBinary represents a parsed ELF executable or shared library.
 type ELFBinary struct {
-	Binary
+	Info
 
 	file *elf.File
 
@@ -72,7 +72,7 @@ func ParseELFWithDetector(r io.ReaderAt, detector toolchain.ELFDetector) (*ELFBi
 	}
 
 	bin := &ELFBinary{
-		Binary: Binary{
+		Info: Info{
 			Format: FormatELF,
 		},
 		file: f,

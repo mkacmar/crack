@@ -4,6 +4,7 @@ import (
 	"context"
 	"crypto/sha256"
 	"encoding/hex"
+	"errors"
 	"fmt"
 	"io"
 	"io/fs"
@@ -17,9 +18,9 @@ import (
 )
 
 type Scanner struct {
-	analyzer analyzer.FileAnalyzer
-	logger   *slog.Logger
-	workers  int
+	dispatcher *analyzer.Dispatcher
+	logger     *slog.Logger
+	workers    int
 }
 
 type Options struct {
@@ -27,11 +28,11 @@ type Options struct {
 	Workers int
 }
 
-func NewScanner(fileAnalyzer analyzer.FileAnalyzer, opts Options) *Scanner {
+func NewScanner(dispatcher *analyzer.Dispatcher, opts Options) *Scanner {
 	return &Scanner{
-		analyzer: fileAnalyzer,
-		logger:   opts.Logger.With(slog.String("component", "scanner")),
-		workers:  opts.Workers,
+		dispatcher: dispatcher,
+		logger:     opts.Logger.With(slog.String("component", "scanner")),
+		workers:    opts.Workers,
 	}
 }
 
@@ -71,11 +72,13 @@ func (s *Scanner) scanFilesParallel(ctx context.Context, files []string) <-chan 
 				if ctx.Err() != nil {
 					return ctx.Err()
 				}
-				res := s.scanFile(ctx, path)
-				select {
-				case results <- res:
-				case <-ctx.Done():
-					return ctx.Err()
+				fileResults := s.scanFile(ctx, path)
+				for _, res := range fileResults {
+					select {
+					case results <- res:
+					case <-ctx.Done():
+						return ctx.Err()
+					}
 				}
 				return nil
 			})
@@ -88,18 +91,43 @@ func (s *Scanner) scanFilesParallel(ctx context.Context, files []string) <-chan 
 	return results
 }
 
-func (s *Scanner) scanFile(ctx context.Context, path string) analyzer.FileResult {
+// scanFile returns a slice of FileResult to support future fat/universal binaries.
+func (s *Scanner) scanFile(ctx context.Context, path string) []analyzer.FileResult {
 	s.logger.Debug("scanning file", slog.String("path", path))
 
-	res := s.analyzer.Analyze(ctx, path)
+	f, err := os.Open(path)
+	if err != nil {
+		s.logger.Warn("failed to open file", slog.String("path", path), slog.Any("error", err))
+		return []analyzer.FileResult{{Path: path, Error: err}}
+	}
+	defer f.Close()
+
+	results, err := s.dispatcher.Analyze(ctx, f)
+	if err != nil {
+		if errors.Is(err, analyzer.ErrUnrecognizedFormat) {
+			s.logger.Debug("skipping unsupported format", slog.String("path", path))
+			return []analyzer.FileResult{{Path: path, Skipped: true}}
+		}
+		s.logger.Warn("failed to analyze file", slog.String("path", path), slog.Any("error", err))
+		return []analyzer.FileResult{{Path: path, Error: err}}
+	}
 
 	hash, err := computeSHA256(path)
 	if err != nil {
 		s.logger.Warn("failed to compute SHA256", slog.String("path", path), slog.Any("error", err))
 	}
-	res.SHA256 = hash
 
-	return res
+	// Assemble FileResults from AnalysisResults
+	fileResults := make([]analyzer.FileResult, len(results))
+	for i, r := range results {
+		fileResults[i] = analyzer.FileResult{
+			Path:     path,
+			Info:     r.Info,
+			SHA256:   hash,
+			Findings: r.Findings,
+		}
+	}
+	return fileResults
 }
 
 func (s *Scanner) collectFiles(path string, recursive bool) ([]string, error) {

@@ -5,7 +5,7 @@ import (
 	"github.com/mkacmar/crack/rule/elf"
 )
 
-var registry = []rule.ELFRule{
+var registry = []rule.Rule{
 	elf.PIERule{},
 	elf.NXBitRule{},
 	elf.RELRORule{},
@@ -33,17 +33,42 @@ var registry = []rule.ELFRule{
 	elf.ARMMTERule{},
 }
 
-func All() []rule.ELFRule {
-	result := make([]rule.ELFRule, len(registry))
+// All returns all registered rules.
+func All() []rule.Rule {
+	result := make([]rule.Rule, len(registry))
 	copy(result, registry)
 	return result
 }
 
-func Get(id string) rule.ELFRule {
+// Where returns rules of type T matching the predicate.
+// If predicate is nil, returns all rules of type T.
+func Where[T rule.Rule](predicate func(rule.Rule) bool) []T {
+	var result []T
 	for _, r := range registry {
-		if r.ID() == id {
-			return r
+		if typed, ok := r.(T); ok {
+			if predicate == nil || predicate(r) {
+				result = append(result, typed)
+			}
 		}
 	}
-	return nil
+	return result
+}
+
+// Find returns the first rule of type T matching the predicate.
+// If predicate is nil, returns the first rule of type T.
+func Find[T rule.Rule](predicate func(rule.Rule) bool) (T, bool) {
+	var zero T
+	for _, r := range registry {
+		if typed, ok := r.(T); ok {
+			if predicate == nil || predicate(r) {
+				return typed, true
+			}
+		}
+	}
+	return zero, false
+}
+
+// ByID returns a predicate matching rules by ID.
+func ByID(id string) func(rule.Rule) bool {
+	return func(r rule.Rule) bool { return r.ID() == id }
 }

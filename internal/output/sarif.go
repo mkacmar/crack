@@ -8,7 +8,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/mkacmar/crack/internal/analyzer"
+	"github.com/mkacmar/crack/internal/suggestions"
 	"github.com/mkacmar/crack/internal/version"
 	"github.com/mkacmar/crack/rule"
 )
@@ -109,7 +109,7 @@ type SARIFFormatter struct {
 	Invocation     *InvocationInfo
 }
 
-func (f *SARIFFormatter) Format(report *analyzer.Report, w io.Writer) error {
+func (f *SARIFFormatter) Format(report *DecoratedReport, w io.Writer) error {
 	output := f.convertToSARIF(report)
 
 	encoder := json.NewEncoder(w)
@@ -118,7 +118,7 @@ func (f *SARIFFormatter) Format(report *analyzer.Report, w io.Writer) error {
 	return encoder.Encode(output)
 }
 
-func (f *SARIFFormatter) convertToSARIF(report *analyzer.Report) SARIFReport {
+func (f *SARIFFormatter) convertToSARIF(report *DecoratedReport) SARIFReport {
 	rules, ruleIndex := f.buildRules(report)
 	artifacts, artifactIndex := f.buildArtifacts(report)
 	results, notifications := f.buildResults(report, ruleIndex, artifactIndex)
@@ -147,8 +147,8 @@ func (f *SARIFFormatter) convertToSARIF(report *analyzer.Report) SARIFReport {
 	}
 }
 
-func (f *SARIFFormatter) buildRules(report *analyzer.Report) ([]SARIFRule, map[string]int) {
-	ruleMap := make(map[string]analyzer.FindingWithSuggestion)
+func (f *SARIFFormatter) buildRules(report *DecoratedReport) ([]SARIFRule, map[string]int) {
+	ruleMap := make(map[string]suggestions.DecoratedFinding)
 	for _, res := range report.Results {
 		for _, finding := range res.Findings {
 			if _, exists := ruleMap[finding.RuleID]; !exists {
@@ -185,7 +185,7 @@ func (f *SARIFFormatter) buildRules(report *analyzer.Report) ([]SARIFRule, map[s
 	return rules, ruleIndex
 }
 
-func (f *SARIFFormatter) buildResults(report *analyzer.Report, ruleIndex, artifactIndex map[string]int) ([]SARIFResult, []SARIFNotification) {
+func (f *SARIFFormatter) buildResults(report *DecoratedReport, ruleIndex, artifactIndex map[string]int) ([]SARIFResult, []SARIFNotification) {
 	sarifResults := make([]SARIFResult, 0)
 	notifications := make([]SARIFNotification, 0)
 
@@ -250,7 +250,7 @@ func (f *SARIFFormatter) buildResults(report *analyzer.Report, ruleIndex, artifa
 	return sarifResults, notifications
 }
 
-func (f *SARIFFormatter) buildArtifacts(report *analyzer.Report) ([]SARIFArtifact, map[string]int) {
+func (f *SARIFFormatter) buildArtifacts(report *DecoratedReport) ([]SARIFArtifact, map[string]int) {
 	artifactHashes := make(map[string]string)
 	for _, res := range report.Results {
 		fileURI := toFileURI(res.Path)

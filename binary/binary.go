@@ -59,8 +59,8 @@ func (l LibC) String() string {
 	}
 }
 
-// Binary holds common metadata for any executable format.
-type Binary struct {
+// Info holds common metadata for any executable format.
+type Info struct {
 	Format       Format
 	Architecture Architecture
 	Bits         BitWidth

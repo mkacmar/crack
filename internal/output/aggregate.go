@@ -6,7 +6,7 @@ import (
 	"slices"
 	"strings"
 
-	"github.com/mkacmar/crack/internal/analyzer"
+	"github.com/mkacmar/crack/internal/suggestions"
 	"github.com/mkacmar/crack/rule"
 	"github.com/mkacmar/crack/toolchain"
 )
@@ -24,7 +24,7 @@ func NewAggregatedReport() *AggregatedReport {
 	}
 }
 
-func AggregateFindings(report *analyzer.Report, rules []rule.ELFRule) *AggregatedReport {
+func AggregateFindings(report *DecoratedReport, rules []rule.ELFRule) *AggregatedReport {
 	agg := NewAggregatedReport()
 
 	rulesMap := make(map[string]rule.ELFRule, len(rules))
@@ -40,12 +40,12 @@ func AggregateFindings(report *analyzer.Report, rules []rule.ELFRule) *Aggregate
 	return agg
 }
 
-func processResult(agg *AggregatedReport, result analyzer.FileResult, rules map[string]rule.ELFRule) {
+func processResult(agg *AggregatedReport, result DecoratedFileResult, rules map[string]rule.ELFRule) {
 	if result.Error != nil {
 		return
 	}
 
-	var failedFindings []analyzer.FindingWithSuggestion
+	var failedFindings []suggestions.DecoratedFinding
 	allPassed := true
 
 	for _, f := range result.Findings {
@@ -61,11 +61,11 @@ func processResult(agg *AggregatedReport, result analyzer.FileResult, rules map[
 	}
 
 	for _, f := range failedFindings {
-		processFailedFinding(agg, f, result.Path, result.Build.Compiler, rules)
+		processFailedFinding(agg, f, result.Path, result.Info.Build.Compiler, rules)
 	}
 }
 
-func processFailedFinding(agg *AggregatedReport, f analyzer.FindingWithSuggestion, path string, detectedCompiler toolchain.Compiler, rules map[string]rule.ELFRule) {
+func processFailedFinding(agg *AggregatedReport, f suggestions.DecoratedFinding, path string, detectedCompiler toolchain.Compiler, rules map[string]rule.ELFRule) {
 	r := rules[f.RuleID]
 	if r == nil {
 		return

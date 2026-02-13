@@ -86,7 +86,6 @@ Import the relevant packages:
 
 ```go
 import (
-    "github.com/mkacmar/crack/analyzer"
     "github.com/mkacmar/crack/binary"
     "github.com/mkacmar/crack/rule"
     "github.com/mkacmar/crack/rule/elf"
@@ -114,7 +113,7 @@ The `ELFBinary` struct provides access to ELF metadata (see [`debug/elf`](https:
 - `HasDynTag()`, `HasDynFlag()`, `DynString()` - query [dynamic section tags](https://man7.org/linux/man-pages/man5/elf.5.html) (`DT_*`)
 - `HasGNUProperty()` - check [GNU program properties](https://docs.kernel.org/userspace-api/ELF.html) for features like CET, BTI
 
-Create an analyzer with the rules you want to run (see [rules reference](https://github.com/mkacmar/crack/wiki/Rules) for available rules):
+Run rules against the parsed binary (see [rules reference](https://github.com/mkacmar/crack/wiki/Rules) for available rules):
 
 ```go
 rules := []rule.ELFRule{
@@ -123,20 +122,12 @@ rules := []rule.ELFRule{
     elf.FullRELRORule{},
 }
 
-a := analyzer.NewAnalyzer(rules, opts)
-
-findings := a.Analyze(bin)
-for _, f := range findings {
-    fmt.Printf("%s: %s - %s\n", f.RuleID, f.Status, f.Message)
-}
+findings := rule.Check(rules, bin.Info, func(r rule.ELFRule) rule.Result {
+    return r.Execute(bin)
+})
 ```
 
-The `Options` struct controls which findings are returned:
-
-- `IncludePassed` - include rules that passed
-- `IncludeSkipped` - include rules that were skipped
-
-By default, only failed rules are returned. Pass `nil` for options to use defaults.
+All rules are checked by default - passed, failed, and skipped findings are all included in results.
 
 ### Applicability
 
@@ -156,11 +147,11 @@ rule.Applicability{
 
 If your binaries are built with an internal compiler, register it via a custom detector so rules can determine whether they apply.
 
-Use `analyzer.CheckApplicability()` to manually check if a rule applies:
+Use `rule.CheckApplicability()` to manually check if a rule applies:
 
 ```go
-result := analyzer.CheckApplicability(myRule.Applicability(), bin)
-if result == analyzer.Applicable {
+result := rule.CheckApplicability(myRule.Applicability(), bin.Info)
+if result == rule.Applicable {
 	// ...
 }
 ```

@@ -13,12 +13,12 @@ import (
 	"time"
 
 	"github.com/mkacmar/crack/internal/analyzer"
-	elfanalyzer "github.com/mkacmar/crack/internal/analyzer/elf"
 	"github.com/mkacmar/crack/internal/debuginfo"
 	"github.com/mkacmar/crack/internal/output"
 	"github.com/mkacmar/crack/internal/preset"
 	"github.com/mkacmar/crack/internal/rules"
 	"github.com/mkacmar/crack/internal/scanner"
+	"github.com/mkacmar/crack/internal/suggestions"
 	"github.com/mkacmar/crack/rule"
 )
 
@@ -95,8 +95,8 @@ func parseRules(rulesFlag, targetPlatform, targetCompiler string) ([]rule.ELFRul
 		ids := strings.Split(rulesFlag, ",")
 		for _, id := range ids {
 			id = strings.TrimSpace(id)
-			r := rules.Get(id)
-			if r == nil {
+			r, ok := rules.Find[rule.ELFRule](rules.ByID(id))
+			if !ok {
 				return nil, fmt.Errorf("unknown rule %q", id)
 			}
 			selectedRules = append(selectedRules, r)
@@ -183,13 +183,18 @@ func (a *App) runAnalyze(prog string, args []string) int {
 		return ExitError
 	}
 
-	elfAnalyzer := elfanalyzer.NewAnalyzer(elfanalyzer.Options{
+	elfAnalyzer := analyzer.NewELFAnalyzer(analyzer.ELFAnalyzerOptions{
 		Rules:            selectedRules,
 		DebuginfodClient: debuginfodClient,
 		Logger:           a.logger,
 	})
 
-	scan := scanner.NewScanner(elfAnalyzer, scanner.Options{
+	dispatcher := analyzer.NewDispatcher(analyzer.DispatcherOptions{
+		ELF:    elfAnalyzer,
+		Logger: a.logger,
+	})
+
+	scan := scanner.NewScanner(dispatcher, scanner.Options{
 		Logger:  a.logger,
 		Workers: cfg.parallel,
 	})
@@ -279,7 +284,8 @@ func (a *App) processFullReport(resultsChan <-chan analyzer.FileResult, opts *ou
 		totalFailed += res.FailedRules()
 	}
 
-	report := &analyzer.Report{Results: results}
+	// Decorate findings with suggestions
+	report := decorateReport(results)
 
 	if opts.aggregate {
 		agg := output.AggregateFindings(report, rules)
@@ -329,8 +335,8 @@ func (a *App) processStreaming(resultsChan <-chan analyzer.FileResult, opts *out
 			continue
 		}
 		totalFailed += res.FailedRules()
-		singleReport := &analyzer.Report{Results: []analyzer.FileResult{res}}
-		if err := textFormatter.Format(singleReport, os.Stdout); err != nil {
+		report := decorateReport([]analyzer.FileResult{res})
+		if err := textFormatter.Format(report, os.Stdout); err != nil {
 			a.logger.Error("failed to format output", slog.Any("error", err))
 		}
 	}
@@ -339,4 +345,15 @@ func (a *App) processStreaming(resultsChan <-chan analyzer.FileResult, opts *out
 		return ExitFindings
 	}
 	return ExitSuccess
+}
+
+func decorateReport(results []analyzer.FileResult) *output.DecoratedReport {
+	decorated := make([]output.DecoratedFileResult, len(results))
+	for i, res := range results {
+		decorated[i] = output.DecoratedFileResult{
+			FileResult: res,
+			Findings:   suggestions.Decorate(res.Findings, res.Info),
+		}
+	}
+	return &output.DecoratedReport{Results: decorated}
 }
