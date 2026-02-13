@@ -61,4 +61,5 @@ install-tools:
 	go install honnef.co/go/tools/cmd/staticcheck@latest
 
 doc:
-	go run ./internal/tools/doc
+	@mkdir -p docs
+	go run ./internal/tools/doc > docs/rules.md

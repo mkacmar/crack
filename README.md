@@ -34,7 +34,7 @@ crack analyze [options] [<path>...]
 
 ### Rule Selection
 
-See [rules reference](https://github.com/mkacmar/crack/wiki/Rules) for available rules.
+See [rules reference](docs/rules.md) for available rules.
 
 - `--rules <ids>` - Comma-separated list of rule IDs to run
 - `--target-compiler <spec>` - Only run rules available for these compilers (e.g., `gcc`, `clang:15`)
@@ -113,7 +113,7 @@ The `ELFBinary` struct provides access to ELF metadata (see [`debug/elf`](https:
 - `HasDynTag()`, `HasDynFlag()`, `DynString()` - query [dynamic section tags](https://man7.org/linux/man-pages/man5/elf.5.html) (`DT_*`)
 - `HasGNUProperty()` - check [GNU program properties](https://docs.kernel.org/userspace-api/ELF.html) for features like CET, BTI
 
-Run rules against the parsed binary (see [rules reference](https://github.com/mkacmar/crack/wiki/Rules) for available rules):
+Run rules against the parsed binary (see [rules reference](docs/rules.md) for available rules):
 
 ```go
 rules := []rule.ELFRule{
