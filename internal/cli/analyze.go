@@ -175,10 +175,12 @@ func (a *App) runAnalyze(prog string, args []string) int {
 		return ExitError
 	}
 
-	if err := a.setupLogging(cfg.logFile, cfg.logLevel); err != nil {
+	closeLog, err := a.setupLogging(cfg.logFile, cfg.logLevel)
+	if err != nil {
 		fmt.Fprintf(os.Stderr, "Error: %v\n", err)
 		return ExitError
 	}
+	defer closeLog()
 
 	debuginfodClient, err := a.setupDebuginfod(cfg)
 	if err != nil {
@@ -250,17 +252,19 @@ func (a *App) setupAnalyzeFlags(prog string) (*flag.FlagSet, *outputOptions, *an
 	return fs, opts, cfg
 }
 
-func (a *App) setupLogging(logFile, logLevel string) error {
+func (a *App) setupLogging(logFile, logLevel string) (func(), error) {
 	var logOutput io.Writer = os.Stderr
+	cleanup := func() {}
 	if logFile != "" {
 		f, err := os.Create(logFile)
 		if err != nil {
-			return fmt.Errorf("failed to open log file: %w", err)
+			return nil, fmt.Errorf("failed to open log file: %w", err)
 		}
 		logOutput = f
+		cleanup = func() { f.Close() }
 	}
 	a.logger = setupLogger(logLevel, logOutput)
-	return nil
+	return cleanup, nil
 }
 
 func (a *App) setupDebuginfod(cfg *analyzeConfig) (*debuginfo.Client, error) {
