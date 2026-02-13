@@ -139,7 +139,7 @@ func (b *ELFBinary) HasDynTag(tag elf.DynTag) bool {
 	return false
 }
 
-// DynString returns the string value associated with a dynamic tag.
+// DynString returns the string value associated with the first occurrence of a dynamic tag.
 func (b *ELFBinary) DynString(tag elf.DynTag) string {
 	dynstr := b.file.Section(".dynstr")
 	if dynstr == nil {
