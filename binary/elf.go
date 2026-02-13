@@ -156,11 +156,12 @@ func (b *ELFBinary) DynString(tag elf.DynTag) string {
 			if int(entry.Val) >= len(strtab) {
 				return ""
 			}
-			end := int(entry.Val)
+			start := int(entry.Val)
+			end := start
 			for end < len(strtab) && strtab[end] != 0 {
 				end++
 			}
-			return string(strtab[entry.Val:end])
+			return string(strtab[start:end])
 		}
 	}
 	return ""
