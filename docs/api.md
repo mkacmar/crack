@@ -1,95 +1,24 @@
 # Programmatic Usage
 
-The public packages can be used as a library to integrate binary analysis into your own tools, write custom rules, or build an alternative frontend.
-
-Import the relevant packages:
+The public packages — [`binary`](https://pkg.go.dev/github.com/mkacmar/crack/binary), [`rule`](https://pkg.go.dev/github.com/mkacmar/crack/rule), [`rule/elf`](https://pkg.go.dev/github.com/mkacmar/crack/rule/elf), and [`toolchain`](https://pkg.go.dev/github.com/mkacmar/crack/toolchain) — can be used as a library. The standard workflow is to parse a binary, run rules, and inspect the findings:
 
 ```go
-import (
-    "github.com/mkacmar/crack/binary"
-    "github.com/mkacmar/crack/rule"
-    "github.com/mkacmar/crack/rule/elf"
-    "github.com/mkacmar/crack/toolchain"
-)
-```
+bin, _ := binary.ParseELF(f)
 
-Parse a binary using `binary.ParseELF`:
-
-```go
-f, err := os.Open("/usr/bin/ls")
-if err != nil {
-    log.Fatal(err)
-}
-defer f.Close()
-
-bin, err := binary.ParseELF(f)
-if err != nil {
-    log.Fatal(err)
-}
-```
-
-The `ELFBinary` struct provides access to ELF metadata (see [`debug/elf`](https://pkg.go.dev/debug/elf) for types), symbol tables, and detected toolchain info. Helper methods simplify common checks:
-
-- `HasDynTag()`, `HasDynFlag()`, `DynString()` - query [dynamic section tags](https://man7.org/linux/man-pages/man5/elf.5.html) (`DT_*`)
-- `HasGNUProperty()` - check [GNU program properties](https://docs.kernel.org/userspace-api/ELF.html) for features like CET, BTI
-
-Run rules against the parsed binary (see [rules reference](rules.md) for available rules):
-
-```go
-rules := []rule.ELFRule{
-    elf.PIERule{},
-    elf.StackCanaryRule{},
-    elf.FullRELRORule{},
-}
+rules := []rule.ELFRule{elf.PIERule{}, elf.StackCanaryRule{}, elf.FullRELRORule{}}
 
 findings := rule.Check(rules, bin.Info, func(r rule.ELFRule) rule.Result {
     return r.Execute(bin)
 })
 ```
 
-All rules are checked by default - passed, failed, and skipped findings are all included in results.
+[`Check`](https://pkg.go.dev/github.com/mkacmar/crack/rule#Check) handles applicability automatically — rules that don't match the binary's platform or compiler are skipped. See the [rules reference](rules.md) for available built-in rules.
 
-## Applicability
-
-Each rule declares its applicability - which platforms and compilers it supports. For example, a rule might require GCC 10+ or only apply to ARM64 architecture. When analyzing a binary, rules that don't apply are automatically skipped.
-
-Rules specify a `MinVersion` - the minimum compiler version required for the feature. The `Platform` field specifies which architectures the rule applies to. For example, the ARM PAC rule:
-
-```go
-rule.Applicability{
-    Platform: binary.PlatformARM64v83,
-    Compilers: map[toolchain.Compiler]rule.CompilerRequirement{
-        toolchain.GCC:   {MinVersion: toolchain.Version{Major: 10, Minor: 1}, Flag: "-mbranch-protection=pac-ret"},
-        toolchain.Clang: {MinVersion: toolchain.Version{Major: 12}, Flag: "-mbranch-protection=pac-ret"},
-    },
-}
-```
-
-If your binaries are built with an internal compiler, register it via a custom detector so rules can determine whether they apply.
-
-Use `rule.CheckApplicability()` to manually check if a rule applies:
-
-```go
-result := rule.CheckApplicability(myRule.Applicability(), bin.Info)
-if result == rule.Applicable {
-	// ...
-}
-```
-
-Use `rule.FilterRules()` to pre-filter rules based on your target environment. The filter uses `MaxVersion` to exclude rules that require a newer compiler than you have:
-
-```go
-filter := &rule.TargetFilter{
-    Compilers: []rule.CompilerTarget{
-        {Compiler: toolchain.GCC, MaxVersion: &toolchain.Version{Major: 12}},
-    },
-}
-filtered := rule.FilterRules(rules, filter)
-```
+For filtering, applicability checks, and other utilities, see the [package documentation](https://pkg.go.dev/github.com/mkacmar/crack).
 
 ## Custom Rules
 
-To create a custom rule, implement the `rule.ELFRule` interface. For example, a rule that checks for a minimum stack size:
+To create a custom rule, implement the [`ELFRule`](https://pkg.go.dev/github.com/mkacmar/crack/rule#ELFRule) interface. For example, a rule that checks for a minimum stack size:
 
 ```go
 type MinStackSizeRule struct {
@@ -118,7 +47,7 @@ func (r MinStackSizeRule) Execute(bin *binary.ELFBinary) rule.Result {
 
 ## Custom Compiler Detection
 
-To detect custom compilers, implement `toolchain.ELFDetector` and pass it to `binary.ParseELFWithDetector()`. This enables applicability checks for binaries built with internal or proprietary compilers:
+To detect custom compilers, implement [`ELFDetector`](https://pkg.go.dev/github.com/mkacmar/crack/toolchain#ELFDetector) and pass it to [`ParseELFWithDetector()`](https://pkg.go.dev/github.com/mkacmar/crack/binary#ParseELFWithDetector). This enables applicability checks for binaries built with internal or proprietary compilers:
 
 ```go
 // AcmeDetector detects Acme Corp's internal compiler, falling back to standard detection.
