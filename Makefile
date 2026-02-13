@@ -28,21 +28,22 @@ build-release: lint test
 	@cd $(DIST_DIR) && sha256sum *
 
 test:
-	go test -v ./...
+	go test -race -v ./...
 
 test-unit:
-	go test -v ./internal/...
+	go test -v $$(go list ./... | grep -v /test/)
 
 test-e2e: build
 	go test -v ./test/e2e/...
 
 test-e2e-coverage:
+	@rm -rf $(COVERAGE_DIR)/raw
 	@mkdir -p $(COVERAGE_DIR)/raw
 	go build -cover -ldflags "$(LDFLAGS)" -o $(BINARY) $(ENTRYPOINT)
 	GOCOVERDIR=$(shell pwd)/$(COVERAGE_DIR)/raw go test -v ./test/e2e/...
 	go tool covdata textfmt -i=$(COVERAGE_DIR)/raw -o=$(COVERAGE_DIR)/e2e.out
 	go tool cover -html=$(COVERAGE_DIR)/e2e.out -o $(COVERAGE_DIR)/e2e.html
-	xdg-open $(COVERAGE_DIR)/e2e.html
+	@echo "Coverage report: $(COVERAGE_DIR)/e2e.html"
 
 clean:
 	rm -f $(BINARY)
