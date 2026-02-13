@@ -94,7 +94,7 @@ func (i ISA) String() string {
 func ParseISA(s string) (ISA, error) {
 	s = strings.TrimPrefix(s, "v")
 	parts := strings.Split(s, ".")
-	if len(parts) == 0 || len(parts) > 2 {
+	if len(parts) > 2 {
 		return ISA{}, fmt.Errorf("invalid ISA format: %s", s)
 	}
 
