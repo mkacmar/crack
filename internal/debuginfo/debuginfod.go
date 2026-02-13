@@ -20,10 +20,10 @@ import (
 )
 
 const (
-	DefaultServerURL     = "https://debuginfod.elfutils.org"
-	DefaultTimeout       = 30 * time.Second
-	DefaultRetries       = 3
-	DefaultMaxFileSize   = 2 * 1024 * 1024 * 1024 // 2GB
+	DefaultServerURL   = "https://debuginfod.elfutils.org"
+	DefaultTimeout     = 30 * time.Second
+	DefaultRetries     = 3
+	DefaultMaxFileSize = 2 * 1024 * 1024 * 1024 // 2GB
 )
 
 type nonRetryableError struct{ err error }
@@ -59,16 +59,16 @@ type Client struct {
 	maxRetries  int
 	maxFileSize int64
 	logger      *slog.Logger
-	inflight    singleflight.Group
+	downloads   singleflight.Group
 }
 
 type Options struct {
-	ServerURLs      []string
-	CacheDir        string
-	Timeout         time.Duration
-	MaxRetries      int
-	MaxFileSize     int64
-	Logger          *slog.Logger
+	ServerURLs  []string
+	CacheDir    string
+	Timeout     time.Duration
+	MaxRetries  int
+	MaxFileSize int64
+	Logger      *slog.Logger
 }
 
 func NewClient(opts Options) (*Client, error) {
@@ -121,7 +121,7 @@ func (c *Client) FetchDebugInfo(ctx context.Context, buildID string) (string, er
 		return "", fmt.Errorf("build-id is empty")
 	}
 
-	result, err, _ := c.inflight.Do(buildID, func() (interface{}, error) {
+	result, err, _ := c.downloads.Do(buildID, func() (interface{}, error) {
 		return c.fetchDebugInfo(ctx, buildID)
 	})
 	if err != nil {
