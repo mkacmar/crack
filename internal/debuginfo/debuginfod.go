@@ -185,12 +185,8 @@ func (c *Client) calculateBackoff(attempt int) time.Duration {
 	// Base delay: 1s, 2s, 4s... (exponential)
 	baseDelay := time.Duration(1<<uint(attempt-1)) * time.Second
 
-	// Add jitter: +-25% of base delay
-	jitter := time.Duration(rand.Int64N(int64(baseDelay / 2)))
-	if rand.IntN(2) == 0 {
-		return baseDelay + jitter
-	}
-	return baseDelay - jitter/2
+	// Randomize between 100% and 200% of base delay
+	return baseDelay + time.Duration(rand.Int64N(int64(baseDelay)))
 }
 
 func (c *Client) fetchFromServer(ctx context.Context, serverURL, buildID, destPath string) (string, error) {
