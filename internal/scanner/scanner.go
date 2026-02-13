@@ -50,10 +50,10 @@ func (s *Scanner) ScanPaths(ctx context.Context, paths []string, recursive bool)
 
 	s.logger.Debug("collected files to scan", slog.Int("count", len(filesToScan)))
 
-	return s.scanFilesParallel(ctx, filesToScan)
+	return s.scanFiles(ctx, filesToScan)
 }
 
-func (s *Scanner) scanFilesParallel(ctx context.Context, files []string) <-chan analyzer.FileResult {
+func (s *Scanner) scanFiles(ctx context.Context, files []string) <-chan analyzer.FileResult {
 	results := make(chan analyzer.FileResult)
 
 	if len(files) == 0 {
@@ -112,7 +112,7 @@ func (s *Scanner) scanFile(ctx context.Context, path string) []analyzer.FileResu
 		return []analyzer.FileResult{{Path: path, Error: err}}
 	}
 
-	hash, err := computeSHA256(path)
+	hash, err := hashFile(f)
 	if err != nil {
 		s.logger.Warn("failed to compute SHA256", slog.String("path", path), slog.Any("error", err))
 	}
@@ -171,17 +171,13 @@ func (s *Scanner) collectFiles(path string, recursive bool) ([]string, error) {
 	return files, nil
 }
 
-func computeSHA256(path string) (string, error) {
-	f, err := os.Open(path)
-	if err != nil {
+func hashFile(f *os.File) (string, error) {
+	if _, err := f.Seek(0, io.SeekStart); err != nil {
 		return "", err
 	}
-	defer f.Close()
-
 	h := sha256.New()
 	if _, err := io.Copy(h, f); err != nil {
 		return "", err
 	}
-
 	return hex.EncodeToString(h.Sum(nil)), nil
 }
