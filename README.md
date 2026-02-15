@@ -71,6 +71,12 @@ Fetch debug symbols from [debuginfod](https://sourceware.org/elfutils/Debuginfod
 - `--debuginfod-retries <n>` - Max retries per server
 - `--debuginfod-max-size <bytes>` - Max debug file size per download
 
+### Profiling
+
+Debug builds (`make build`) include `--cpuprofile` and `--memprofile` flags for the `analyze` command. These flags are not available in release binaries.
+
+If you experience performance issues, please build from source with `make build` and attach CPU/memory profiles to your issue. Profiles are written in [pprof](https://github.com/google/pprof) format and can be analyzed with `go tool pprof <file>`.
+
 ### Exit Codes
 
 - `0` - Success (no findings, or `--exit-zero` specified)

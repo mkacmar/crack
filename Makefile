@@ -14,7 +14,7 @@ LDFLAGS = -X github.com/mkacmar/crack/internal/version.Version=$(VERSION) \
 RELEASE_LDFLAGS = -s -w $(LDFLAGS)
 
 build:
-	go build -ldflags "$(LDFLAGS)" -o $(BINARY) $(ENTRYPOINT)
+	go build -tags debug -ldflags "$(LDFLAGS)" -o $(BINARY) $(ENTRYPOINT)
 
 build-release: lint test
 	@mkdir -p $(DIST_DIR)

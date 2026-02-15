@@ -46,6 +46,7 @@ type analyzeConfig struct {
 	debuginfodTimeout time.Duration
 	debuginfodRetries int
 	debuginfodMaxSize int64
+	profile           profileConfig
 }
 
 func (a *App) printAnalyzeUsage(prog string) {
@@ -92,6 +93,10 @@ Logging options:
       --debuginfod-servers string   Comma-separated debuginfod server URLs (default %q)
       --debuginfod-timeout duration Debuginfod HTTP timeout (default %v)
 `, defaultCacheDir, debuginfo.DefaultMaxFileSize, debuginfo.DefaultRetries, debuginfo.DefaultServerURL, debuginfo.DefaultTimeout)
+
+	if usage := profileUsage(); usage != "" {
+		fmt.Fprint(os.Stderr, usage)
+	}
 }
 
 func parseRules(rulesFlag, targetPlatform, targetCompiler string) ([]rule.ELFRule, error) {
@@ -154,6 +159,15 @@ func (a *App) runAnalyze(prog string, args []string) int {
 	fs, opts, cfg := a.setupAnalyzeFlags(prog)
 	if err := fs.Parse(args); err != nil {
 		return ExitError
+	}
+
+	stopProfile, err := startProfiling(&cfg.profile)
+	if err != nil {
+		fmt.Fprintf(os.Stderr, "Error: %v\n", err)
+		return ExitError
+	}
+	if stopProfile != nil {
+		defer stopProfile()
 	}
 
 	selectedRules, err := parseRules(cfg.rulesFlag, cfg.targetPlatform, cfg.targetCompiler)
@@ -248,6 +262,7 @@ func (a *App) setupAnalyzeFlags(prog string) (*flag.FlagSet, *outputOptions, *an
 	fs.DurationVar(&cfg.debuginfodTimeout, "debuginfod-timeout", debuginfo.DefaultTimeout, "")
 	fs.IntVar(&cfg.debuginfodRetries, "debuginfod-retries", debuginfo.DefaultRetries, "")
 	fs.Int64Var(&cfg.debuginfodMaxSize, "debuginfod-max-size", debuginfo.DefaultMaxFileSize, "")
+	registerProfileFlags(fs, &cfg.profile)
 
 	fs.Usage = func() { a.printAnalyzeUsage(prog) }
 
