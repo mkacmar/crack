@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
+	"regexp"
 	"slices"
 	"strings"
 	"time"
@@ -171,7 +172,7 @@ func (f *SARIFFormatter) buildRules(report *DecoratedReport) ([]SARIFRule, map[s
 		r := SARIFRule{
 			ID:      finding.RuleID,
 			Name:    finding.Name,
-			HelpUri: ruleHelpURL(finding.Name, finding.RuleID),
+			HelpUri: ruleHelpURL(finding.Name, version.Version),
 			DefaultConfiguration: SARIFConfiguration{
 				Level: "warning",
 			},
@@ -310,10 +311,16 @@ func toFileURI(path string) string {
 	return path
 }
 
-const wikiBaseURL = "https://github.com/mkacmar/crack/wiki/Rules"
+const repoBaseURL = "https://github.com/mkacmar/crack"
 
-func ruleHelpURL(name, id string) string {
+var semverTag = regexp.MustCompile(`^v\d+\.\d+\.\d+$`)
+
+func ruleHelpURL(name, ver string) string {
+	ref := "main"
+	if semverTag.MatchString(ver) {
+		ref = ver
+	}
 	slug := strings.ToLower(name)
 	slug = strings.ReplaceAll(slug, " ", "-")
-	return fmt.Sprintf("%s#%s-%s", wikiBaseURL, slug, id)
+	return fmt.Sprintf("%s/blob/%s/docs/rules.md#%s", repoBaseURL, ref, slug)
 }
