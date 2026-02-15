@@ -2,11 +2,11 @@
 set -ex
 
 ARCH=$1
-C_SRC=test/e2e/testdata/main.c
-RUST_SRC=test/e2e/testdata/main.rs
+C_SRC=test/e2e/elf/testdata/main.c
+RUST_SRC=test/e2e/elf/testdata/main.rs
 mkdir -p binaries
 
-. test/e2e/testdata/log-env.sh
+. test/e2e/elf/testdata/log-env.sh
 
 build_c() { $1 $2 -o binaries/${ARCH}-$1-$3 $C_SRC; }
 build_c_strip() { $1 $2 -o binaries/${ARCH}-$1-$3 $C_SRC && strip binaries/${ARCH}-$1-$3; }
@@ -25,7 +25,7 @@ build_c clang "-fPIE -pie -Wl,-z,execstack" execstack
 build_c clang "-static -fno-pie -no-pie" static-no-pie
 
 gcc -fPIE -pie -Wl,-z,noexecstack -o binaries/${ARCH}-gcc-textrel-patched $C_SRC
-go run test/e2e/aslr/add-textrel.go binaries/${ARCH}-gcc-textrel-patched
+go run test/e2e/elf/aslr/add-textrel.go binaries/${ARCH}-gcc-textrel-patched
 
 gcc -c -o binaries/${ARCH}-gcc-relocatable.o $C_SRC
 

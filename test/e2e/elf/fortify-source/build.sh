@@ -2,10 +2,10 @@
 set -ex
 
 ARCH=$1
-RUST_SRC=test/e2e/testdata/main.rs
+RUST_SRC=test/e2e/elf/testdata/main.rs
 mkdir -p binaries
 
-. test/e2e/testdata/log-env.sh
+. test/e2e/elf/testdata/log-env.sh
 
 cat > /tmp/fortify.c << 'EOF'
 #include <string.h>
@@ -26,7 +26,7 @@ int main(int argc, char **argv) {
 EOF
 
 C_SRC=/tmp/fortify.c
-C_SRC_SIMPLE=test/e2e/testdata/main.c
+C_SRC_SIMPLE=test/e2e/elf/testdata/main.c
 
 build_c() { $1 $2 -o binaries/${ARCH}-$1-$3 $C_SRC; }
 build_c_strip() { build_c "$@" && strip binaries/${ARCH}-$1-$3; }

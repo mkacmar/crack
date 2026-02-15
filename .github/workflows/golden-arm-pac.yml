@@ -16,7 +16,7 @@ jobs:
         run: dnf install -y gcc clang binutils rust
 
       - name: Build binaries
-        run: sh test/e2e/arm-pac/build.sh
+        run: sh test/e2e/elf/arm-pac/build.sh
 
       - uses: actions/upload-artifact@v4
         with:

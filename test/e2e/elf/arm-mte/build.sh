@@ -7,7 +7,7 @@ if [ -z "$NDK_DIR" ] || [ ! -d "$NDK_DIR" ]; then
     exit 1
 fi
 
-C_SRC=test/e2e/testdata/main.c
+C_SRC=test/e2e/elf/testdata/main.c
 mkdir -p binaries
 
 CLANG=${NDK_DIR}/toolchains/llvm/prebuilt/linux-x86_64/bin/clang

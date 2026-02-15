@@ -5,15 +5,8 @@ on:
 
 jobs:
   build:
-    runs-on: ubuntu-24.04
-    steps:
-      - uses: actions/checkout@v4
-      - name: Install Rust
-        run: rustup update stable
-      - name: Build binaries
-        run: sh test/e2e/x86-retpoline/build.sh
-
-      - uses: actions/upload-artifact@v4
-        with:
-          name: x86-retpoline-binaries
-          path: binaries/
+    uses: ./.github/workflows/golden-build.yml
+    with:
+      rule: x86-retpoline
+      aarch64: false
+      armv7: false

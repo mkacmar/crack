@@ -36,12 +36,14 @@ done
 run_workflow() {
     RULE="$1"
     WORKFLOW="golden-${RULE}.yml"
-    TEST_DIR="test/e2e/${RULE}/binaries"
+    RULE_DIR=$(find test/e2e -mindepth 2 -maxdepth 2 -type d -name "$RULE" | head -1)
 
-    if [ ! -d "test/e2e/${RULE}" ]; then
-        echo "Error: Rule directory test/e2e/${RULE} does not exist"
+    if [ -z "$RULE_DIR" ]; then
+        echo "Error: Rule directory for ${RULE} does not exist"
         return 1
     fi
+
+    TEST_DIR="${RULE_DIR}/binaries"
 
     if ! gh workflow view "$WORKFLOW" > /dev/null 2>&1; then
         echo "Error: Workflow ${WORKFLOW} not found"
@@ -114,7 +116,7 @@ if [ -n "$RULES" ]; then
     done
 else
     echo "Running all workflows"
-    for dir in test/e2e/*/; do
+    for dir in test/e2e/*/*/; do
         rule=$(basename "$dir")
         if [ -f ".github/workflows/golden-${rule}.yml" ]; then
             run_workflow "$rule" || echo "Warning: Failed to run workflow for ${rule}"

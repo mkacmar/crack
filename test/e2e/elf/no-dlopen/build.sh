@@ -2,11 +2,11 @@
 set -ex
 
 ARCH=$1
-C_SRC=test/e2e/testdata/main.c
-RUST_SRC=test/e2e/testdata/main.rs
+C_SRC=test/e2e/elf/testdata/main.c
+RUST_SRC=test/e2e/elf/testdata/main.rs
 mkdir -p binaries
 
-. test/e2e/testdata/log-env.sh
+. test/e2e/elf/testdata/log-env.sh
 
 build_c() { $1 -shared -fPIC $2 -o binaries/${ARCH}-$1-$3.so $C_SRC; }
 build_c_strip() { build_c $1 "$2" $3 && strip binaries/${ARCH}-$1-$3.so; }

@@ -11,7 +11,7 @@ jobs:
       - name: Install Rust
         run: rustup update stable
       - name: Build binaries
-        run: sh test/e2e/asan/build.sh x86_64
+        run: sh test/e2e/elf/asan/build.sh x86_64
       - uses: actions/upload-artifact@v4
         with:
           name: binaries-x86_64
@@ -24,7 +24,7 @@ jobs:
       - name: Install Rust
         run: rustup update stable
       - name: Build binaries
-        run: sh test/e2e/asan/build.sh aarch64
+        run: sh test/e2e/elf/asan/build.sh aarch64
       - uses: actions/upload-artifact@v4
         with:
           name: binaries-aarch64
@@ -48,7 +48,7 @@ jobs:
               apt-get install -y gcc clang binutils curl &&
               curl --proto =https --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y &&
               . ~/.cargo/env &&
-              sh test/e2e/asan/build.sh armv7
+              sh test/e2e/elf/asan/build.sh armv7
             '
       - uses: actions/upload-artifact@v4
         with:

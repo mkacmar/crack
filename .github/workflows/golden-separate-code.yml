@@ -32,7 +32,7 @@ jobs:
 
       - name: Build binaries (native)
         if: ${{ !matrix.qemu }}
-        run: sh test/e2e/separate-code/build.sh ${{ matrix.arch }}
+        run: sh test/e2e/elf/separate-code/build.sh ${{ matrix.arch }}
 
       - name: Build binaries (QEMU)
         if: matrix.qemu
@@ -40,7 +40,7 @@ jobs:
           docker run --rm --platform linux/arm/v7 \
             -v ${{ github.workspace }}:/workspace \
             -w /workspace \
-            alpine:latest sh -c 'apk add --no-cache gcc clang musl-dev binutils rust && sh test/e2e/separate-code/build.sh ${{ matrix.arch }}'
+            alpine:latest sh -c 'apk add --no-cache gcc clang musl-dev binutils rust && sh test/e2e/elf/separate-code/build.sh ${{ matrix.arch }}'
 
       - uses: actions/upload-artifact@v4
         with:
@@ -74,9 +74,9 @@ jobs:
             -w /workspace \
             ${{ matrix.image }} sh -c '
               apt-get update && apt-get install -y gcc
-              . test/e2e/testdata/log-env.sh
+              . test/e2e/elf/testdata/log-env.sh
               mkdir -p binaries
-              gcc -o binaries/${{ matrix.arch }}-gcc7-no-separate-code test/e2e/testdata/main.c
+              gcc -o binaries/${{ matrix.arch }}-gcc7-no-separate-code test/e2e/elf/testdata/main.c
             '
 
       - uses: actions/upload-artifact@v4

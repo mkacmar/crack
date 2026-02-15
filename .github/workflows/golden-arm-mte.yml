@@ -16,7 +16,7 @@ jobs:
           wget -q https://dl.google.com/android/repository/android-ndk-${NDK_VERSION}-linux.zip
           unzip -q android-ndk-${NDK_VERSION}-linux.zip
       - name: Build binaries
-        run: sh test/e2e/arm-mte/build.sh android-ndk-${NDK_VERSION}
+        run: sh test/e2e/elf/arm-mte/build.sh android-ndk-${NDK_VERSION}
       - uses: actions/upload-artifact@v4
         with:
           name: arm-mte-binaries

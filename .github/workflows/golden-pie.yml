@@ -11,7 +11,7 @@ jobs:
       - name: Install Rust
         run: rustup update stable
       - name: Build binaries
-        run: sh test/e2e/pie/build.sh x86_64
+        run: sh test/e2e/elf/pie/build.sh x86_64
       - uses: actions/upload-artifact@v4
         with:
           name: binaries-x86_64
@@ -24,7 +24,7 @@ jobs:
       - name: Install Rust
         run: rustup update stable
       - name: Build binaries
-        run: sh test/e2e/pie/build.sh aarch64
+        run: sh test/e2e/elf/pie/build.sh aarch64
       - uses: actions/upload-artifact@v4
         with:
           name: binaries-aarch64
@@ -42,7 +42,7 @@ jobs:
           docker run --rm --platform linux/arm/v7 \
             -v ${{ github.workspace }}:/workspace \
             -w /workspace \
-            alpine:latest sh -c 'apk add --no-cache gcc clang musl-dev binutils rust && sh test/e2e/pie/build.sh armv7'
+            alpine:latest sh -c 'apk add --no-cache gcc clang musl-dev binutils rust && sh test/e2e/elf/pie/build.sh armv7'
       - uses: actions/upload-artifact@v4
         with:
           name: binaries-armv7
@@ -59,7 +59,7 @@ jobs:
             echo "deb http://archive.debian.org/debian-security jessie/updates main" >> /etc/apt/sources.list
             apt-get -o Acquire::Check-Valid-Until=false update
             apt-get install -y --force-yes gcc binutils
-            sh test/e2e/pie/build-old-toolchain.sh
+            sh test/e2e/elf/pie/build-old-toolchain.sh
           '
       - uses: actions/upload-artifact@v4
         with:

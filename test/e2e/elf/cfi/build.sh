@@ -2,10 +2,10 @@
 set -ex
 
 ARCH=$1
-RUST_SRC=test/e2e/testdata/main.rs
+RUST_SRC=test/e2e/elf/testdata/main.rs
 mkdir -p binaries
 
-. test/e2e/testdata/log-env.sh
+. test/e2e/elf/testdata/log-env.sh
 
 cat > /tmp/cfi.c << 'EOF'
 typedef int (*func_ptr)(int);

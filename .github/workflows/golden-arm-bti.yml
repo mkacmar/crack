@@ -11,7 +11,7 @@ jobs:
       - name: Install Rust
         run: rustup update stable
       - name: Build binaries
-        run: sh test/e2e/arm-bti/build.sh glibc
+        run: sh test/e2e/elf/arm-bti/build.sh glibc
 
       - uses: actions/upload-artifact@v4
         with:
@@ -27,7 +27,7 @@ jobs:
         run: |
           docker run --rm -v "$PWD:/workspace" -w /workspace alpine:latest sh -c '
             apk add --no-cache gcc clang musl-dev binutils rust
-            sh test/e2e/arm-bti/build.sh musl
+            sh test/e2e/elf/arm-bti/build.sh musl
           '
 
       - uses: actions/upload-artifact@v4

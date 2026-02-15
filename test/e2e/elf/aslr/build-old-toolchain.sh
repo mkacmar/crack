@@ -1,7 +1,7 @@
 #!/bin/sh
 set -ex
 
-SRC=test/e2e/testdata/main.c
+SRC=test/e2e/elf/testdata/main.c
 mkdir -p binaries
 
 gcc -fPIE -pie -Wl,-z,noexecstack -o binaries/x86_64-gcc-old-pie $SRC

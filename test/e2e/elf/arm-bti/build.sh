@@ -7,11 +7,11 @@ if [ -z "$LIBC" ]; then
     exit 1
 fi
 
-C_SRC=test/e2e/testdata/main.c
-RUST_SRC=test/e2e/testdata/main.rs
+C_SRC=test/e2e/elf/testdata/main.c
+RUST_SRC=test/e2e/elf/testdata/main.rs
 mkdir -p binaries
 
-. test/e2e/testdata/log-env.sh
+. test/e2e/elf/testdata/log-env.sh
 
 ARCH=$(uname -m)
 if [ "$ARCH" != "aarch64" ]; then

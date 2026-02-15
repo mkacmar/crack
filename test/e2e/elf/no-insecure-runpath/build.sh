@@ -2,11 +2,11 @@
 set -ex
 
 ARCH=$1
-C_SRC=test/e2e/testdata/main.c
-RUST_SRC=test/e2e/testdata/main.rs
+C_SRC=test/e2e/elf/testdata/main.c
+RUST_SRC=test/e2e/elf/testdata/main.rs
 mkdir -p binaries
 
-. test/e2e/testdata/log-env.sh
+. test/e2e/elf/testdata/log-env.sh
 
 RUNPATH_FLAGS="-Wl,--enable-new-dtags"
 
@@ -36,8 +36,8 @@ build_c clang /tmp tmp
 clang -c -o binaries/${ARCH}-clang-relocatable.o $C_SRC
 
 rustc -o binaries/${ARCH}-rustc-no-runpath $RUST_SRC
-rustc -C link-arg=--enable-new-dtags -C link-arg=-rpath -C link-arg=/usr/lib -o binaries/${ARCH}-rustc-runpath-absolute $RUST_SRC
-rustc -C link-arg=--enable-new-dtags -C link-arg=-rpath -C link-arg=. -o binaries/${ARCH}-rustc-runpath-dot $RUST_SRC
-rustc -C link-arg=--enable-new-dtags -C link-arg=-rpath -C link-arg=/tmp -o binaries/${ARCH}-rustc-runpath-tmp $RUST_SRC
+rustc -C link-arg=-Wl,--enable-new-dtags -C link-arg=-Wl,-rpath,/usr/lib -o binaries/${ARCH}-rustc-runpath-absolute $RUST_SRC
+rustc -C link-arg=-Wl,--enable-new-dtags -C link-arg=-Wl,-rpath,. -o binaries/${ARCH}-rustc-runpath-dot $RUST_SRC
+rustc -C link-arg=-Wl,--enable-new-dtags -C link-arg=-Wl,-rpath,/tmp -o binaries/${ARCH}-rustc-runpath-tmp $RUST_SRC
 
 ls -la binaries/
