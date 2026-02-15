@@ -4,33 +4,33 @@ on:
   workflow_dispatch:
 
 jobs:
-  build-x86_64:
+  build-amd64:
     runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v4
       - name: Install Rust
         run: rustup update stable
       - name: Build binaries
-        run: sh test/e2e/elf/asan/build.sh x86_64
+        run: sh test/e2e/elf/asan/build.sh amd64
       - uses: actions/upload-artifact@v4
         with:
-          name: binaries-x86_64
+          name: binaries-amd64
           path: binaries/
 
-  build-aarch64:
+  build-arm64:
     runs-on: ubuntu-24.04-arm
     steps:
       - uses: actions/checkout@v4
       - name: Install Rust
         run: rustup update stable
       - name: Build binaries
-        run: sh test/e2e/elf/asan/build.sh aarch64
+        run: sh test/e2e/elf/asan/build.sh arm64
       - uses: actions/upload-artifact@v4
         with:
-          name: binaries-aarch64
+          name: binaries-arm64
           path: binaries/
 
-  build-armv7:
+  build-arm:
     runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v4
@@ -48,16 +48,16 @@ jobs:
               apt-get install -y gcc clang binutils curl &&
               curl --proto =https --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y &&
               . ~/.cargo/env &&
-              sh test/e2e/elf/asan/build.sh armv7
+              sh test/e2e/elf/asan/build.sh arm
             '
       - uses: actions/upload-artifact@v4
         with:
-          name: binaries-armv7
+          name: binaries-arm
           path: binaries/
 
   merge:
     runs-on: ubuntu-latest
-    needs: [build-x86_64, build-aarch64, build-armv7]
+    needs: [build-amd64, build-arm64, build-arm]
     steps:
       - uses: actions/download-artifact@v4
         with:

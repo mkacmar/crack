@@ -8,5 +8,5 @@ jobs:
     uses: ./.github/workflows/golden-build.yml
     with:
       rule: x86-cet-shstk
-      aarch64: false
-      armv7: false
+      arm64: false
+      arm: false

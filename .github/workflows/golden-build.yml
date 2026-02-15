@@ -6,22 +6,22 @@ on:
       rule:
         required: true
         type: string
-      x86_64:
+      amd64:
         required: false
         type: boolean
         default: true
-      aarch64:
+      arm64:
         required: false
         type: boolean
         default: true
-      armv7:
+      arm:
         required: false
         type: boolean
         default: true
 
 jobs:
-  build-x86_64:
-    if: inputs.x86_64
+  build-amd64:
+    if: inputs.amd64
     runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v4
@@ -30,14 +30,14 @@ jobs:
       - name: Install lld
         run: sudo apt-get update && sudo apt-get install -y lld
       - name: Build binaries
-        run: sh test/e2e/elf/${{ inputs.rule }}/build.sh x86_64
+        run: sh test/e2e/elf/${{ inputs.rule }}/build.sh amd64
       - uses: actions/upload-artifact@v4
         with:
-          name: binaries-x86_64
+          name: binaries-amd64
           path: binaries/
 
-  build-aarch64:
-    if: inputs.aarch64
+  build-arm64:
+    if: inputs.arm64
     runs-on: ubuntu-24.04-arm
     steps:
       - uses: actions/checkout@v4
@@ -46,14 +46,14 @@ jobs:
       - name: Install lld
         run: sudo apt-get update && sudo apt-get install -y lld
       - name: Build binaries
-        run: sh test/e2e/elf/${{ inputs.rule }}/build.sh aarch64
+        run: sh test/e2e/elf/${{ inputs.rule }}/build.sh arm64
       - uses: actions/upload-artifact@v4
         with:
-          name: binaries-aarch64
+          name: binaries-arm64
           path: binaries/
 
-  build-armv7:
-    if: inputs.armv7
+  build-arm:
+    if: inputs.arm
     runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v4
@@ -66,17 +66,17 @@ jobs:
           docker run --rm --platform linux/arm/v7 \
             -v ${{ github.workspace }}:/workspace \
             -w /workspace \
-            alpine:latest sh -c 'apk add --no-cache gcc clang musl-dev binutils rust && sh test/e2e/elf/${{ inputs.rule }}/build.sh armv7'
+            alpine:latest sh -c 'apk add --no-cache gcc clang musl-dev binutils rust && sh test/e2e/elf/${{ inputs.rule }}/build.sh arm'
       - uses: actions/upload-artifact@v4
         with:
-          name: binaries-armv7
+          name: binaries-arm
           path: binaries/
 
   merge:
     runs-on: ubuntu-latest
     # Run even when some build jobs are skipped
     if: always() && !failure() && !cancelled()
-    needs: [build-x86_64, build-aarch64, build-armv7]
+    needs: [build-amd64, build-arm64, build-arm]
     steps:
       - uses: actions/download-artifact@v4
         with:

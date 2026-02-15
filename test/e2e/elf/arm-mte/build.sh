@@ -10,9 +10,9 @@ fi
 C_SRC=test/e2e/elf/testdata/main.c
 mkdir -p binaries
 
-CLANG=${NDK_DIR}/toolchains/llvm/prebuilt/linux-x86_64/bin/clang
-STRIP=${NDK_DIR}/toolchains/llvm/prebuilt/linux-x86_64/bin/llvm-strip
-TARGET=aarch64-linux-android35
+CLANG=${NDK_DIR}/toolchains/llvm/prebuilt/linux-amd64/bin/clang
+STRIP=${NDK_DIR}/toolchains/llvm/prebuilt/linux-amd64/bin/llvm-strip
+TARGET=arm64-linux-android35
 
 
 $CLANG --version

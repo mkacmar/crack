@@ -8,8 +8,8 @@ mkdir -p binaries
 . test/e2e/elf/testdata/log-env.sh
 
 ARCH=$(uname -m)
-if [ "$ARCH" != "x86_64" ]; then
-    echo "Error: Intel CET is only supported on x86_64, detected $ARCH"
+if [ "$ARCH" != "amd64" ]; then
+    echo "Error: Intel CET is only supported on amd64, detected $ARCH"
     exit 1
 fi
 

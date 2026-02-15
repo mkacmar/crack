@@ -14,8 +14,8 @@ mkdir -p binaries
 . test/e2e/elf/testdata/log-env.sh
 
 ARCH=$(uname -m)
-if [ "$ARCH" != "aarch64" ]; then
-    echo "Error: ARM BTI is only supported on aarch64, detected $ARCH"
+if [ "$ARCH" != "arm64" ]; then
+    echo "Error: ARM BTI is only supported on arm64, detected $ARCH"
     exit 1
 fi
 

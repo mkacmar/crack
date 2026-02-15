@@ -8,34 +8,34 @@ import (
 
 func TestUBSanRule(t *testing.T) {
 	e2e.RunRuleTests(t, "ubsan", []e2e.TestCase{
-		{Binary: "x86_64-gcc-ubsan", Expect: e2e.Pass},
-		{Binary: "x86_64-gcc-ubsan-stripped", Expect: e2e.Pass},
-		{Binary: "x86_64-gcc-no-ubsan", Expect: e2e.Fail},
+		{Binary: "amd64-gcc-ubsan", Expect: e2e.Pass},
+		{Binary: "amd64-gcc-ubsan-stripped", Expect: e2e.Pass},
+		{Binary: "amd64-gcc-no-ubsan", Expect: e2e.Fail},
 
-		{Binary: "x86_64-clang-ubsan", Expect: e2e.Pass},
-		{Binary: "x86_64-clang-ubsan-stripped", Expect: e2e.Pass},
-		{Binary: "x86_64-clang-no-ubsan", Expect: e2e.Fail},
+		{Binary: "amd64-clang-ubsan", Expect: e2e.Pass},
+		{Binary: "amd64-clang-ubsan-stripped", Expect: e2e.Pass},
+		{Binary: "amd64-clang-no-ubsan", Expect: e2e.Fail},
 
-		{Binary: "x86_64-rustc-no-ubsan", Expect: e2e.Skip},
+		{Binary: "amd64-rustc-no-ubsan", Expect: e2e.Skip},
 
-		{Binary: "aarch64-gcc-ubsan", Expect: e2e.Pass},
-		{Binary: "aarch64-gcc-ubsan-stripped", Expect: e2e.Pass},
-		{Binary: "aarch64-gcc-no-ubsan", Expect: e2e.Fail},
+		{Binary: "arm64-gcc-ubsan", Expect: e2e.Pass},
+		{Binary: "arm64-gcc-ubsan-stripped", Expect: e2e.Pass},
+		{Binary: "arm64-gcc-no-ubsan", Expect: e2e.Fail},
 
-		{Binary: "aarch64-clang-ubsan", Expect: e2e.Pass},
-		{Binary: "aarch64-clang-ubsan-stripped", Expect: e2e.Pass},
-		{Binary: "aarch64-clang-no-ubsan", Expect: e2e.Fail},
+		{Binary: "arm64-clang-ubsan", Expect: e2e.Pass},
+		{Binary: "arm64-clang-ubsan-stripped", Expect: e2e.Pass},
+		{Binary: "arm64-clang-no-ubsan", Expect: e2e.Fail},
 
-		{Binary: "aarch64-rustc-no-ubsan", Expect: e2e.Skip},
+		{Binary: "arm64-rustc-no-ubsan", Expect: e2e.Skip},
 
-		{Binary: "armv7-gcc-ubsan", Expect: e2e.Pass},
-		{Binary: "armv7-gcc-ubsan-stripped", Expect: e2e.Pass},
-		{Binary: "armv7-gcc-no-ubsan", Expect: e2e.Fail},
+		{Binary: "arm-gcc-ubsan", Expect: e2e.Pass},
+		{Binary: "arm-gcc-ubsan-stripped", Expect: e2e.Pass},
+		{Binary: "arm-gcc-no-ubsan", Expect: e2e.Fail},
 
-		{Binary: "armv7-clang-ubsan", Expect: e2e.Pass},
-		{Binary: "armv7-clang-ubsan-stripped", Expect: e2e.Pass},
-		{Binary: "armv7-clang-no-ubsan", Expect: e2e.Fail},
+		{Binary: "arm-clang-ubsan", Expect: e2e.Pass},
+		{Binary: "arm-clang-ubsan-stripped", Expect: e2e.Pass},
+		{Binary: "arm-clang-no-ubsan", Expect: e2e.Fail},
 
-		{Binary: "armv7-rustc-no-ubsan", Expect: e2e.Skip},
+		{Binary: "arm-rustc-no-ubsan", Expect: e2e.Skip},
 	})
 }

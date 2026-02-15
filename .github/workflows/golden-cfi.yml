@@ -8,4 +8,4 @@ jobs:
     uses: ./.github/workflows/golden-build.yml
     with:
       rule: cfi
-      armv7: false
+      arm: false

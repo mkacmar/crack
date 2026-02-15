@@ -8,11 +8,11 @@ jobs:
     strategy:
       matrix:
         include:
-          - arch: x86_64
+          - arch: amd64
             runner: ubuntu-24.04
-          - arch: aarch64
+          - arch: arm64
             runner: ubuntu-24.04-arm
-          - arch: armv7
+          - arch: arm
             runner: ubuntu-24.04
             qemu: true
 
@@ -51,9 +51,9 @@ jobs:
     strategy:
       matrix:
         include:
-          - arch: x86_64
+          - arch: amd64
             image: ubuntu:18.04
-          - arch: aarch64
+          - arch: arm64
             image: arm64v8/ubuntu:18.04
             platform: linux/arm64
 

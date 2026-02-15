@@ -8,32 +8,32 @@ import (
 
 func TestASANRule(t *testing.T) {
 	e2e.RunRuleTests(t, "asan", []e2e.TestCase{
-		{Binary: "x86_64-gcc-asan", Expect: e2e.Pass},
-		{Binary: "x86_64-gcc-asan-stripped", Expect: e2e.Pass},
-		{Binary: "x86_64-gcc-no-asan", Expect: e2e.Fail},
+		{Binary: "amd64-gcc-asan", Expect: e2e.Pass},
+		{Binary: "amd64-gcc-asan-stripped", Expect: e2e.Pass},
+		{Binary: "amd64-gcc-no-asan", Expect: e2e.Fail},
 
-		{Binary: "x86_64-clang-asan", Expect: e2e.Pass},
-		{Binary: "x86_64-clang-asan-stripped", Expect: e2e.Pass},
-		{Binary: "x86_64-clang-no-asan", Expect: e2e.Fail},
+		{Binary: "amd64-clang-asan", Expect: e2e.Pass},
+		{Binary: "amd64-clang-asan-stripped", Expect: e2e.Pass},
+		{Binary: "amd64-clang-no-asan", Expect: e2e.Fail},
 
-		{Binary: "aarch64-gcc-asan", Expect: e2e.Pass},
-		{Binary: "aarch64-gcc-asan-stripped", Expect: e2e.Pass},
-		{Binary: "aarch64-gcc-no-asan", Expect: e2e.Fail},
+		{Binary: "arm64-gcc-asan", Expect: e2e.Pass},
+		{Binary: "arm64-gcc-asan-stripped", Expect: e2e.Pass},
+		{Binary: "arm64-gcc-no-asan", Expect: e2e.Fail},
 
-		{Binary: "aarch64-clang-asan", Expect: e2e.Pass},
-		{Binary: "aarch64-clang-asan-stripped", Expect: e2e.Pass},
-		{Binary: "aarch64-clang-no-asan", Expect: e2e.Fail},
+		{Binary: "arm64-clang-asan", Expect: e2e.Pass},
+		{Binary: "arm64-clang-asan-stripped", Expect: e2e.Pass},
+		{Binary: "arm64-clang-no-asan", Expect: e2e.Fail},
 
-		{Binary: "armv7-gcc-asan", Expect: e2e.Pass},
-		{Binary: "armv7-gcc-asan-stripped", Expect: e2e.Pass},
-		{Binary: "armv7-gcc-no-asan", Expect: e2e.Fail},
+		{Binary: "arm-gcc-asan", Expect: e2e.Pass},
+		{Binary: "arm-gcc-asan-stripped", Expect: e2e.Pass},
+		{Binary: "arm-gcc-no-asan", Expect: e2e.Fail},
 
-		{Binary: "armv7-clang-asan", Expect: e2e.Pass},
-		{Binary: "armv7-clang-asan-stripped", Expect: e2e.Pass},
-		{Binary: "armv7-clang-no-asan", Expect: e2e.Fail},
+		{Binary: "arm-clang-asan", Expect: e2e.Pass},
+		{Binary: "arm-clang-asan-stripped", Expect: e2e.Pass},
+		{Binary: "arm-clang-no-asan", Expect: e2e.Fail},
 
-		{Binary: "x86_64-rustc-no-asan", Expect: e2e.Skip},
-		{Binary: "aarch64-rustc-no-asan", Expect: e2e.Skip},
-		{Binary: "armv7-rustc-no-asan", Expect: e2e.Skip},
+		{Binary: "amd64-rustc-no-asan", Expect: e2e.Skip},
+		{Binary: "arm64-rustc-no-asan", Expect: e2e.Skip},
+		{Binary: "arm-rustc-no-asan", Expect: e2e.Skip},
 	})
 }
