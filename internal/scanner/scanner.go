@@ -95,7 +95,7 @@ func (s *Scanner) scanFiles(ctx context.Context, files []string) <-chan analyzer
 func (s *Scanner) scanFile(ctx context.Context, path string) []analyzer.FileResult {
 	s.logger.Debug("scanning file", slog.String("path", path))
 
-	f, err := os.Open(path)
+	f, err := os.Open(path) // #nosec G304 -- user-provided paths are the tool's input
 	if err != nil {
 		s.logger.Warn("failed to open file", slog.String("path", path), slog.Any("error", err))
 		return []analyzer.FileResult{{Path: path, Error: err}}

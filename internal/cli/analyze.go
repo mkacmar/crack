@@ -273,12 +273,12 @@ func (a *App) setupLogging(logFile, logLevel string) (func(), error) {
 	var logOutput io.Writer = os.Stderr
 	cleanup := func() {}
 	if logFile != "" {
-		f, err := os.Create(logFile)
+		f, err := os.Create(logFile) // #nosec G304 -- user-provided log file path
 		if err != nil {
 			return nil, fmt.Errorf("failed to open log file: %w", err)
 		}
 		logOutput = f
-		cleanup = func() { f.Close() }
+		cleanup = func() { _ = f.Close() }
 	}
 	a.logger = setupLogger(logLevel, logOutput)
 	return cleanup, nil

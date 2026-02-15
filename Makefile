@@ -54,6 +54,7 @@ clean:
 lint:
 	go vet ./...
 	staticcheck ./...
+	gosec -quiet ./...
 
 fmt:
 	goimports -l -w .
@@ -61,6 +62,7 @@ fmt:
 install-tools:
 	go install golang.org/x/tools/cmd/goimports@latest
 	go install honnef.co/go/tools/cmd/staticcheck@latest
+	go install github.com/securego/gosec/v2/cmd/gosec@latest
 
 doc:
 	@mkdir -p docs

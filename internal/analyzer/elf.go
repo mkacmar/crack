@@ -54,7 +54,7 @@ func (a *ELFAnalyzer) Analyze(ctx context.Context, bin *binary.ELFBinary) []rule
 }
 
 func (a *ELFAnalyzer) applyDebugInfo(bin *binary.ELFBinary, path string) error {
-	f, err := os.Open(path)
+	f, err := os.Open(path) // #nosec G304 -- path from debuginfod cache
 	if err != nil {
 		return err
 	}

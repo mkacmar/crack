@@ -85,7 +85,7 @@ func NewClient(opts Options) (*Client, error) {
 		}
 	}
 
-	if err := os.MkdirAll(cacheDir, 0755); err != nil {
+	if err := os.MkdirAll(cacheDir, 0750); err != nil {
 		return nil, fmt.Errorf("failed to create cache directory: %w", err)
 	}
 
@@ -183,10 +183,10 @@ func (c *Client) fetchFromServerWithRetry(ctx context.Context, serverURL, buildI
 
 func (c *Client) calculateBackoff(attempt int) time.Duration {
 	// Base delay: 1s, 2s, 4s... (exponential)
-	baseDelay := time.Duration(1<<uint(attempt-1)) * time.Second
+	baseDelay := time.Duration(1<<uint(attempt-1)) * time.Second // #nosec G115 -- bounded by maxRetries
 
 	// Randomize between 100% and 200% of base delay
-	return baseDelay + time.Duration(rand.Int64N(int64(baseDelay)))
+	return baseDelay + time.Duration(rand.Int64N(int64(baseDelay))) // #nosec G404 -- jitter, not security
 }
 
 func (c *Client) fetchFromServer(ctx context.Context, serverURL, buildID, destPath string) (string, error) {
@@ -198,7 +198,7 @@ func (c *Client) fetchFromServer(ctx context.Context, serverURL, buildID, destPa
 	}
 	req.Header.Set("User-Agent", userAgent())
 
-	resp, err := c.httpClient.Do(req)
+	resp, err := c.httpClient.Do(req) // #nosec G704 -- URL from user-configured --debuginfod-servers
 	if err != nil {
 		return "", fmt.Errorf("request failed: %w", err)
 	}
@@ -212,7 +212,7 @@ func (c *Client) fetchFromServer(ctx context.Context, serverURL, buildID, destPa
 		return "", err
 	}
 
-	if err := os.MkdirAll(filepath.Dir(destPath), 0755); err != nil {
+	if err := os.MkdirAll(filepath.Dir(destPath), 0750); err != nil {
 		return "", fmt.Errorf("failed to create cache directory: %w", err)
 	}
 
@@ -226,7 +226,7 @@ func (c *Client) fetchFromServer(ctx context.Context, serverURL, buildID, destPa
 func downloadToFile(r io.Reader, destPath string, maxSize int64) error {
 	tmpPath := destPath + ".tmp"
 
-	tmpFile, err := os.Create(tmpPath)
+	tmpFile, err := os.Create(tmpPath) // #nosec G304 -- path derived from validated cache directory
 	if err != nil {
 		return fmt.Errorf("failed to create temp file: %w", err)
 	}
@@ -235,16 +235,16 @@ func downloadToFile(r io.Reader, destPath string, maxSize int64) error {
 	closeErr := tmpFile.Close()
 
 	if copyErr != nil {
-		os.Remove(tmpPath)
+		_ = os.Remove(tmpPath)
 		return fmt.Errorf("download failed: %w", copyErr)
 	}
 	if closeErr != nil {
-		os.Remove(tmpPath)
+		_ = os.Remove(tmpPath)
 		return fmt.Errorf("failed to close temp file: %w", closeErr)
 	}
 
 	if err := os.Rename(tmpPath, destPath); err != nil {
-		os.Remove(tmpPath)
+		_ = os.Remove(tmpPath)
 		return fmt.Errorf("failed to move file: %w", err)
 	}
 

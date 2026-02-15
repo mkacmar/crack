@@ -48,7 +48,7 @@ func RunRuleTests(t *testing.T, rule string, cases []TestCase) {
 			binaryPath := filepath.Join(binariesDir, tc.Binary)
 
 			sarifPath := filepath.Join(t.TempDir(), "result.sarif")
-			cmd := exec.Command(
+			cmd := exec.Command( // #nosec G204 -- test code with controlled inputs
 				crackBin,
 				"analyze",
 				"--rules="+rule,
@@ -57,7 +57,7 @@ func RunRuleTests(t *testing.T, rule string, cases []TestCase) {
 				"--sarif="+sarifPath,
 				binaryPath,
 			)
-			cmd.Run()
+			_ = cmd.Run()
 
 			state := getRuleState(t, sarifPath, rule)
 			if state != tc.Expect {
@@ -110,7 +110,7 @@ func validateBinaries(t *testing.T, binariesDir string, cases []TestCase) {
 func getRuleState(t *testing.T, sarifPath, rule string) Expectation {
 	t.Helper()
 
-	data, err := os.ReadFile(sarifPath)
+	data, err := os.ReadFile(sarifPath) // #nosec G304 -- test code with controlled paths
 	if err != nil {
 		t.Fatalf("failed to read SARIF: %v", err)
 	}

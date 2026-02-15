@@ -12,7 +12,7 @@ func readPathsFromInput(input string) ([]string, error) {
 	if input == "-" {
 		reader = bufio.NewScanner(os.Stdin)
 	} else {
-		f, err := os.Open(input)
+		f, err := os.Open(input) // #nosec G304 -- user-provided input file path
 		if err != nil {
 			return nil, fmt.Errorf("failed to open input file: %w", err)
 		}

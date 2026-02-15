@@ -120,7 +120,7 @@ func ParseELFWithDetector(r io.ReaderAt, detector toolchain.ELFDetector) (*ELFBi
 // HasDynFlag reports whether a dynamic tag has the specified flag set.
 func (b *ELFBinary) HasDynFlag(tag elf.DynTag, flag uint64) bool {
 	for _, entry := range b.DynEntries {
-		if entry.Tag == uint64(tag) && (entry.Val&flag) != 0 {
+		if entry.Tag == uint64(tag) && (entry.Val&flag) != 0 { // #nosec G115 -- ELF tag constants
 			return true
 		}
 	}
@@ -130,7 +130,7 @@ func (b *ELFBinary) HasDynFlag(tag elf.DynTag, flag uint64) bool {
 // HasDynTag reports whether a dynamic tag exists.
 func (b *ELFBinary) HasDynTag(tag elf.DynTag) bool {
 	for _, entry := range b.DynEntries {
-		if entry.Tag == uint64(tag) {
+		if entry.Tag == uint64(tag) { // #nosec G115 -- ELF tag constants
 			return true
 		}
 	}
@@ -149,11 +149,11 @@ func (b *ELFBinary) DynString(tag elf.DynTag) string {
 	}
 
 	for _, entry := range b.DynEntries {
-		if entry.Tag == uint64(tag) {
-			if int(entry.Val) >= len(strtab) {
+		if entry.Tag == uint64(tag) { // #nosec G115 -- ELF tag constants
+			if int(entry.Val) >= len(strtab) { // #nosec G115 -- bounds checked on this line
 				return ""
 			}
-			start := int(entry.Val)
+			start := int(entry.Val) // #nosec G115 -- bounds checked above
 			end := start
 			for end < len(strtab) && strtab[end] != 0 {
 				end++
