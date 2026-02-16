@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"io"
+	"math"
 	"math/rand/v2"
 	"net/http"
 	"os"
@@ -231,7 +232,14 @@ func downloadToFile(r io.Reader, destPath string, maxSize int64) error {
 		return fmt.Errorf("failed to create temp file: %w", err)
 	}
 
-	_, copyErr := io.Copy(tmpFile, io.LimitReader(r, maxSize))
+	readLimit := maxSize
+	checkOverflow := false
+	if maxSize < math.MaxInt64 {
+		readLimit = maxSize + 1
+		checkOverflow = true
+	}
+
+	n, copyErr := io.Copy(tmpFile, io.LimitReader(r, readLimit))
 	closeErr := tmpFile.Close()
 
 	if copyErr != nil {
@@ -241,6 +249,10 @@ func downloadToFile(r io.Reader, destPath string, maxSize int64) error {
 	if closeErr != nil {
 		_ = os.Remove(tmpPath)
 		return fmt.Errorf("failed to close temp file: %w", closeErr)
+	}
+	if checkOverflow && n > maxSize {
+		_ = os.Remove(tmpPath)
+		return fmt.Errorf("download failed: file exceeds max size (%d bytes)", maxSize)
 	}
 
 	if err := os.Rename(tmpPath, destPath); err != nil {
