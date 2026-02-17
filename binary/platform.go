@@ -2,6 +2,7 @@ package binary
 
 import (
 	"fmt"
+	"sort"
 	"strconv"
 	"strings"
 )
@@ -47,6 +48,7 @@ func (a Architecture) String() string {
 		}
 	}
 	if len(names) > 0 {
+		sort.Strings(names)
 		return strings.Join(names, ", ")
 	}
 	return "unknown"

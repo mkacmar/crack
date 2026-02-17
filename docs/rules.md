@@ -90,7 +90,7 @@ Checks for AddressSanitizer (ASan) instrumentation. ASan detects memory errors i
 
 ### Platform
 
-arm64, x86, amd64, arm
+amd64, arm, arm64, x86
 
 ### Toolchain
 
@@ -111,7 +111,7 @@ Checks if the binary is compatible with Address Space Layout Randomization (ASLR
 
 ### Platform
 
-arm, arm64, x86, amd64
+amd64, arm, arm64, x86
 
 ### Toolchain
 
@@ -133,7 +133,7 @@ Checks for Clang Control Flow Integrity (CFI) instrumentation. CFI validates tha
 
 ### Platform
 
-x86, amd64, arm, arm64
+amd64, arm, arm64, x86
 
 ### Toolchain
 
@@ -153,7 +153,7 @@ Checks for FORTIFY_SOURCE buffer overflow protection. This glibc feature replace
 
 ### Platform
 
-arm, arm64, x86, amd64
+amd64, arm, arm64, x86
 
 ### Toolchain
 
@@ -174,7 +174,7 @@ Checks for full RELRO (Relocation Read-Only) protection. Full RELRO makes the Gl
 
 ### Platform
 
-x86, amd64, arm, arm64
+amd64, arm, arm64, x86
 
 ### Toolchain
 
@@ -196,7 +196,7 @@ Checks if the shared library has the DF_1_NOOPEN flag set to prevent loading via
 
 ### Platform
 
-x86, amd64, arm, arm64
+amd64, arm, arm64, x86
 
 ### Toolchain
 
@@ -218,7 +218,7 @@ Checks if the binary has the DF_1_NODUMP flag set to prevent dldump(3) from copy
 
 ### Platform
 
-arm64, x86, amd64, arm
+amd64, arm, arm64, x86
 
 ### Toolchain
 
@@ -239,7 +239,7 @@ Checks for insecure RPATH values that could enable library injection. RPATH take
 
 ### Platform
 
-arm, arm64, x86, amd64
+amd64, arm, arm64, x86
 
 ### Toolchain
 
@@ -261,7 +261,7 @@ Checks for insecure RUNPATH values that could enable library injection. Relative
 
 ### Platform
 
-x86, amd64, arm, arm64
+amd64, arm, arm64, x86
 
 ### Toolchain
 
@@ -283,7 +283,7 @@ Checks if the stack is marked non-executable (NX bit). This prevents stack-based
 
 ### Platform
 
-x86, amd64, arm, arm64
+amd64, arm, arm64, x86
 
 ### Toolchain
 
@@ -305,7 +305,7 @@ Checks if the binary is compiled as a Position Independent Executable (PIE). PIE
 
 ### Platform
 
-arm, arm64, x86, amd64
+amd64, arm, arm64, x86
 
 ### Toolchain
 
@@ -327,7 +327,7 @@ Checks for partial RELRO (Relocation Read-Only) protection. Partial RELRO reorde
 
 ### Platform
 
-arm64, x86, amd64, arm
+amd64, arm, arm64, x86
 
 ### Toolchain
 
@@ -349,7 +349,7 @@ Checks for Clang SafeStack instrumentation. SafeStack separates the stack into a
 
 ### Platform
 
-x86, amd64, arm, arm64
+amd64, arm, arm64, x86
 
 ### Toolchain
 
@@ -369,7 +369,7 @@ Checks if code and data are in separate memory pages. This prevents code pages f
 
 ### Platform
 
-x86, amd64, arm, arm64
+amd64, arm, arm64, x86
 
 ### Toolchain
 
@@ -391,7 +391,7 @@ Checks for stack canary (stack protector) instrumentation. Stack canaries detect
 
 ### Platform
 
-x86, amd64, arm, arm64
+amd64, arm, arm64, x86
 
 ### Toolchain
 
@@ -412,7 +412,7 @@ Checks if an explicit stack size limit is set. Defining a maximum stack size hel
 
 ### Platform
 
-x86, amd64, arm, arm64
+amd64, arm, arm64, x86
 
 ### Toolchain
 
@@ -433,7 +433,7 @@ Checks if the binary has been stripped of symbol tables and debug information. S
 
 ### Platform
 
-x86, amd64, arm, arm64
+amd64, arm, arm64, x86
 
 ### Toolchain
 
@@ -455,7 +455,7 @@ Checks for Undefined Behavior Sanitizer (UBSan) instrumentation. UBSan detects u
 
 ### Platform
 
-arm64, x86, amd64, arm
+amd64, arm, arm64, x86
 
 ### Toolchain
 
@@ -476,7 +476,7 @@ Checks for Intel Control-flow Enforcement Technology Indirect Branch Tracking (C
 
 ### Platform
 
-x86, amd64
+amd64, x86
 
 ### Toolchain
 
@@ -497,7 +497,7 @@ Checks for Intel Control-flow Enforcement Technology Shadow Stack (CET-SS). Shad
 
 ### Platform
 
-x86, amd64
+amd64, x86
 
 ### Toolchain
 
@@ -518,7 +518,7 @@ Checks for retpoline mitigation against Spectre v2 attacks. Retpoline replaces i
 
 ### Platform
 
-x86, amd64
+amd64, x86
 
 ### Toolchain
 
