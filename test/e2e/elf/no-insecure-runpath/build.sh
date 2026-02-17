@@ -28,6 +28,7 @@ build_c gcc lib bare-relative
 build_c gcc subdir/lib subdir-relative
 build_c gcc /dev/shm dev-shm
 gcc $RUNPATH_FLAGS '-Wl,-rpath,$ORIGIN/../lib' -o binaries/${ARCH}-gcc-runpath-origin-relative $C_SRC
+gcc $RUNPATH_FLAGS '-Wl,-rpath,$ORIGIN/..' -o binaries/${ARCH}-gcc-runpath-origin-parent $C_SRC
 
 clang -o binaries/${ARCH}-clang-no-runpath $C_SRC
 build_c clang /usr/lib absolute

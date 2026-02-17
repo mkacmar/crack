@@ -3,6 +3,7 @@ package elf
 import (
 	"debug/elf"
 	"fmt"
+	"path"
 	"strings"
 
 	"github.com/mkacmar/crack/binary"
@@ -87,7 +88,11 @@ func isInsecurePath(p string) bool {
 	}
 
 	if strings.HasPrefix(p, "$ORIGIN") && strings.Contains(p, "..") {
-		return true
+		// Allow $ORIGIN/../lib and $ORIGIN/../lib64 — standard layout for co-installed binaries and libraries.
+		base := path.Base(p)
+		if base != "lib" && base != "lib64" {
+			return true
+		}
 	}
 
 	worldWritable := []string{"/tmp", "/var/tmp", "/dev/shm"}

@@ -22,7 +22,8 @@ func TestNoInsecureRPATHRule(t *testing.T) {
 		{Binary: "amd64-gcc-rpath-mixed", Expect: e2e.Fail},
 		{Binary: "amd64-gcc-rpath-bare-relative", Expect: e2e.Fail},
 		{Binary: "amd64-gcc-rpath-subdir-relative", Expect: e2e.Fail},
-		{Binary: "amd64-gcc-rpath-origin-relative", Expect: e2e.Fail},
+		{Binary: "amd64-gcc-rpath-origin-relative", Expect: e2e.Pass},
+		{Binary: "amd64-gcc-rpath-origin-parent", Expect: e2e.Fail},
 		{Binary: "amd64-gcc-rpath-dev-shm", Expect: e2e.Fail},
 
 		{Binary: "amd64-clang-no-rpath", Expect: e2e.Pass},
@@ -45,7 +46,8 @@ func TestNoInsecureRPATHRule(t *testing.T) {
 		{Binary: "arm64-gcc-rpath-mixed", Expect: e2e.Fail},
 		{Binary: "arm64-gcc-rpath-bare-relative", Expect: e2e.Fail},
 		{Binary: "arm64-gcc-rpath-subdir-relative", Expect: e2e.Fail},
-		{Binary: "arm64-gcc-rpath-origin-relative", Expect: e2e.Fail},
+		{Binary: "arm64-gcc-rpath-origin-relative", Expect: e2e.Pass},
+		{Binary: "arm64-gcc-rpath-origin-parent", Expect: e2e.Fail},
 		{Binary: "arm64-gcc-rpath-dev-shm", Expect: e2e.Fail},
 
 		{Binary: "arm64-clang-no-rpath", Expect: e2e.Pass},
@@ -68,7 +70,8 @@ func TestNoInsecureRPATHRule(t *testing.T) {
 		{Binary: "arm-gcc-rpath-mixed", Expect: e2e.Fail},
 		{Binary: "arm-gcc-rpath-bare-relative", Expect: e2e.Fail},
 		{Binary: "arm-gcc-rpath-subdir-relative", Expect: e2e.Fail},
-		{Binary: "arm-gcc-rpath-origin-relative", Expect: e2e.Fail},
+		{Binary: "arm-gcc-rpath-origin-relative", Expect: e2e.Pass},
+		{Binary: "arm-gcc-rpath-origin-parent", Expect: e2e.Fail},
 		{Binary: "arm-gcc-rpath-dev-shm", Expect: e2e.Fail},
 
 		{Binary: "arm-clang-no-rpath", Expect: e2e.Pass},
