@@ -33,11 +33,24 @@ crack analyze [options] [<path>...]
 
 ### Rule Selection
 
-See [rules reference](docs/rules.md) for available rules.
+See [rules reference](docs/rules.md) for all available rules.
 
 - `--rules <ids>` - Comma-separated list of rule IDs to run
 - `--target-compiler <spec>` - Only run rules available for these compilers (e.g., `gcc`, `clang:15`)
 - `--target-platform <spec>` - Only run rules available for these platforms (e.g., `arm64`, `amd64`)
+
+When `--rules` is not specified, crack runs the following default set:
+
+[`aslr`](docs/rules.md#aslr-compatibility),
+[`fortify-source`](docs/rules.md#fortify_source),
+[`full-relro`](docs/rules.md#full-relro),
+[`no-insecure-rpath`](docs/rules.md#secure-rpath),
+[`no-insecure-runpath`](docs/rules.md#secure-runpath),
+[`nx-bit`](docs/rules.md#non-executable-stack),
+[`pie`](docs/rules.md#position-independent-executable),
+[`relro`](docs/rules.md#partial-relro),
+[`separate-code`](docs/rules.md#separate-code-segments),
+[`stack-canary`](docs/rules.md#stack-canary-protection)
 
 The `--target-compiler` and `--target-platform` flags filter which rules are loaded based on their applicability.
 At runtime, the tool also detects the actual compiler from binary metadata and skips rules that don't apply to the detected compiler.
