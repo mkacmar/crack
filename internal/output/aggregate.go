@@ -12,9 +12,10 @@ type PathSet map[string]bool
 type CompilerUpgrades map[toolchain.Version]PathSet
 
 type AggregatedReport struct {
-	Upgrades  map[string]CompilerUpgrades
-	Flags     map[string]PathSet
-	PassedAll []string
+	Upgrades     map[string]CompilerUpgrades
+	Flags        map[string]PathSet
+	PassedAll    []string
+	NoApplicable []string
 }
 
 func newAggregatedReport() *AggregatedReport {
@@ -37,6 +38,7 @@ func AggregateFindings(report *DecoratedReport, rules []rule.ELFRule) *Aggregate
 	}
 
 	slices.Sort(agg.PassedAll)
+	slices.Sort(agg.NoApplicable)
 	return agg
 }
 
@@ -46,16 +48,26 @@ func (agg *AggregatedReport) addResult(result DecoratedFileResult, rules map[str
 	}
 
 	var failedFindings []suggestions.DecoratedFinding
-	allPassed := true
+	hasApplicable := false
+	hasFailed := false
 
 	for _, f := range result.Findings {
-		if f.Status == rule.StatusFailed {
+		switch f.Status {
+		case rule.StatusFailed:
 			failedFindings = append(failedFindings, f)
-			allPassed = false
+			hasApplicable = true
+			hasFailed = true
+		case rule.StatusPassed:
+			hasApplicable = true
 		}
 	}
 
-	if allPassed {
+	if !hasApplicable {
+		agg.NoApplicable = append(agg.NoApplicable, result.Path)
+		return
+	}
+
+	if !hasFailed {
 		agg.PassedAll = append(agg.PassedAll, result.Path)
 		return
 	}

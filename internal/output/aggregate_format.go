@@ -47,6 +47,11 @@ func (agg *AggregatedReport) Format() string {
 			len(agg.PassedAll),
 			strings.Join(agg.PassedAll, ", ")))
 	}
+	if len(agg.NoApplicable) > 0 {
+		sb.WriteString(fmt.Sprintf("No applicable checks (%d binaries): %s\n",
+			len(agg.NoApplicable),
+			strings.Join(agg.NoApplicable, ", ")))
+	}
 
 	if sb.Len() == 0 {
 		sb.WriteString("No binaries analyzed.\n")
