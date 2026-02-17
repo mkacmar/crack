@@ -149,7 +149,7 @@ x86, amd64, arm, arm64
 - **Rule ID:** `fortify-source`
 - **Implementation:** `FortifySourceRule`
 
-Checks for FORTIFY_SOURCE buffer overflow protection. This glibc feature replaces unsafe C library functions (strcpy, memcpy, sprintf, etc.) with bounds-checked variants at compile time.
+Checks for FORTIFY_SOURCE buffer overflow protection. This glibc feature replaces unsafe C library functions (strcpy, memcpy, sprintf, etc.) with bounds-checked variants that detect buffer overflows at runtime.
 
 ### Platform
 
@@ -192,7 +192,7 @@ x86, amd64, arm, arm64
 - **Rule ID:** `no-dlopen`
 - **Implementation:** `NoDLOpenRule`
 
-Checks if the shared library disallows being loaded via dlopen(). This prevents attackers from injecting the library into arbitrary processes.
+Checks if the shared library has the DF_1_NOOPEN flag set to prevent loading via dlopen(3). This restricts an attacker's ability to load the library into arbitrary processes at runtime.
 
 ### Platform
 
@@ -214,7 +214,7 @@ x86, amd64, arm, arm64
 - **Rule ID:** `no-dump`
 - **Implementation:** `NoDumpRule`
 
-Checks if the binary is excluded from core dumps. Disabling core dumps prevents sensitive data like cryptographic keys and passwords from being written to disk during crashes.
+Checks if the binary has the DF_1_NODUMP flag set to prevent dldump(3) from copying the shared object. This restricts an attacker's ability to extract the mapped object from a running process.
 
 ### Platform
 
@@ -387,7 +387,7 @@ x86, amd64, arm, arm64
 - **Rule ID:** `stack-canary`
 - **Implementation:** `StackCanaryRule`
 
-Checks for stack canary (stack protector) instrumentation. Stack canaries detect buffer overflows by placing a guard value before the return address. If the canary is corrupted, the program terminates before exploitation can occur.
+Checks for stack canary (stack protector) instrumentation. Stack canaries detect buffer overflows by placing a guard value between local variables and the return address. If the canary is corrupted, the program terminates before exploitation can occur.
 
 ### Platform
 

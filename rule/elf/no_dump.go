@@ -18,7 +18,7 @@ type NoDumpRule struct{}
 func (r NoDumpRule) ID() string   { return NoDumpRuleID }
 func (r NoDumpRule) Name() string { return "Core Dump Protection" }
 func (r NoDumpRule) Description() string {
-	return "Checks if the binary is excluded from core dumps. Disabling core dumps prevents sensitive data like cryptographic keys and passwords from being written to disk during crashes."
+	return "Checks if the binary has the DF_1_NODUMP flag set to prevent dldump(3) from copying the shared object. This restricts an attacker's ability to extract the mapped object from a running process."
 }
 
 func (r NoDumpRule) Applicability() rule.Applicability {

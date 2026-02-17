@@ -19,7 +19,7 @@ type StackCanaryRule struct{}
 func (r StackCanaryRule) ID() string   { return StackCanaryRuleID }
 func (r StackCanaryRule) Name() string { return "Stack Canary Protection" }
 func (r StackCanaryRule) Description() string {
-	return "Checks for stack canary (stack protector) instrumentation. Stack canaries detect buffer overflows by placing a guard value before the return address. If the canary is corrupted, the program terminates before exploitation can occur."
+	return "Checks for stack canary (stack protector) instrumentation. Stack canaries detect buffer overflows by placing a guard value between local variables and the return address. If the canary is corrupted, the program terminates before exploitation can occur."
 }
 
 func (r StackCanaryRule) Applicability() rule.Applicability {

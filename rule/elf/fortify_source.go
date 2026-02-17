@@ -46,7 +46,7 @@ type FortifySourceRule struct{}
 func (r FortifySourceRule) ID() string   { return FortifySourceRuleID }
 func (r FortifySourceRule) Name() string { return "FORTIFY_SOURCE" }
 func (r FortifySourceRule) Description() string {
-	return "Checks for FORTIFY_SOURCE buffer overflow protection. This glibc feature replaces unsafe C library functions (strcpy, memcpy, sprintf, etc.) with bounds-checked variants at compile time."
+	return "Checks for FORTIFY_SOURCE buffer overflow protection. This glibc feature replaces unsafe C library functions (strcpy, memcpy, sprintf, etc.) with bounds-checked variants that detect buffer overflows at runtime."
 }
 
 func (r FortifySourceRule) Applicability() rule.Applicability {
