@@ -41,16 +41,16 @@ See [rules reference](docs/rules.md) for all available rules.
 
 When `--rules` is not specified, crack runs the following default set:
 
-[`aslr`](docs/rules.md#aslr-compatibility),
-[`fortify-source`](docs/rules.md#fortify_source),
-[`full-relro`](docs/rules.md#full-relro),
-[`no-insecure-rpath`](docs/rules.md#secure-rpath),
-[`no-insecure-runpath`](docs/rules.md#secure-runpath),
-[`nx-bit`](docs/rules.md#non-executable-stack),
-[`pie`](docs/rules.md#position-independent-executable),
-[`relro`](docs/rules.md#partial-relro),
-[`separate-code`](docs/rules.md#separate-code-segments),
-[`stack-canary`](docs/rules.md#stack-canary-protection)
+- [`aslr`](docs/rules.md#aslr-compatibility)
+- [`fortify-source`](docs/rules.md#fortify_source)
+- [`full-relro`](docs/rules.md#full-relro)
+- [`no-insecure-rpath`](docs/rules.md#secure-rpath)
+- [`no-insecure-runpath`](docs/rules.md#secure-runpath)
+- [`nx-bit`](docs/rules.md#non-executable-stack)
+- [`pie`](docs/rules.md#position-independent-executable)
+- [`relro`](docs/rules.md#partial-relro)
+- [`separate-code`](docs/rules.md#separate-code-segments)
+- [`stack-canary`](docs/rules.md#stack-canary-protection)
 
 The `--target-compiler` and `--target-platform` flags filter which rules are loaded based on their applicability.
 At runtime, the tool also detects the actual compiler from binary metadata and skips rules that don't apply to the detected compiler.
