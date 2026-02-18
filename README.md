@@ -26,7 +26,7 @@ crack analyze [options] [<path>...]
 
 ### Input Options
 
-- `<path>...` - Files or directories to analyze (supports glob patterns)
+- `<path>...` - Files or directories to analyze (glob patterns must be expanded by the shell)
 - `--recursive` - Recursively scan directories
 - `--input <file>` - Read paths from file, one per line (use `-` for stdin)
 - `--parallel <n>` - Number of files to analyze in parallel (default: number of CPUs)
