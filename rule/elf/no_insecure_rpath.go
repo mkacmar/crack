@@ -66,10 +66,14 @@ func (r NoInsecureRPATHRule) Execute(bin *binary.ELFBinary) rule.Result {
 
 func findInsecurePaths(rpath string) []string {
 	var insecure []string
+	hasEmpty := false
 	for _, p := range strings.Split(rpath, ":") {
 		if isInsecurePath(p) {
 			if p == "" {
-				insecure = append(insecure, "(empty)")
+				if !hasEmpty {
+					insecure = append(insecure, "(empty)")
+					hasEmpty = true
+				}
 			} else {
 				insecure = append(insecure, p)
 			}
