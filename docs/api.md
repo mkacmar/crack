@@ -1,6 +1,14 @@
 # Programmatic Usage
 
-The public packages — [`binary`](https://pkg.go.dev/github.com/mkacmar/crack/binary), [`rule`](https://pkg.go.dev/github.com/mkacmar/crack/rule), [`rule/elf`](https://pkg.go.dev/github.com/mkacmar/crack/rule/elf), and [`toolchain`](https://pkg.go.dev/github.com/mkacmar/crack/toolchain) — can be used as a library. The standard workflow is to parse a binary, run rules, and inspect the findings:
+The following public packages can be used as a library:
+
+- [`binary`](https://pkg.go.dev/github.com/mkacmar/crack/binary)
+- [`rule`](https://pkg.go.dev/github.com/mkacmar/crack/rule)
+- [`rule/elf`](https://pkg.go.dev/github.com/mkacmar/crack/rule/elf)
+- [`rule/registry`](https://pkg.go.dev/github.com/mkacmar/crack/rule/registry)
+- [`toolchain`](https://pkg.go.dev/github.com/mkacmar/crack/toolchain)
+
+The standard workflow is to parse a binary, run rules, and inspect the findings:
 
 ```go
 bin, _ := binary.ParseELF(f)

@@ -1,4 +1,4 @@
-package rules
+package registry
 
 import (
 	"github.com/mkacmar/crack/rule"

@@ -16,9 +16,9 @@ import (
 	"github.com/mkacmar/crack/internal/debuginfo"
 	"github.com/mkacmar/crack/internal/output"
 	"github.com/mkacmar/crack/internal/preset"
-	"github.com/mkacmar/crack/internal/rules"
 	"github.com/mkacmar/crack/internal/scanner"
 	"github.com/mkacmar/crack/rule"
+	"github.com/mkacmar/crack/rule/registry"
 )
 
 var errNoPathsSpecified = fmt.Errorf("no paths specified")
@@ -105,7 +105,7 @@ func parseRules(rulesFlag, targetPlatform, targetCompiler string) ([]rule.ELFRul
 		ids := strings.Split(rulesFlag, ",")
 		for _, id := range ids {
 			id = strings.TrimSpace(id)
-			r, ok := rules.Find[rule.ELFRule](rules.ByID(id))
+			r, ok := registry.Find[rule.ELFRule](registry.ByID(id))
 			if !ok {
 				return nil, fmt.Errorf("unknown rule %q", id)
 			}

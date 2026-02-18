@@ -6,8 +6,8 @@ import (
 	"strings"
 
 	"github.com/mkacmar/crack/binary"
-	"github.com/mkacmar/crack/internal/rules"
 	"github.com/mkacmar/crack/rule"
+	"github.com/mkacmar/crack/rule/registry"
 	"github.com/mkacmar/crack/toolchain"
 )
 
@@ -29,7 +29,7 @@ func Decorate(findings []rule.Finding, info binary.Info) []DecoratedFinding {
 			continue
 		}
 
-		r, ok := rules.Find[rule.Rule](rules.ByID(f.RuleID))
+		r, ok := registry.Find[rule.Rule](registry.ByID(f.RuleID))
 		if !ok {
 			continue
 		}

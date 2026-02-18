@@ -10,8 +10,8 @@ import (
 	"text/template"
 
 	"github.com/mkacmar/crack/binary"
-	"github.com/mkacmar/crack/internal/rules"
 	"github.com/mkacmar/crack/rule"
+	"github.com/mkacmar/crack/rule/registry"
 	"github.com/mkacmar/crack/toolchain"
 )
 
@@ -41,7 +41,7 @@ type compilerData struct {
 }
 
 func main() {
-	allRules := rules.All()
+	allRules := registry.All()
 	sort.Slice(allRules, func(i, j int) bool {
 		return allRules[i].ID() < allRules[j].ID()
 	})
