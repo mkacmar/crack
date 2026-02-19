@@ -26,6 +26,9 @@ func TestFortifySourceRule(t *testing.T) {
 		{Binary: "amd64-clang-fortify2-stripped", Expect: e2e.Pass},
 		{Binary: "amd64-clang-fortify2-lto", Expect: e2e.Pass},
 
+		{Binary: "amd64-gcc-fortify2-shared", Expect: e2e.Pass},
+		{Binary: "amd64-gcc-no-fortify-shared", Expect: e2e.Fail},
+
 		{Binary: "arm64-gcc-fortify2-O2", Expect: e2e.Pass},
 		{Binary: "arm64-gcc-fortify1-O1", Expect: e2e.Pass},
 		{Binary: "arm64-gcc-fortify3-O2", Expect: e2e.Pass},
@@ -43,6 +46,9 @@ func TestFortifySourceRule(t *testing.T) {
 		{Binary: "arm64-clang-fortify2-O0", Expect: e2e.Fail},
 		{Binary: "arm64-clang-fortify2-stripped", Expect: e2e.Pass},
 		{Binary: "arm64-clang-fortify2-lto", Expect: e2e.Pass},
+
+		{Binary: "arm64-gcc-fortify2-shared", Expect: e2e.Pass},
+		{Binary: "arm64-gcc-no-fortify-shared", Expect: e2e.Fail},
 
 		// arm uses musl libc, fortify-source rule skips
 		{Binary: "arm-gcc-fortify2-O2", Expect: e2e.Skip},
@@ -62,6 +68,10 @@ func TestFortifySourceRule(t *testing.T) {
 		{Binary: "arm-clang-fortify2-O0", Expect: e2e.Skip},
 		{Binary: "arm-clang-fortify2-stripped", Expect: e2e.Skip},
 		{Binary: "arm-clang-fortify2-lto", Expect: e2e.Skip},
+
+		// musl shared libs: no PT_INTERP, musl detected via DT_NEEDED
+		{Binary: "arm-gcc-fortify2-shared", Expect: e2e.Skip},
+		{Binary: "arm-gcc-no-fortify-shared", Expect: e2e.Skip},
 
 		{Binary: "amd64-rustc-no-fortify", Expect: e2e.Skip},
 		{Binary: "arm64-rustc-no-fortify", Expect: e2e.Skip},

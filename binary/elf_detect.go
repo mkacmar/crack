@@ -142,5 +142,18 @@ func detectLibC(f *elf.File) LibC {
 		}
 	}
 
+	// Fall back to DT_NEEDED entries for shared libraries without PT_INTERP.
+	libs, err := f.ImportedLibraries()
+	if err == nil {
+		for _, lib := range libs {
+			if strings.Contains(lib, "musl") {
+				return LibCMusl
+			}
+			if lib == "libc.so.6" {
+				return LibCGlibc
+			}
+		}
+	}
+
 	return LibCUnknown
 }
