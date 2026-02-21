@@ -3,7 +3,7 @@ package arm_mte_test
 import (
 	"testing"
 
-	"github.com/mkacmar/crack/test/e2e"
+	"go.kacmar.sk/crack/test/e2e"
 )
 
 func TestARMMTERule(t *testing.T) {

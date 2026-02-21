@@ -3,7 +3,7 @@ package asan_test
 import (
 	"testing"
 
-	"github.com/mkacmar/crack/test/e2e"
+	"go.kacmar.sk/crack/test/e2e"
 )
 
 func TestASANRule(t *testing.T) {

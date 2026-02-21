@@ -3,7 +3,7 @@ package binary
 import (
 	"fmt"
 
-	"github.com/mkacmar/crack/toolchain"
+	"go.kacmar.sk/crack/toolchain"
 )
 
 // Format identifies the executable format.

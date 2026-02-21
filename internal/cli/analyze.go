@@ -12,13 +12,13 @@ import (
 	"strings"
 	"time"
 
-	"github.com/mkacmar/crack/internal/analyzer"
-	"github.com/mkacmar/crack/internal/debuginfo"
-	"github.com/mkacmar/crack/internal/output"
-	"github.com/mkacmar/crack/internal/preset"
-	"github.com/mkacmar/crack/internal/scanner"
-	"github.com/mkacmar/crack/rule"
-	"github.com/mkacmar/crack/rule/registry"
+	"go.kacmar.sk/crack/internal/analyzer"
+	"go.kacmar.sk/crack/internal/debuginfo"
+	"go.kacmar.sk/crack/internal/output"
+	"go.kacmar.sk/crack/internal/preset"
+	"go.kacmar.sk/crack/internal/scanner"
+	"go.kacmar.sk/crack/rule"
+	"go.kacmar.sk/crack/rule/registry"
 )
 
 var errNoPathsSpecified = fmt.Errorf("no paths specified")

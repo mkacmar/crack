@@ -6,10 +6,10 @@ import (
 	"os"
 	"time"
 
-	"github.com/mkacmar/crack/internal/analyzer"
-	"github.com/mkacmar/crack/internal/output"
-	"github.com/mkacmar/crack/internal/suggestions"
-	"github.com/mkacmar/crack/rule"
+	"go.kacmar.sk/crack/internal/analyzer"
+	"go.kacmar.sk/crack/internal/output"
+	"go.kacmar.sk/crack/internal/suggestions"
+	"go.kacmar.sk/crack/rule"
 )
 
 func (a *App) processFullReport(resultsChan <-chan analyzer.FileResult, opts *outputOptions, invocation *output.InvocationInfo, rules []rule.ELFRule) int {

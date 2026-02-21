@@ -3,7 +3,7 @@ package stack_limit_test
 import (
 	"testing"
 
-	"github.com/mkacmar/crack/test/e2e"
+	"go.kacmar.sk/crack/test/e2e"
 )
 
 func TestStackLimitRule(t *testing.T) {

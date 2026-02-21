@@ -6,7 +6,7 @@ import (
 	"slices"
 	"strings"
 
-	"github.com/mkacmar/crack/toolchain"
+	"go.kacmar.sk/crack/toolchain"
 )
 
 func sortedPaths(m PathSet) []string {

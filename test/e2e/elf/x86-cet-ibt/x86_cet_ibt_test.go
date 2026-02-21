@@ -3,7 +3,7 @@ package x86_cet_ibt_test
 import (
 	"testing"
 
-	"github.com/mkacmar/crack/test/e2e"
+	"go.kacmar.sk/crack/test/e2e"
 )
 
 func TestX86CETIBTRule(t *testing.T) {

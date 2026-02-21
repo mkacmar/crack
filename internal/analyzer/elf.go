@@ -5,9 +5,9 @@ import (
 	"log/slog"
 	"os"
 
-	"github.com/mkacmar/crack/binary"
-	"github.com/mkacmar/crack/internal/debuginfo"
-	"github.com/mkacmar/crack/rule"
+	"go.kacmar.sk/crack/binary"
+	"go.kacmar.sk/crack/internal/debuginfo"
+	"go.kacmar.sk/crack/rule"
 )
 
 // ELFAnalyzer runs ELF-specific analysis and returns findings.

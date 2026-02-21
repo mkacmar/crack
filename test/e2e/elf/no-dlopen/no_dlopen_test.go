@@ -3,7 +3,7 @@ package no_dlopen_test
 import (
 	"testing"
 
-	"github.com/mkacmar/crack/test/e2e"
+	"go.kacmar.sk/crack/test/e2e"
 )
 
 func TestNoDLOpenRule(t *testing.T) {

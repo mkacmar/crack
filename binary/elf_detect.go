@@ -6,7 +6,7 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/mkacmar/crack/toolchain"
+	"go.kacmar.sk/crack/toolchain"
 )
 
 var compilerPriority = map[toolchain.Compiler]int{

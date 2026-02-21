@@ -5,7 +5,7 @@ import (
 	"log/slog"
 	"os"
 
-	"github.com/mkacmar/crack/internal/version"
+	"go.kacmar.sk/crack/internal/version"
 )
 
 const (

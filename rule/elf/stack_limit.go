@@ -4,9 +4,9 @@ import (
 	"debug/elf"
 	"fmt"
 
-	"github.com/mkacmar/crack/binary"
-	"github.com/mkacmar/crack/rule"
-	"github.com/mkacmar/crack/toolchain"
+	"go.kacmar.sk/crack/binary"
+	"go.kacmar.sk/crack/rule"
+	"go.kacmar.sk/crack/toolchain"
 )
 
 // StackLimitRuleID is the rule ID for stack limit.

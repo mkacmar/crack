@@ -6,7 +6,7 @@ import (
 	"io"
 	"log/slog"
 
-	"github.com/mkacmar/crack/binary"
+	"go.kacmar.sk/crack/binary"
 )
 
 // Dispatcher routes binary analysis to format-specific analyzers.

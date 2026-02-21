@@ -1,8 +1,8 @@
 package rule
 
 import (
-	"github.com/mkacmar/crack/binary"
-	"github.com/mkacmar/crack/toolchain"
+	"go.kacmar.sk/crack/binary"
+	"go.kacmar.sk/crack/toolchain"
 )
 
 // PlatformTarget specifies an architecture constraint for filtering rules.

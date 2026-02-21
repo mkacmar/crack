@@ -2,11 +2,11 @@
 
 The following public packages can be used as a library:
 
-- [`binary`](https://pkg.go.dev/github.com/mkacmar/crack/binary)
-- [`rule`](https://pkg.go.dev/github.com/mkacmar/crack/rule)
-- [`rule/elf`](https://pkg.go.dev/github.com/mkacmar/crack/rule/elf)
-- [`rule/registry`](https://pkg.go.dev/github.com/mkacmar/crack/rule/registry)
-- [`toolchain`](https://pkg.go.dev/github.com/mkacmar/crack/toolchain)
+- [`binary`](https://pkg.go.dev/go.kacmar.sk/crack/binary)
+- [`rule`](https://pkg.go.dev/go.kacmar.sk/crack/rule)
+- [`rule/elf`](https://pkg.go.dev/go.kacmar.sk/crack/rule/elf)
+- [`rule/registry`](https://pkg.go.dev/go.kacmar.sk/crack/rule/registry)
+- [`toolchain`](https://pkg.go.dev/go.kacmar.sk/crack/toolchain)
 
 The standard workflow is to parse a binary, run rules, and inspect the findings:
 
@@ -20,13 +20,13 @@ findings := rule.Check(rules, bin.Info, func(r rule.ELFRule) rule.Result {
 })
 ```
 
-[`Check`](https://pkg.go.dev/github.com/mkacmar/crack/rule#Check) handles applicability automatically — rules that don't match the binary's platform or compiler are skipped. See the [rules reference](rules.md) for available built-in rules.
+[`Check`](https://pkg.go.dev/go.kacmar.sk/crack/rule#Check) handles applicability automatically — rules that don't match the binary's platform or compiler are skipped. See the [rules reference](rules.md) for available built-in rules.
 
-For filtering, applicability checks, and other utilities, see the [package documentation](https://pkg.go.dev/github.com/mkacmar/crack).
+For filtering, applicability checks, and other utilities, see the [package documentation](https://pkg.go.dev/go.kacmar.sk/crack).
 
 ## Custom Rules
 
-To create a custom rule, implement the [`ELFRule`](https://pkg.go.dev/github.com/mkacmar/crack/rule#ELFRule) interface. For example, a rule that checks for a minimum stack size:
+To create a custom rule, implement the [`ELFRule`](https://pkg.go.dev/go.kacmar.sk/crack/rule#ELFRule) interface. For example, a rule that checks for a minimum stack size:
 
 ```go
 type MinStackSizeRule struct {
@@ -55,7 +55,7 @@ func (r MinStackSizeRule) Execute(bin *binary.ELFBinary) rule.Result {
 
 ## Custom Compiler Detection
 
-To detect custom compilers, implement [`ELFDetector`](https://pkg.go.dev/github.com/mkacmar/crack/toolchain#ELFDetector) and pass it to [`ParseELFWithDetector()`](https://pkg.go.dev/github.com/mkacmar/crack/binary#ParseELFWithDetector). This enables applicability checks for binaries built with internal or proprietary compilers:
+To detect custom compilers, implement [`ELFDetector`](https://pkg.go.dev/go.kacmar.sk/crack/toolchain#ELFDetector) and pass it to [`ParseELFWithDetector()`](https://pkg.go.dev/go.kacmar.sk/crack/binary#ParseELFWithDetector). This enables applicability checks for binaries built with internal or proprietary compilers:
 
 ```go
 // AcmeDetector detects Acme Corp's internal compiler, falling back to standard detection.
@@ -80,4 +80,4 @@ func (d AcmeDetector) Detect(comment string) (toolchain.Compiler, toolchain.Vers
 bin, err := binary.ParseELFWithDetector(f, AcmeDetector{})
 ```
 
-For complete API documentation, see [pkg.go.dev](https://pkg.go.dev/github.com/mkacmar/crack).
+For complete API documentation, see [pkg.go.dev](https://pkg.go.dev/go.kacmar.sk/crack).

@@ -8,7 +8,7 @@ import (
 	"runtime"
 	"testing"
 
-	"github.com/mkacmar/crack/internal/output"
+	"go.kacmar.sk/crack/internal/output"
 )
 
 const (

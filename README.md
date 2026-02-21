@@ -13,7 +13,7 @@ Based on recommendations from:
 ## Installation
 
 ```sh
-go install github.com/mkacmar/crack/cmd/crack@latest
+go install go.kacmar.sk/crack/cmd/crack@latest
 ```
 
 Or download pre-built binaries from [releases](https://github.com/mkacmar/crack/releases).

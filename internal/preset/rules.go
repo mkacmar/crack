@@ -1,8 +1,8 @@
 package preset
 
 import (
-	"github.com/mkacmar/crack/rule"
-	"github.com/mkacmar/crack/rule/elf"
+	"go.kacmar.sk/crack/rule"
+	"go.kacmar.sk/crack/rule/elf"
 )
 
 func Default() []rule.ELFRule {

@@ -1,4 +1,4 @@
-module github.com/mkacmar/crack
+module go.kacmar.sk/crack
 
 go 1.25.0
 

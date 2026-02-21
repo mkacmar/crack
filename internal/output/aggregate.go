@@ -3,9 +3,9 @@ package output
 import (
 	"slices"
 
-	"github.com/mkacmar/crack/internal/suggestions"
-	"github.com/mkacmar/crack/rule"
-	"github.com/mkacmar/crack/toolchain"
+	"go.kacmar.sk/crack/internal/suggestions"
+	"go.kacmar.sk/crack/rule"
+	"go.kacmar.sk/crack/toolchain"
 )
 
 type PathSet map[string]bool

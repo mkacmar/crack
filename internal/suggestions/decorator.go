@@ -5,10 +5,10 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/mkacmar/crack/binary"
-	"github.com/mkacmar/crack/rule"
-	"github.com/mkacmar/crack/rule/registry"
-	"github.com/mkacmar/crack/toolchain"
+	"go.kacmar.sk/crack/binary"
+	"go.kacmar.sk/crack/rule"
+	"go.kacmar.sk/crack/rule/registry"
+	"go.kacmar.sk/crack/toolchain"
 )
 
 // DecoratedFinding extends rule.Finding with a fix suggestion.

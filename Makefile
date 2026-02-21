@@ -8,9 +8,9 @@ COVERAGE_DIR = coverage
 VERSION ?= $(shell git describe --tags --always --dirty 2>/dev/null || echo "dev")
 COMMIT ?= $(shell git rev-parse --short HEAD 2>/dev/null || echo "unknown")
 BUILD_TIME ?= $(shell date -u +"%Y-%m-%dT%H:%M:%SZ")
-LDFLAGS = -X github.com/mkacmar/crack/internal/version.Version=$(VERSION) \
-          -X github.com/mkacmar/crack/internal/version.GitCommit=$(COMMIT) \
-          -X github.com/mkacmar/crack/internal/version.BuildTime=$(BUILD_TIME)
+LDFLAGS = -X go.kacmar.sk/crack/internal/version.Version=$(VERSION) \
+          -X go.kacmar.sk/crack/internal/version.GitCommit=$(COMMIT) \
+          -X go.kacmar.sk/crack/internal/version.BuildTime=$(BUILD_TIME)
 RELEASE_LDFLAGS = -s -w $(LDFLAGS)
 GOFLAGS = -buildmode=pie
 

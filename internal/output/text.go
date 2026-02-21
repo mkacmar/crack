@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"io"
 
-	"github.com/mkacmar/crack/rule"
+	"go.kacmar.sk/crack/rule"
 )
 
 type TextFormatter struct {

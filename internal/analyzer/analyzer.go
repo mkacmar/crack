@@ -1,8 +1,8 @@
 package analyzer
 
 import (
-	"github.com/mkacmar/crack/binary"
-	"github.com/mkacmar/crack/rule"
+	"go.kacmar.sk/crack/binary"
+	"go.kacmar.sk/crack/rule"
 )
 
 // FileResult contains analysis results for a single file (or arch slice for fat binaries).

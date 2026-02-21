@@ -3,7 +3,7 @@ package main
 import (
 	"os"
 
-	"github.com/mkacmar/crack/internal/cli"
+	"go.kacmar.sk/crack/internal/cli"
 )
 
 func main() {

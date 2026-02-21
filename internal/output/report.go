@@ -1,8 +1,8 @@
 package output
 
 import (
-	"github.com/mkacmar/crack/internal/analyzer"
-	"github.com/mkacmar/crack/internal/suggestions"
+	"go.kacmar.sk/crack/internal/analyzer"
+	"go.kacmar.sk/crack/internal/suggestions"
 )
 
 // DecoratedFileResult extends FileResult with suggestion-enriched findings.

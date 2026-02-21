@@ -6,9 +6,9 @@ import (
 	"testing"
 	"time"
 
-	"github.com/mkacmar/crack/internal/analyzer"
-	"github.com/mkacmar/crack/internal/suggestions"
-	"github.com/mkacmar/crack/rule"
+	"go.kacmar.sk/crack/internal/analyzer"
+	"go.kacmar.sk/crack/internal/suggestions"
+	"go.kacmar.sk/crack/rule"
 )
 
 func TestSARIFResultKind(t *testing.T) {

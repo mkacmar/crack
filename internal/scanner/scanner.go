@@ -14,7 +14,7 @@ import (
 
 	"golang.org/x/sync/errgroup"
 
-	"github.com/mkacmar/crack/internal/analyzer"
+	"go.kacmar.sk/crack/internal/analyzer"
 )
 
 type Scanner struct {

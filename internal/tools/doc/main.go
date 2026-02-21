@@ -9,10 +9,10 @@ import (
 	"sort"
 	"text/template"
 
-	"github.com/mkacmar/crack/binary"
-	"github.com/mkacmar/crack/rule"
-	"github.com/mkacmar/crack/rule/registry"
-	"github.com/mkacmar/crack/toolchain"
+	"go.kacmar.sk/crack/binary"
+	"go.kacmar.sk/crack/rule"
+	"go.kacmar.sk/crack/rule/registry"
+	"go.kacmar.sk/crack/toolchain"
 )
 
 //go:embed rules.md.tpl

@@ -1,6 +1,6 @@
 package rule
 
-import "github.com/mkacmar/crack/binary"
+import "go.kacmar.sk/crack/binary"
 
 // Check runs all rules against binary metadata, using execFn to execute each rule.
 func Check[R Rule](rules []R, info binary.Info, execFn func(R) Result) []Finding {

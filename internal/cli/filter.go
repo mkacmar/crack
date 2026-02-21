@@ -4,9 +4,9 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/mkacmar/crack/binary"
-	"github.com/mkacmar/crack/rule"
-	"github.com/mkacmar/crack/toolchain"
+	"go.kacmar.sk/crack/binary"
+	"go.kacmar.sk/crack/rule"
+	"go.kacmar.sk/crack/toolchain"
 )
 
 func ParseTargetFilter(platforms, compilers string) (*rule.TargetFilter, error) {

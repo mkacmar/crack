@@ -6,7 +6,7 @@ import (
 	"fmt"
 	"io"
 
-	"github.com/mkacmar/crack/toolchain"
+	"go.kacmar.sk/crack/toolchain"
 )
 
 // ErrUnsupportedFormat is returned when the file is not a supported binary format.

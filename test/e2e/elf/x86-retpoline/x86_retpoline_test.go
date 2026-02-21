@@ -3,7 +3,7 @@ package x86_retpoline_test
 import (
 	"testing"
 
-	"github.com/mkacmar/crack/test/e2e"
+	"go.kacmar.sk/crack/test/e2e"
 )
 
 func TestX86RetpolineRule(t *testing.T) {

@@ -9,9 +9,9 @@ import (
 	"strings"
 	"time"
 
-	"github.com/mkacmar/crack/internal/suggestions"
-	"github.com/mkacmar/crack/internal/version"
-	"github.com/mkacmar/crack/rule"
+	"go.kacmar.sk/crack/internal/suggestions"
+	"go.kacmar.sk/crack/internal/version"
+	"go.kacmar.sk/crack/rule"
 )
 
 type SARIFReport struct {

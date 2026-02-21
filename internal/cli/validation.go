@@ -3,8 +3,8 @@ package cli
 import (
 	"strings"
 
-	"github.com/mkacmar/crack/binary"
-	"github.com/mkacmar/crack/toolchain"
+	"go.kacmar.sk/crack/binary"
+	"go.kacmar.sk/crack/toolchain"
 )
 
 func splitTarget(s string) (name, version string) {
