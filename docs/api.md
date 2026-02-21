@@ -13,7 +13,7 @@ The standard workflow is to parse a binary, run rules, and inspect the findings:
 ```go
 bin, _ := binary.ParseELF(f)
 
-rules := []rule.ELFRule{elf.PIERule{}, elf.StackCanaryRule{}, elf.FullRELRORule{}}
+rules := registry.Where[rule.ELFRule](nil)
 
 findings := rule.Check(rules, bin.Info, func(r rule.ELFRule) rule.Result {
     return r.Execute(bin)
