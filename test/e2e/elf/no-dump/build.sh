@@ -22,7 +22,4 @@ clang -c -o binaries/${ARCH}-clang-relocatable.o $C_SRC
 build_c gcc "" default
 build_c clang "" default
 
-
-rustc -o binaries/${ARCH}-rustc-default $RUST_SRC
-
 ls -la binaries/

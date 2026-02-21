@@ -29,8 +29,12 @@ func TestStackLimitRule(t *testing.T) {
 		{Binary: "arm-clang-no-stack-limit", Expect: e2e.Fail},
 		{Binary: "arm-clang-relocatable.o", Expect: e2e.Skip},
 
-		{Binary: "amd64-rustc-no-stack-limit", Expect: e2e.Skip},
-		{Binary: "arm64-rustc-no-stack-limit", Expect: e2e.Skip},
-		{Binary: "arm-rustc-no-stack-limit", Expect: e2e.Skip},
+		{Binary: "amd64-rustc-no-stack-limit", Expect: e2e.Fail},
+		{Binary: "arm64-rustc-no-stack-limit", Expect: e2e.Fail},
+		{Binary: "arm-rustc-no-stack-limit", Expect: e2e.Fail},
+
+		{Binary: "amd64-rustc-stack-limit", Expect: e2e.Pass},
+		{Binary: "arm64-rustc-stack-limit", Expect: e2e.Pass},
+		{Binary: "arm-rustc-stack-limit", Expect: e2e.Pass},
 	})
 }

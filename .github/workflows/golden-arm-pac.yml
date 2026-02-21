@@ -13,7 +13,12 @@ jobs:
       - uses: actions/checkout@v4
 
       - name: Install build tools
-        run: dnf install -y gcc clang binutils rust
+        run: dnf install -y gcc clang binutils curl
+
+      - name: Install Rust
+        run: |
+          . test/e2e/install-rust.sh
+          echo "$HOME/.cargo/bin" >> $GITHUB_PATH
 
       - name: Build binaries
         run: sh test/e2e/elf/arm-pac/build.sh

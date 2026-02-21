@@ -12,10 +12,11 @@ import (
 type Compiler string
 
 const (
-	Unknown Compiler = ""
-	GCC     Compiler = "gcc"
-	Clang   Compiler = "clang"
-	Rustc   Compiler = "rustc"
+	Unknown      Compiler = ""
+	GCC          Compiler = "gcc"
+	Clang        Compiler = "clang"
+	Rustc        Compiler = "rustc"
+	RustcNightly Compiler = "rustc-nightly"
 )
 
 func (c Compiler) String() string {
@@ -106,6 +107,9 @@ func (ELFCommentDetector) Detect(comment string) (Compiler, Version) {
 	var comp Compiler
 	if strings.Contains(lower, "rustc") {
 		comp = Rustc
+		if strings.Contains(lower, "-nightly") {
+			comp = RustcNightly
+		}
 	} else if strings.Contains(lower, "gcc") || strings.Contains(lower, "gnu c") || strings.Contains(lower, "gnu gimple") {
 		comp = GCC
 	} else if strings.Contains(lower, "clang") {

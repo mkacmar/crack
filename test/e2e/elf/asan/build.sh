@@ -22,4 +22,9 @@ build_c clang "" no-asan
 
 rustc -o binaries/${ARCH}-rustc-no-asan $RUST_SRC
 
+if [ "$ARCH" != "arm" ]; then
+    rustc +nightly -Zsanitizer=address -Cunsafe-allow-abi-mismatch=sanitizer -o binaries/${ARCH}-rustc-nightly-asan $RUST_SRC
+    rustc +nightly -o binaries/${ARCH}-rustc-nightly-no-asan $RUST_SRC
+fi
+
 ls -la binaries/

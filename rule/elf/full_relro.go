@@ -13,6 +13,7 @@ const FullRELRORuleID = "full-relro"
 
 // FullRELRORule checks for full RELRO protection.
 // ld: https://sourceware.org/binutils/docs/ld/Options.html
+// Rustc: https://doc.rust-lang.org/rustc/exploit-mitigations.html#read-only-relocations-and-immediate-binding
 type FullRELRORule struct{}
 
 func (r FullRELRORule) ID() string   { return FullRELRORuleID }

@@ -14,6 +14,7 @@ const ASANRuleID = "asan"
 // ASANRule checks for AddressSanitizer instrumentation.
 // Clang: https://clang.llvm.org/docs/AddressSanitizer.html
 // GCC: https://gcc.gnu.org/onlinedocs/gcc/Instrumentation-Options.html#index-fsanitize=address
+// Rustc nightly: https://doc.rust-lang.org/beta/unstable-book/compiler-flags/sanitizer.html#addresssanitizer
 type ASANRule struct{}
 
 func (r ASANRule) ID() string   { return ASANRuleID }
@@ -26,8 +27,9 @@ func (r ASANRule) Applicability() rule.Applicability {
 	return rule.Applicability{
 		Platform: binary.Platform{Architecture: binary.ArchAllX86 | binary.ArchAllARM},
 		Compilers: map[toolchain.Compiler]rule.CompilerRequirement{
-			toolchain.GCC:   {MinVersion: toolchain.Version{Major: 5, Minor: 1}, Flag: "-fsanitize=address"},
-			toolchain.Clang: {MinVersion: toolchain.Version{Major: 3, Minor: 4}, Flag: "-fsanitize=address"},
+			toolchain.GCC:          {MinVersion: toolchain.Version{Major: 5, Minor: 1}, Flag: "-fsanitize=address"},
+			toolchain.Clang:        {MinVersion: toolchain.Version{Major: 3, Minor: 4}, Flag: "-fsanitize=address"},
+			toolchain.RustcNightly: {MinVersion: toolchain.Version{Major: 1, Minor: 52}, Flag: "-Zsanitizer=address"},
 		},
 	}
 }

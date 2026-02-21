@@ -26,7 +26,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - name: Install Rust
-        run: rustup update stable
+        run: . test/e2e/install-rust.sh
       - name: Install lld
         run: sudo apt-get update && sudo apt-get install -y lld
       - name: Build binaries
@@ -42,7 +42,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - name: Install Rust
-        run: rustup update stable
+        run: . test/e2e/install-rust.sh
       - name: Install lld
         run: sudo apt-get update && sudo apt-get install -y lld
       - name: Build binaries
@@ -66,7 +66,11 @@ jobs:
           docker run --rm --platform linux/arm/v7 \
             -v ${{ github.workspace }}:/workspace \
             -w /workspace \
-            alpine:latest sh -c 'apk add --no-cache gcc clang musl-dev binutils rust && sh test/e2e/elf/${{ inputs.rule }}/build.sh arm'
+            alpine:latest sh -c '
+              # rustup does not support armv7 musl so we use apk for stable rustc only
+              apk add --no-cache gcc clang musl-dev binutils rust &&
+              sh test/e2e/elf/${{ inputs.rule }}/build.sh arm
+            '
       - uses: actions/upload-artifact@v4
         with:
           name: binaries-arm

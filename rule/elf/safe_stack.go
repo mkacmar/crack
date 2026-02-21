@@ -14,6 +14,7 @@ const SafeStackRuleID = "safe-stack"
 // SafeStackRule checks for SafeStack protection.
 // Clang: https://clang.llvm.org/docs/SafeStack.html
 // LLVM: https://llvm.org/docs/SafeStack.html
+// Rustc nightly https://doc.rust-lang.org/beta/unstable-book/compiler-flags/sanitizer.html#safestack
 type SafeStackRule struct{}
 
 func (r SafeStackRule) ID() string   { return SafeStackRuleID }
@@ -26,7 +27,8 @@ func (r SafeStackRule) Applicability() rule.Applicability {
 	return rule.Applicability{
 		Platform: binary.Platform{Architecture: binary.ArchAllX86 | binary.ArchAllARM},
 		Compilers: map[toolchain.Compiler]rule.CompilerRequirement{
-			toolchain.Clang: {MinVersion: toolchain.Version{Major: 3, Minor: 7}, Flag: "-fsanitize=safe-stack"},
+			toolchain.Clang:        {MinVersion: toolchain.Version{Major: 3, Minor: 7}, Flag: "-fsanitize=safe-stack"},
+			toolchain.RustcNightly: {MinVersion: toolchain.Version{Major: 1, Minor: 66}, Flag: "-Zsanitizer=safestack"},
 		},
 	}
 }

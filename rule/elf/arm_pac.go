@@ -10,9 +10,13 @@ import (
 const ARMPACRuleID = "arm-pac"
 
 // ARMPACRule checks for ARM Pointer Authentication Code.
-// ARM: https://developer.arm.com/documentation/ddi0487/latest
+// https://developer.arm.com/documentation/ddi0487/latest
+//
 // GCC: https://gcc.gnu.org/onlinedocs/gcc/AArch64-Options.html#index-mbranch-protection
 // Clang: https://clang.llvm.org/docs/ClangCommandLineReference.html#cmdoption-clang-mbranch-protection
+//
+// Rustc nightly not supported: pre-built std lacks PAC, requires -Z build-std.
+// https://doc.rust-lang.org/beta/unstable-book/compiler-flags/branch-protection.html
 type ARMPACRule struct{}
 
 func (r ARMPACRule) ID() string   { return ARMPACRuleID }

@@ -30,6 +30,7 @@ var cfiPrefixes = []string{
 
 // CFIRule checks for Clang Control Flow Integrity.
 // https://clang.llvm.org/docs/ControlFlowIntegrity.html
+// Rustc nightly: https://doc.rust-lang.org/beta/unstable-book/compiler-flags/sanitizer.html#controlflowintegrity
 type CFIRule struct{}
 
 func (r CFIRule) ID() string   { return CFIRuleID }
@@ -42,7 +43,8 @@ func (r CFIRule) Applicability() rule.Applicability {
 	return rule.Applicability{
 		Platform: binary.Platform{Architecture: binary.ArchAllX86 | binary.ArchAllARM},
 		Compilers: map[toolchain.Compiler]rule.CompilerRequirement{
-			toolchain.Clang: {MinVersion: toolchain.Version{Major: 6, Minor: 0}, Flag: "-fsanitize=cfi -flto -fvisibility=hidden"},
+			toolchain.Clang:        {MinVersion: toolchain.Version{Major: 6, Minor: 0}, Flag: "-fsanitize=cfi -flto -fvisibility=hidden"},
+			toolchain.RustcNightly: {MinVersion: toolchain.Version{Major: 1, Minor: 66}, Flag: "-Zsanitizer=cfi -Clto -Ccodegen-units=1"},
 		},
 	}
 }

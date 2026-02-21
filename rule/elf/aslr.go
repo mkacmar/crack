@@ -13,6 +13,7 @@ const ASLRRuleID = "aslr"
 
 // ASLRRule checks if binary is ASLR compatible.
 // Linux Kernel: https://github.com/torvalds/linux/blob/master/Documentation/admin-guide/sysctl/kernel.rst
+// Rustc: https://doc.rust-lang.org/rustc/exploit-mitigations.html#position-independent-executable
 type ASLRRule struct{}
 
 func (r ASLRRule) ID() string   { return ASLRRuleID }

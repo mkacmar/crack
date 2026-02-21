@@ -10,9 +10,10 @@ import (
 )
 
 var compilerPriority = map[toolchain.Compiler]int{
-	toolchain.GCC:   1,
-	toolchain.Clang: 2,
-	toolchain.Rustc: 3,
+	toolchain.GCC:          1,
+	toolchain.Clang:        2,
+	toolchain.Rustc:        3,
+	toolchain.RustcNightly: 3,
 }
 
 func isNotELFError(err error) bool {

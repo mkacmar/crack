@@ -9,7 +9,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - name: Install Rust
-        run: rustup update stable
+        run: . test/e2e/install-rust.sh
       - name: Build binaries
         run: sh test/e2e/elf/asan/build.sh amd64
       - uses: actions/upload-artifact@v4
@@ -22,7 +22,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - name: Install Rust
-        run: rustup update stable
+        run: . test/e2e/install-rust.sh
       - name: Build binaries
         run: sh test/e2e/elf/asan/build.sh arm64
       - uses: actions/upload-artifact@v4
@@ -46,8 +46,7 @@ jobs:
             debian:bookworm sh -c '
               apt-get update &&
               apt-get install -y gcc clang binutils curl &&
-              curl --proto =https --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y &&
-              . ~/.cargo/env &&
+              . /workspace/test/e2e/install-rust.sh &&
               sh test/e2e/elf/asan/build.sh arm
             '
       - uses: actions/upload-artifact@v4

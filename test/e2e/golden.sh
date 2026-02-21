@@ -5,23 +5,29 @@ RETRY_ATTEMPTS=6
 RETRY_DELAY=5
 
 usage() {
-    echo "Usage: $0 [--rules <rule1,rule2,...>]"
+    echo "Usage: $0 [--rules <rule1,rule2,...>] [--fail-fast]"
     echo ""
     echo "Generate golden binaries by running pipeline(s)."
     echo ""
     echo "Options:"
     echo "  --rules <names>  Comma-separated list of rules (runs all if not specified)"
+    echo "  --fail-fast      Exit immediately on first workflow failure"
     exit 1
 }
 
 BRANCH=$(git branch --show-current)
 RULES=""
+FAIL_FAST=false
 
 while [ $# -gt 0 ]; do
     case "$1" in
         --rules)
             RULES="$2"
             shift 2
+            ;;
+        --fail-fast)
+            FAIL_FAST=true
+            shift
             ;;
         -h|--help)
             usage
@@ -119,7 +125,13 @@ else
     for dir in test/e2e/*/*/; do
         rule=$(basename "$dir")
         if [ -f ".github/workflows/golden-${rule}.yml" ]; then
-            run_workflow "$rule" || echo "Warning: Failed to run workflow for ${rule}"
+            if ! run_workflow "$rule"; then
+                if [ "$FAIL_FAST" = true ]; then
+                    echo "Error: Workflow for ${rule} failed, aborting"
+                    exit 1
+                fi
+                echo "Warning: Failed to run workflow for ${rule}"
+            fi
         fi
     done
     echo "All workflows completed"

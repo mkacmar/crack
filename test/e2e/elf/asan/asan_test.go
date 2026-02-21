@@ -35,5 +35,10 @@ func TestASANRule(t *testing.T) {
 		{Binary: "amd64-rustc-no-asan", Expect: e2e.Skip},
 		{Binary: "arm64-rustc-no-asan", Expect: e2e.Skip},
 		{Binary: "arm-rustc-no-asan", Expect: e2e.Skip},
+
+		{Binary: "amd64-rustc-nightly-asan", Expect: e2e.Pass},
+		{Binary: "amd64-rustc-nightly-no-asan", Expect: e2e.Fail},
+		{Binary: "arm64-rustc-nightly-asan", Expect: e2e.Pass},
+		{Binary: "arm64-rustc-nightly-no-asan", Expect: e2e.Fail},
 	})
 }

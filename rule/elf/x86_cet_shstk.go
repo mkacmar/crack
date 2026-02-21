@@ -11,6 +11,9 @@ const X86CETShadowStackRuleID = "x86-cet-shstk"
 
 // X86CETShadowStackRule checks for CET Shadow Stack (Intel/AMD).
 // GCC: https://gcc.gnu.org/onlinedocs/gcc/x86-Options.html#index-fcf-protection
+//
+// Rustc nightly not supported: pre-built std lacks CET, requires -Z build-std.
+// https://doc.rust-lang.org/beta/unstable-book/compiler-flags/cf-protection.html
 type X86CETShadowStackRule struct{}
 
 func (r X86CETShadowStackRule) ID() string   { return X86CETShadowStackRuleID }

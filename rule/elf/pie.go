@@ -14,6 +14,7 @@ const PIERuleID = "pie"
 // PIERule checks if binary is compiled as Position Independent Executable.
 // GCC: https://gcc.gnu.org/onlinedocs/gcc/Code-Gen-Options.html#index-fPIE
 // Clang: https://clang.llvm.org/docs/ClangCommandLineReference.html#cmdoption-clang-fpie
+// Rustc: https://doc.rust-lang.org/rustc/exploit-mitigations.html#position-independent-executable
 type PIERule struct{}
 
 func (r PIERule) ID() string   { return PIERuleID }

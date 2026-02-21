@@ -8,4 +8,5 @@ jobs:
     uses: ./.github/workflows/golden-build.yml
     with:
       rule: cfi
+      # CFI requires lld which is not available in the Alpine ARM container
       arm: false
