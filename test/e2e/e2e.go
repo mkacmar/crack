@@ -38,7 +38,7 @@ func RunRuleTests(t *testing.T, rule string, cases []TestCase) {
 	}
 
 	if _, err := os.Stat(crackBin); os.IsNotExist(err) {
-		t.Skipf("crack binary not found, run 'make build' first")
+		t.Fatalf("crack binary not found, run 'make build' first")
 	}
 
 	validateBinaries(t, binariesDir, cases)
