@@ -3,7 +3,8 @@
 > **Note**: This is a v0 release, API may change.
 
 A tool to analyze ELF binaries for security hardening features.
-Supports binaries compiled with `gcc`, `clang`, and `rustc` (stable).
+Supports binaries compiled with `gcc`, `clang`, and `rustc` stable and nightly.
+Nightly support is limited to rules where unstable flags work without rebuilding the standard library (`-Z build-std`).
 
 Based on recommendations from:
 - [OpenSSF Compiler Options Hardening Guide](https://best.openssf.org/Compiler-Hardening-Guides/Compiler-Options-Hardening-Guide-for-C-and-C++.html)

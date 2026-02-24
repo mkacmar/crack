@@ -98,6 +98,7 @@ amd64, arm, arm64, x86
 |:---------|:----------------|:----------------|:-----|
 | clang | 3.4 | - | `-fsanitize=address` |
 | gcc | 5.1 | - | `-fsanitize=address` |
+| rustc-nightly | 1.52 | - | `-Zsanitizer=address` |
 
 
 ---
@@ -140,6 +141,7 @@ amd64, arm, arm64, x86
 | Compiler | Minimal Version | Default Version | Flag |
 |:---------|:----------------|:----------------|:-----|
 | clang | 6.0 | - | `-fsanitize=cfi -flto -fvisibility=hidden` |
+| rustc-nightly | 1.66 | - | `-Zsanitizer=cfi -Clto -Ccodegen-units=1` |
 
 
 ---
@@ -356,6 +358,7 @@ amd64, arm, arm64, x86
 | Compiler | Minimal Version | Default Version | Flag |
 |:---------|:----------------|:----------------|:-----|
 | clang | 3.7 | - | `-fsanitize=safe-stack` |
+| rustc-nightly | 1.66 | - | `-Zsanitizer=safestack` |
 
 
 ---
@@ -399,6 +402,7 @@ amd64, arm, arm64, x86
 |:---------|:----------------|:----------------|:-----|
 | clang | 3.5 | 3.5 | `-fstack-protector-strong` |
 | gcc | 4.9 | 4.9 | `-fstack-protector-strong` |
+| rustc-nightly | 1.52 | - | `-Z stack-protector=strong` |
 
 
 ---
@@ -420,6 +424,7 @@ amd64, arm, arm64, x86
 |:---------|:----------------|:----------------|:-----|
 | clang | 3.4 | - | `-Wl,-z,stack-size=<bytes>` |
 | gcc | 4.1 | - | `-Wl,-z,stack-size=<bytes>` |
+| rustc | 1.0 | - | `-C link-arg=-z -C link-arg=stack-size=<bytes>` |
 
 
 ---
