@@ -12,9 +12,10 @@ import (
 const NoDumpRuleID = "no-dump"
 
 // NoDumpRule checks if core dumps are disabled.
-// ld: https://sourceware.org/binutils/docs/ld/Options.html#index-z-keyword
-//
 // Rustc not supported: rustc 1.90+ defaults to rust-lld which silently ignores -z nodump.
+//
+// References:
+//   - https://sourceware.org/binutils/docs/ld/Options.html#index-z-keyword
 type NoDumpRule struct{}
 
 func (r NoDumpRule) ID() string   { return NoDumpRuleID }

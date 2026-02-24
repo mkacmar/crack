@@ -10,12 +10,13 @@ import (
 const ARMBranchProtectionRuleID = "arm-branch-protection"
 
 // ARMBranchProtectionRule checks for ARM branch protection (PAC+BTI).
-// https://developer.arm.com/documentation/ddi0487/latest
-// GCC: https://gcc.gnu.org/onlinedocs/gcc/AArch64-Options.html#index-mbranch-protection
-// Clang: https://clang.llvm.org/docs/ClangCommandLineReference.html#cmdoption-clang-mbranch-protection
-//
 // Rustc nightly not supported: pre-built std lacks BTI/PAC, requires -Z build-std.
-// https://doc.rust-lang.org/beta/unstable-book/compiler-flags/branch-protection.html
+//
+// References:
+//   - https://developer.arm.com/documentation/ddi0487/latest
+//   - https://gcc.gnu.org/onlinedocs/gcc/AArch64-Options.html#index-mbranch-protection
+//   - https://clang.llvm.org/docs/ClangCommandLineReference.html#cmdoption-clang-mbranch-protection
+//   - https://doc.rust-lang.org/beta/unstable-book/compiler-flags/branch-protection.html
 type ARMBranchProtectionRule struct{}
 
 func (r ARMBranchProtectionRule) ID() string   { return ARMBranchProtectionRuleID }

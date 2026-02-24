@@ -12,7 +12,9 @@ import (
 const NoDLOpenRuleID = "no-dlopen"
 
 // NoDLOpenRule checks if dlopen is disabled.
-// ld: https://sourceware.org/binutils/docs/ld/Options.html#index-z-keyword
+//
+// References:
+//   - https://sourceware.org/binutils/docs/ld/Options.html#index-z-keyword
 type NoDLOpenRule struct{}
 
 func (r NoDLOpenRule) ID() string   { return NoDLOpenRuleID }

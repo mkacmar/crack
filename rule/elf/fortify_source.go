@@ -39,8 +39,10 @@ var fortifiableFunctions = map[string]string{
 }
 
 // FortifySourceRule checks for FORTIFY_SOURCE protection.
-// glibc: https://sourceware.org/glibc/wiki/FortifySourceLevel3
-// GCC: https://gcc.gnu.org/onlinedocs/gcc/Instrumentation-Options.html#index-D_FORTIFY_SOURCE
+//
+// References:
+//   - https://sourceware.org/glibc/wiki/FortifySourceLevel3
+//   - https://gcc.gnu.org/onlinedocs/gcc/Instrumentation-Options.html#index-D_FORTIFY_SOURCE
 type FortifySourceRule struct{}
 
 func (r FortifySourceRule) ID() string   { return FortifySourceRuleID }

@@ -10,12 +10,12 @@ import (
 const ARMMTERuleID = "arm-mte"
 
 // ARMMTERule checks for ARM Memory Tagging Extension.
-// https://developer.arm.com/documentation/ddi0487/latest
-//
-// LLVM: https://llvm.org/docs/MemTagSanitizer.html
-//
 // Rustc nightly not supported: pre-built std lacks MTE metadata, requires -Z build-std.
-// https://doc.rust-lang.org/beta/unstable-book/compiler-flags/sanitizer.html#memtagsanitizer
+//
+// References:
+//   - https://developer.arm.com/documentation/ddi0487/latest
+//   - https://llvm.org/docs/MemTagSanitizer.html
+//   - https://doc.rust-lang.org/beta/unstable-book/compiler-flags/sanitizer.html#memtagsanitizer
 type ARMMTERule struct{}
 
 func (r ARMMTERule) ID() string   { return ARMMTERuleID }

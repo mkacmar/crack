@@ -12,7 +12,9 @@ import (
 const RELRORuleID = "relro"
 
 // RELRORule checks for partial RELRO.
-// ld: https://sourceware.org/binutils/docs/ld/Options.html
+//
+// References:
+//   - https://sourceware.org/binutils/docs/ld/Options.html
 type RELRORule struct{}
 
 func (r RELRORule) ID() string   { return RELRORuleID }

@@ -12,8 +12,10 @@ import (
 const NXBitRuleID = "nx-bit"
 
 // NXBitRule checks for non-executable stack.
-// GCC: https://gcc.gnu.org/onlinedocs/gcc/Link-Options.html#index-z
-// Rustc: https://doc.rust-lang.org/rustc/exploit-mitigations.html#non-executable-memory-regions
+//
+// References:
+//   - https://gcc.gnu.org/onlinedocs/gcc/Link-Options.html#index-z
+//   - https://doc.rust-lang.org/rustc/exploit-mitigations.html#non-executable-memory-regions
 type NXBitRule struct{}
 
 func (r NXBitRule) ID() string   { return NXBitRuleID }

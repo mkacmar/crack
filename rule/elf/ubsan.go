@@ -12,8 +12,10 @@ import (
 const UBSanRuleID = "ubsan"
 
 // UBSanRule checks for Undefined Behavior Sanitizer.
-// Clang: https://clang.llvm.org/docs/UndefinedBehaviorSanitizer.html
-// GCC: https://gcc.gnu.org/onlinedocs/gcc/Instrumentation-Options.html#index-fsanitize=undefined
+//
+// References:
+//   - https://clang.llvm.org/docs/UndefinedBehaviorSanitizer.html
+//   - https://gcc.gnu.org/onlinedocs/gcc/Instrumentation-Options.html#index-fsanitize=undefined
 type UBSanRule struct{}
 
 func (r UBSanRule) ID() string   { return UBSanRuleID }

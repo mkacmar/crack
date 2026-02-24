@@ -13,7 +13,9 @@ import (
 const StrippedRuleID = "stripped"
 
 // StrippedRule checks if binary is fully stripped.
-// ld: https://sourceware.org/binutils/docs/ld/Options.html#index-_002d_002dstrip_002dall
+//
+// References:
+//   - https://sourceware.org/binutils/docs/ld/Options.html#index-_002d_002dstrip_002dall
 type StrippedRule struct{}
 
 func (r StrippedRule) ID() string   { return StrippedRuleID }

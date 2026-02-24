@@ -29,8 +29,10 @@ var cfiPrefixes = []string{
 }
 
 // CFIRule checks for Clang Control Flow Integrity.
-// https://clang.llvm.org/docs/ControlFlowIntegrity.html
-// Rustc nightly: https://doc.rust-lang.org/beta/unstable-book/compiler-flags/sanitizer.html#controlflowintegrity
+//
+// References:
+//   - https://clang.llvm.org/docs/ControlFlowIntegrity.html
+//   - https://doc.rust-lang.org/beta/unstable-book/compiler-flags/sanitizer.html#controlflowintegrity
 type CFIRule struct{}
 
 func (r CFIRule) ID() string   { return CFIRuleID }

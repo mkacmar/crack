@@ -10,10 +10,11 @@ import (
 const X86CETIBTRuleID = "x86-cet-ibt"
 
 // X86CETIBTRule checks for CET Indirect Branch Tracking (Intel/AMD).
-// GCC: https://gcc.gnu.org/onlinedocs/gcc/x86-Options.html#index-fcf-protection
-//
 // Rustc nightly not supported: pre-built std lacks CET, requires -Z build-std.
-// https://doc.rust-lang.org/beta/unstable-book/compiler-flags/cf-protection.html
+//
+// References:
+//   - https://gcc.gnu.org/onlinedocs/gcc/x86-Options.html#index-fcf-protection
+//   - https://doc.rust-lang.org/beta/unstable-book/compiler-flags/cf-protection.html
 type X86CETIBTRule struct{}
 
 func (r X86CETIBTRule) ID() string   { return X86CETIBTRuleID }

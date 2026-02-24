@@ -14,7 +14,9 @@ import (
 const NoInsecureRUNPATHRuleID = "no-insecure-runpath"
 
 // NoInsecureRUNPATHRule checks for insecure RUNPATH values.
-// ld: https://sourceware.org/binutils/docs/ld/Options.html
+//
+// References:
+//   - https://sourceware.org/binutils/docs/ld/Options.html
 type NoInsecureRUNPATHRule struct{}
 
 func (r NoInsecureRUNPATHRule) ID() string   { return NoInsecureRUNPATHRuleID }

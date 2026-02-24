@@ -12,7 +12,9 @@ import (
 const SeparateCodeRuleID = "separate-code"
 
 // SeparateCodeRule checks if code and data are in separate pages.
-// ld: https://sourceware.org/binutils/docs/ld/Options.html#index-z-keyword
+//
+// References:
+//   - https://sourceware.org/binutils/docs/ld/Options.html#index-z-keyword
 type SeparateCodeRule struct{}
 
 func (r SeparateCodeRule) ID() string   { return SeparateCodeRuleID }

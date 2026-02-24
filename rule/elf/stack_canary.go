@@ -12,9 +12,11 @@ import (
 const StackCanaryRuleID = "stack-canary"
 
 // StackCanaryRule checks for stack canary protection.
-// GCC: https://gcc.gnu.org/onlinedocs/gcc/Instrumentation-Options.html#index-fstack-protector
-// Clang: https://clang.llvm.org/docs/ClangCommandLineReference.html#cmdoption-clang-fstack-protector-strong
-// Rustc nightly: https://doc.rust-lang.org/rustc/exploit-mitigations.html#stack-smashing-protection
+//
+// References:
+//   - https://gcc.gnu.org/onlinedocs/gcc/Instrumentation-Options.html#index-fstack-protector
+//   - https://clang.llvm.org/docs/ClangCommandLineReference.html#cmdoption-clang-fstack-protector-strong
+//   - https://doc.rust-lang.org/rustc/exploit-mitigations.html#stack-smashing-protection
 type StackCanaryRule struct{}
 
 func (r StackCanaryRule) ID() string   { return StackCanaryRuleID }

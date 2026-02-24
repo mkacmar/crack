@@ -12,9 +12,11 @@ import (
 const ASANRuleID = "asan"
 
 // ASANRule checks for AddressSanitizer instrumentation.
-// Clang: https://clang.llvm.org/docs/AddressSanitizer.html
-// GCC: https://gcc.gnu.org/onlinedocs/gcc/Instrumentation-Options.html#index-fsanitize=address
-// Rustc nightly: https://doc.rust-lang.org/beta/unstable-book/compiler-flags/sanitizer.html#addresssanitizer
+//
+// References:
+//   - https://clang.llvm.org/docs/AddressSanitizer.html
+//   - https://gcc.gnu.org/onlinedocs/gcc/Instrumentation-Options.html#index-fsanitize=address
+//   - https://doc.rust-lang.org/beta/unstable-book/compiler-flags/sanitizer.html#addresssanitizer
 type ASANRule struct{}
 
 func (r ASANRule) ID() string   { return ASANRuleID }

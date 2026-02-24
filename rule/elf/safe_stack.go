@@ -12,9 +12,11 @@ import (
 const SafeStackRuleID = "safe-stack"
 
 // SafeStackRule checks for SafeStack protection.
-// Clang: https://clang.llvm.org/docs/SafeStack.html
-// LLVM: https://llvm.org/docs/SafeStack.html
-// Rustc nightly https://doc.rust-lang.org/beta/unstable-book/compiler-flags/sanitizer.html#safestack
+//
+// References:
+//   - https://clang.llvm.org/docs/SafeStack.html
+//   - https://llvm.org/docs/SafeStack.html
+//   - https://doc.rust-lang.org/beta/unstable-book/compiler-flags/sanitizer.html#safestack
 type SafeStackRule struct{}
 
 func (r SafeStackRule) ID() string   { return SafeStackRuleID }

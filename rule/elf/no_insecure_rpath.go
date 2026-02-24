@@ -15,7 +15,9 @@ import (
 const NoInsecureRPATHRuleID = "no-insecure-rpath"
 
 // NoInsecureRPATHRule checks for insecure RPATH values.
-// ld: https://sourceware.org/binutils/docs/ld/Options.html
+//
+// References:
+//   - https://sourceware.org/binutils/docs/ld/Options.html
 type NoInsecureRPATHRule struct{}
 
 func (r NoInsecureRPATHRule) ID() string   { return NoInsecureRPATHRuleID }
