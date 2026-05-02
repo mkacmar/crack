@@ -81,28 +81,6 @@ arm64 (requires ISA v8.3+)
 
 ---
 
-## Address Sanitizer
-
-- **Rule ID:** `asan`
-- **Implementation:** `ASANRule`
-
-Checks for AddressSanitizer (ASan) instrumentation. ASan detects memory errors including buffer overflows, use-after-free, and memory leaks at runtime.
-
-### Platform
-
-amd64, arm, arm64, x86
-
-### Toolchain
-
-| Compiler | Minimal Version | Default Version | Flag |
-|:---------|:----------------|:----------------|:-----|
-| clang | 3.4 | - | `-fsanitize=address` |
-| gcc | 5.1 | - | `-fsanitize=address` |
-| rustc-nightly | 1.52 | - | `-Zsanitizer=address` |
-
-
----
-
 ## ASLR Compatibility
 
 - **Rule ID:** `aslr`

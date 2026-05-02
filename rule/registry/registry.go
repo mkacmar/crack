@@ -10,7 +10,6 @@ var registry = []rule.Rule{
 	elf.ARMBranchProtectionRule{},
 	elf.ARMMTERule{},
 	elf.ARMPACRule{},
-	elf.ASANRule{},
 	elf.ASLRRule{},
 	elf.CFIRule{},
 	elf.FortifySourceRule{},
