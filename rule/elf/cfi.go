@@ -45,8 +45,7 @@ func (r CFIRule) Applicability() rule.Applicability {
 	return rule.Applicability{
 		Platform: binary.Platform{Architecture: binary.ArchAllX86 | binary.ArchAllARM},
 		Compilers: map[toolchain.Compiler]rule.CompilerRequirement{
-			toolchain.Clang:        {MinVersion: toolchain.Version{Major: 6, Minor: 0}, Flag: "-fsanitize=cfi -flto -fvisibility=hidden"},
-			toolchain.RustcNightly: {MinVersion: toolchain.Version{Major: 1, Minor: 66}, Flag: "-Zsanitizer=cfi -Clto -Ccodegen-units=1"},
+			toolchain.Clang: {MinVersion: toolchain.Version{Major: 6, Minor: 0}, Flag: "-fsanitize=cfi -flto -fvisibility=hidden"},
 		},
 	}
 }

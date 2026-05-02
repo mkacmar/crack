@@ -25,10 +25,5 @@ func TestCFIRule(t *testing.T) {
 
 		{Binary: "amd64-rustc-no-cfi", Expect: e2e.Skip},
 		{Binary: "arm64-rustc-no-cfi", Expect: e2e.Skip},
-
-		{Binary: "amd64-rustc-nightly-cfi", Expect: e2e.Pass},
-		{Binary: "amd64-rustc-nightly-no-cfi", Expect: e2e.Fail},
-		{Binary: "arm64-rustc-nightly-cfi", Expect: e2e.Pass},
-		{Binary: "arm64-rustc-nightly-no-cfi", Expect: e2e.Fail},
 	})
 }

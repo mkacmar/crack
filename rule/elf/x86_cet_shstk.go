@@ -10,7 +10,6 @@ import (
 const X86CETShadowStackRuleID = "x86-cet-shstk"
 
 // X86CETShadowStackRule checks for CET Shadow Stack (Intel/AMD).
-// Rustc nightly not supported: pre-built std lacks CET, requires -Z build-std.
 //
 // References:
 //   - https://gcc.gnu.org/onlinedocs/gcc/x86-Options.html#index-fcf-protection

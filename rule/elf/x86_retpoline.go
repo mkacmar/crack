@@ -13,7 +13,6 @@ import (
 const X86RetpolineRuleID = "x86-retpoline"
 
 // X86RetpolineRule checks for Spectre v2 mitigation (retpoline).
-// Rustc nightly not supported: pre-built std lacks retpoline, requires -Z build-std.
 //
 // References:
 //   - https://gcc.gnu.org/onlinedocs/gcc/x86-Options.html#index-mindirect-branch

@@ -10,7 +10,6 @@ import (
 const ARMMTERuleID = "arm-mte"
 
 // ARMMTERule checks for ARM Memory Tagging Extension.
-// Rustc nightly not supported: pre-built std lacks MTE metadata, requires -Z build-std.
 //
 // References:
 //   - https://developer.arm.com/documentation/ddi0487/latest

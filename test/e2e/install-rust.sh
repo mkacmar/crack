@@ -7,4 +7,3 @@ if ! command -v rustup >/dev/null 2>&1; then
 fi
 
 rustup update stable
-rustup update nightly

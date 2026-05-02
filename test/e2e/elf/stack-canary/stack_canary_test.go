@@ -71,10 +71,5 @@ func TestStackCanaryRule(t *testing.T) {
 		{Binary: "arm64-rustc-stack-protector-stripped", Expect: e2e.Skip},
 		{Binary: "arm-rustc-stack-protector", Expect: e2e.Skip},
 		{Binary: "arm-rustc-stack-protector-stripped", Expect: e2e.Skip},
-
-		{Binary: "amd64-rustc-nightly-stack-protector", Expect: e2e.Pass},
-		{Binary: "amd64-rustc-nightly-no-stack-protector", Expect: e2e.Fail},
-		{Binary: "arm64-rustc-nightly-stack-protector", Expect: e2e.Pass},
-		{Binary: "arm64-rustc-nightly-no-stack-protector", Expect: e2e.Fail},
 	})
 }

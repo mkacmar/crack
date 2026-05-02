@@ -29,8 +29,7 @@ func (r SafeStackRule) Applicability() rule.Applicability {
 	return rule.Applicability{
 		Platform: binary.Platform{Architecture: binary.ArchAllX86 | binary.ArchAllARM},
 		Compilers: map[toolchain.Compiler]rule.CompilerRequirement{
-			toolchain.Clang:        {MinVersion: toolchain.Version{Major: 3, Minor: 7}, Flag: "-fsanitize=safe-stack"},
-			toolchain.RustcNightly: {MinVersion: toolchain.Version{Major: 1, Minor: 66}, Flag: "-Zsanitizer=safestack"},
+			toolchain.Clang: {MinVersion: toolchain.Version{Major: 3, Minor: 7}, Flag: "-fsanitize=safe-stack"},
 		},
 	}
 }

@@ -10,7 +10,6 @@ import (
 const ARMBTIRuleID = "arm-bti"
 
 // ARMBTIRule checks for ARM Branch Target Identification.
-// Rustc nightly not supported: pre-built std lacks BTI, requires -Z build-std.
 //
 // References:
 //   - https://doc.rust-lang.org/beta/unstable-book/compiler-flags/branch-protection.html

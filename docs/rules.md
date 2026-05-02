@@ -119,7 +119,6 @@ amd64, arm, arm64, x86
 | Compiler | Minimal Version | Default Version | Flag |
 |:---------|:----------------|:----------------|:-----|
 | clang | 6.0 | - | `-fsanitize=cfi -flto -fvisibility=hidden` |
-| rustc-nightly | 1.66 | - | `-Zsanitizer=cfi -Clto -Ccodegen-units=1` |
 
 
 ---
@@ -336,7 +335,6 @@ amd64, arm, arm64, x86
 | Compiler | Minimal Version | Default Version | Flag |
 |:---------|:----------------|:----------------|:-----|
 | clang | 3.7 | - | `-fsanitize=safe-stack` |
-| rustc-nightly | 1.66 | - | `-Zsanitizer=safestack` |
 
 
 ---
@@ -380,7 +378,6 @@ amd64, arm, arm64, x86
 |:---------|:----------------|:----------------|:-----|
 | clang | 3.5 | 3.5 | `-fstack-protector-strong` |
 | gcc | 4.9 | 4.9 | `-fstack-protector-strong` |
-| rustc-nightly | 1.52 | - | `-Z stack-protector=strong` |
 
 
 ---

@@ -10,7 +10,6 @@ import (
 const ARMBranchProtectionRuleID = "arm-branch-protection"
 
 // ARMBranchProtectionRule checks for ARM branch protection (PAC+BTI).
-// Rustc nightly not supported: pre-built std lacks BTI/PAC, requires -Z build-std.
 //
 // References:
 //   - https://developer.arm.com/documentation/ddi0487/latest

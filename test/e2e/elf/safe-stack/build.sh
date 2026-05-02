@@ -19,9 +19,4 @@ build_c gcc "" no-safestack
 
 rustc -o binaries/${ARCH}-rustc-no-safestack $RUST_SRC
 
-if [ "$ARCH" = "amd64" ]; then
-    rustc +nightly -Zsanitizer=safestack -Cunsafe-allow-abi-mismatch=sanitizer -o binaries/${ARCH}-rustc-nightly-safestack $RUST_SRC
-    rustc +nightly -o binaries/${ARCH}-rustc-nightly-no-safestack $RUST_SRC
-fi
-
 ls -la binaries/

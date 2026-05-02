@@ -36,8 +36,5 @@ build_c_strip gcc "" no-cfi-stripped
 
 rustc -o binaries/${ARCH}-rustc-no-cfi $RUST_SRC
 
-rustc +nightly -Zsanitizer=cfi -Clto -Ccodegen-units=1 -Cunsafe-allow-abi-mismatch=sanitizer -o binaries/${ARCH}-rustc-nightly-cfi $RUST_SRC
-rustc +nightly -o binaries/${ARCH}-rustc-nightly-no-cfi $RUST_SRC
-
 ls -la binaries/
 rm -f /tmp/cfi.c

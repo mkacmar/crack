@@ -47,10 +47,5 @@ build_c clang "-flto -fstack-protector-strong" stack-protector-lto $C_SRC
 rustc -o binaries/${ARCH}-rustc-stack-protector $RUST_SRC
 rustc -C strip=symbols -o binaries/${ARCH}-rustc-stack-protector-stripped $RUST_SRC
 
-if [ "$ARCH" != "arm" ]; then
-    rustc +nightly -Z stack-protector=strong -o binaries/${ARCH}-rustc-nightly-stack-protector $RUST_SRC
-    rustc +nightly -o binaries/${ARCH}-rustc-nightly-no-stack-protector $RUST_SRC
-fi
-
 ls -la binaries/
 rm -f /tmp/vulnerable.c

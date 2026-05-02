@@ -10,7 +10,6 @@ import (
 const ARMPACRuleID = "arm-pac"
 
 // ARMPACRule checks for ARM Pointer Authentication Code.
-// Rustc nightly not supported: pre-built std lacks PAC, requires -Z build-std.
 //
 // References:
 //   - https://developer.arm.com/documentation/ddi0487/latest
