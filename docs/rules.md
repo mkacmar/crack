@@ -429,27 +429,6 @@ amd64, arm, arm64, x86
 
 ---
 
-## Undefined Behavior Sanitizer
-
-- **Rule ID:** `ubsan`
-- **Implementation:** `UBSanRule`
-
-Checks for Undefined Behavior Sanitizer (UBSan) instrumentation. UBSan detects undefined behavior such as integer overflows, null pointer dereferences, and misaligned accesses at runtime.
-
-### Platform
-
-amd64, arm, arm64, x86
-
-### Toolchain
-
-| Compiler | Minimal Version | Default Version | Flag |
-|:---------|:----------------|:----------------|:-----|
-| clang | 3.4 | - | `-fsanitize=undefined` |
-| gcc | 5.1 | - | `-fsanitize=undefined` |
-
-
----
-
 ## x86 CET - Indirect Branch Tracking
 
 - **Rule ID:** `x86-cet-ibt`

@@ -26,7 +26,6 @@ var registry = []rule.Rule{
 	elf.StackCanaryRule{},
 	elf.StackLimitRule{},
 	elf.StrippedRule{},
-	elf.UBSanRule{},
 	elf.X86CETIBTRule{},
 	elf.X86CETShadowStackRule{},
 	elf.X86RetpolineRule{},
