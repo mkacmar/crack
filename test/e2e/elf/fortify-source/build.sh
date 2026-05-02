@@ -2,7 +2,6 @@
 set -ex
 
 ARCH=$1
-RUST_SRC=test/e2e/elf/testdata/main.rs
 mkdir -p binaries
 
 . test/e2e/elf/testdata/log-env.sh
@@ -51,8 +50,6 @@ build_c clang "-D_FORTIFY_SOURCE=2 -O2 -flto" fortify2-lto
 
 build_c gcc "-shared -fPIC -D_FORTIFY_SOURCE=2 -O2" fortify2-shared
 build_c gcc "-shared -fPIC -U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=0 -O2" no-fortify-shared
-
-rustc -o binaries/${ARCH}-rustc-no-fortify $RUST_SRC
 
 ls -la binaries/
 rm -f /tmp/fortify.c

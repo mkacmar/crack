@@ -3,7 +3,6 @@ set -ex
 
 ARCH=$1
 C_SRC=test/e2e/elf/testdata/main.c
-RUST_SRC=test/e2e/elf/testdata/main.rs
 mkdir -p binaries
 
 . test/e2e/elf/testdata/log-env.sh
@@ -29,9 +28,5 @@ clang -o binaries/${ARCH}-clang-stripped $C_SRC
 strip binaries/${ARCH}-clang-stripped
 clang -g -o binaries/${ARCH}-clang-strip-debug $C_SRC
 strip --strip-debug binaries/${ARCH}-clang-strip-debug
-
-rustc -o binaries/${ARCH}-rustc-not-stripped $RUST_SRC
-rustc -C strip=symbols -o binaries/${ARCH}-rustc-stripped $RUST_SRC
-rustc -C strip=debuginfo -o binaries/${ARCH}-rustc-strip-debuginfo $RUST_SRC
 
 ls -la binaries/

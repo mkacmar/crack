@@ -2,7 +2,6 @@
 set -ex
 
 C_SRC=test/e2e/elf/testdata/main.c
-RUST_SRC=test/e2e/elf/testdata/main.rs
 mkdir -p binaries
 
 . test/e2e/elf/testdata/log-env.sh
@@ -27,7 +26,5 @@ build_c clang pac-ret branch-protection-pac-ret
 build_c clang bti branch-protection-bti
 build_c clang none no-branch-protection
 build_c_strip clang standard branch-protection-stripped
-
-rustc -o binaries/rustc-no-branch-protection $RUST_SRC
 
 ls -la binaries/

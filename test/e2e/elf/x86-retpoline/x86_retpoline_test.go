@@ -14,6 +14,5 @@ func TestX86RetpolineRule(t *testing.T) {
 		{Binary: "gcc-cet-ibt", Expect: e2e.Skip},
 		{Binary: "clang-retpoline", Expect: e2e.Pass},
 		{Binary: "clang-no-retpoline", Expect: e2e.Fail},
-		{Binary: "rustc-no-retpoline", Expect: e2e.Skip},
 	})
 }

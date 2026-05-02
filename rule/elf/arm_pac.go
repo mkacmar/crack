@@ -15,7 +15,6 @@ const ARMPACRuleID = "arm-pac"
 //   - https://developer.arm.com/documentation/ddi0487/latest
 //   - https://gcc.gnu.org/onlinedocs/gcc/AArch64-Options.html#index-mbranch-protection
 //   - https://clang.llvm.org/docs/ClangCommandLineReference.html#cmdoption-clang-mbranch-protection
-//   - https://doc.rust-lang.org/beta/unstable-book/compiler-flags/branch-protection.html
 type ARMPACRule struct{}
 
 func (r ARMPACRule) ID() string   { return ARMPACRuleID }

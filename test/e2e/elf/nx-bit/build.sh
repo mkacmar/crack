@@ -3,7 +3,6 @@ set -ex
 
 ARCH=$1
 C_SRC=test/e2e/elf/testdata/main.c
-RUST_SRC=test/e2e/elf/testdata/main.rs
 mkdir -p binaries
 
 . test/e2e/elf/testdata/log-env.sh
@@ -21,8 +20,5 @@ build_c clang "-Wl,-z,noexecstack" nx-explicit
 build_c clang "-Wl,-z,execstack" no-nx
 build_c_strip clang "-Wl,-z,noexecstack" nx-stripped
 clang -c -o binaries/${ARCH}-clang-relocatable.o $C_SRC
-
-rustc -o binaries/${ARCH}-rustc-nx $RUST_SRC
-rustc -C strip=symbols -o binaries/${ARCH}-rustc-nx-stripped $RUST_SRC
 
 ls -la binaries/

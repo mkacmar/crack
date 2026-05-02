@@ -3,7 +3,6 @@ set -ex
 
 ARCH=$1
 C_SRC=test/e2e/elf/testdata/main.c
-RUST_SRC=test/e2e/elf/testdata/main.rs
 mkdir -p binaries
 
 . test/e2e/elf/testdata/log-env.sh
@@ -28,9 +27,5 @@ gcc -fPIE -pie -Wl,-z,noexecstack -o binaries/${ARCH}-gcc-textrel-patched $C_SRC
 go run test/e2e/elf/aslr/add-textrel.go binaries/${ARCH}-gcc-textrel-patched
 
 gcc -c -o binaries/${ARCH}-gcc-relocatable.o $C_SRC
-
-rustc -C relocation-model=pic -o binaries/${ARCH}-rustc-pie $RUST_SRC
-rustc -C relocation-model=static -o binaries/${ARCH}-rustc-no-pie $RUST_SRC
-rustc -C relocation-model=pic -C strip=symbols -o binaries/${ARCH}-rustc-stripped $RUST_SRC
 
 ls -la binaries/

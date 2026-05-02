@@ -16,7 +16,6 @@ const StackCanaryRuleID = "stack-canary"
 // References:
 //   - https://gcc.gnu.org/onlinedocs/gcc/Instrumentation-Options.html#index-fstack-protector
 //   - https://clang.llvm.org/docs/ClangCommandLineReference.html#cmdoption-clang-fstack-protector-strong
-//   - https://doc.rust-lang.org/rustc/exploit-mitigations.html#stack-smashing-protection
 type StackCanaryRule struct{}
 
 func (r StackCanaryRule) ID() string   { return StackCanaryRuleID }

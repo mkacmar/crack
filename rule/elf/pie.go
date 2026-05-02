@@ -16,7 +16,6 @@ const PIERuleID = "pie"
 // References:
 //   - https://gcc.gnu.org/onlinedocs/gcc/Code-Gen-Options.html#index-fPIE
 //   - https://clang.llvm.org/docs/ClangCommandLineReference.html#cmdoption-clang-fpie
-//   - https://doc.rust-lang.org/rustc/exploit-mitigations.html#position-independent-executable
 type PIERule struct{}
 
 func (r PIERule) ID() string   { return PIERuleID }
@@ -31,7 +30,6 @@ func (r PIERule) Applicability() rule.Applicability {
 		Compilers: map[toolchain.Compiler]rule.CompilerRequirement{
 			toolchain.GCC:   {MinVersion: toolchain.Version{Major: 4, Minor: 1}, DefaultVersion: toolchain.Version{Major: 6, Minor: 1}, Flag: "-fPIE -pie"},
 			toolchain.Clang: {MinVersion: toolchain.Version{Major: 3, Minor: 4}, DefaultVersion: toolchain.Version{Major: 4, Minor: 0}, Flag: "-fPIE -pie"},
-			toolchain.Rustc: {MinVersion: toolchain.Version{Major: 1, Minor: 26}, DefaultVersion: toolchain.Version{Major: 1, Minor: 26}, Flag: "-C relocation-model=pie"},
 		},
 	}
 }

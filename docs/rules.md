@@ -98,7 +98,6 @@ amd64, arm, arm64, x86
 |:---------|:----------------|:----------------|:-----|
 | clang | 3.4 | 4.0 | `-fPIE -pie -z noexecstack` |
 | gcc | 4.1 | 6.1 | `-fPIE -pie -z noexecstack` |
-| rustc | 1.0 | 1.26 | `-C relocation-model=pie` |
 
 
 ---
@@ -161,7 +160,6 @@ amd64, arm, arm64, x86
 |:---------|:----------------|:----------------|:-----|
 | clang | 3.4 | 4.0 | `-Wl,-z,relro,-z,now` |
 | gcc | 4.1 | 6.1 | `-Wl,-z,relro,-z,now` |
-| rustc | 1.21 | 1.21 | `-C link-arg=-z -C link-arg=relro -C link-arg=-z -C link-arg=now` |
 
 
 ---
@@ -183,7 +181,6 @@ amd64, arm, arm64, x86
 |:---------|:----------------|:----------------|:-----|
 | clang | 3.4 | - | `-Wl,-z,nodlopen` |
 | gcc | 4.1 | - | `-Wl,-z,nodlopen` |
-| rustc | 1.0 | - | `-C link-arg=-z -C link-arg=nodlopen` |
 
 
 ---
@@ -226,7 +223,6 @@ amd64, arm, arm64, x86
 |:---------|:----------------|:----------------|:-----|
 | clang | 3.4 | - | `-Wl,-rpath,/absolute/path` |
 | gcc | 4.1 | - | `-Wl,-rpath,/absolute/path` |
-| rustc | 1.0 | - | `-C link-arg=-rpath -C link-arg=/absolute/path` |
 
 
 ---
@@ -248,7 +244,6 @@ amd64, arm, arm64, x86
 |:---------|:----------------|:----------------|:-----|
 | clang | 3.4 | 4.0 | `-Wl,--enable-new-dtags -Wl,-rpath,/absolute/path` |
 | gcc | 4.1 | 6.1 | `-Wl,--enable-new-dtags -Wl,-rpath,/absolute/path` |
-| rustc | 1.74 | - | `-C link-arg=--enable-new-dtags -C link-arg=-rpath -C link-arg=/absolute/path` |
 
 
 ---
@@ -270,7 +265,6 @@ amd64, arm, arm64, x86
 |:---------|:----------------|:----------------|:-----|
 | clang | 1.0 | 1.0 | `-z noexecstack` |
 | gcc | 3.4 | 3.4 | `-z noexecstack` |
-| rustc | 1.0 | 1.0 | `-C link-arg=-Wl,-z,noexecstack` |
 
 
 ---
@@ -292,7 +286,6 @@ amd64, arm, arm64, x86
 |:---------|:----------------|:----------------|:-----|
 | clang | 3.4 | 4.0 | `-fPIE -pie` |
 | gcc | 4.1 | 6.1 | `-fPIE -pie` |
-| rustc | 1.26 | 1.26 | `-C relocation-model=pie` |
 
 
 ---
@@ -314,7 +307,6 @@ amd64, arm, arm64, x86
 |:---------|:----------------|:----------------|:-----|
 | clang | 3.4 | 3.9 | `-Wl,-z,relro` |
 | gcc | 4.1 | 6.1 | `-Wl,-z,relro` |
-| rustc | 1.21 | 1.21 | `-C link-arg=-z -C link-arg=relro` |
 
 
 ---
@@ -356,7 +348,6 @@ amd64, arm, arm64, x86
 |:---------|:----------------|:----------------|:-----|
 | clang | 6.0 | 6.0 | `-Wl,-z,separate-code` |
 | gcc | 8.1 | 8.1 | `-Wl,-z,separate-code` |
-| rustc | 1.31 | - | `-C link-arg=-z -C link-arg=separate-code` |
 
 
 ---
@@ -399,7 +390,6 @@ amd64, arm, arm64, x86
 |:---------|:----------------|:----------------|:-----|
 | clang | 3.4 | - | `-Wl,-z,stack-size=<bytes>` |
 | gcc | 4.1 | - | `-Wl,-z,stack-size=<bytes>` |
-| rustc | 1.0 | - | `-C link-arg=-z -C link-arg=stack-size=<bytes>` |
 
 
 ---
@@ -421,7 +411,6 @@ amd64, arm, arm64, x86
 |:---------|:----------------|:----------------|:-----|
 | clang | 1.0 | - | `-s` |
 | gcc | 3.0 | - | `-s` |
-| rustc | 1.59 | - | `-C strip=symbols` |
 
 
 ---

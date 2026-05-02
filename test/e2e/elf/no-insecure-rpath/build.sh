@@ -3,7 +3,6 @@ set -ex
 
 ARCH=$1
 C_SRC=test/e2e/elf/testdata/main.c
-RUST_SRC=test/e2e/elf/testdata/main.rs
 mkdir -p binaries
 
 . test/e2e/elf/testdata/log-env.sh
@@ -35,10 +34,5 @@ build_c clang /usr/lib absolute
 build_c clang . dot
 build_c clang /tmp tmp
 clang -c -o binaries/${ARCH}-clang-relocatable.o $C_SRC
-
-rustc -o binaries/${ARCH}-rustc-no-rpath $RUST_SRC
-rustc -C link-arg=-Wl,--disable-new-dtags -C link-arg=-Wl,-rpath,/usr/lib -o binaries/${ARCH}-rustc-rpath-absolute $RUST_SRC
-rustc -C link-arg=-Wl,--disable-new-dtags -C link-arg=-Wl,-rpath,. -o binaries/${ARCH}-rustc-rpath-dot $RUST_SRC
-rustc -C link-arg=-Wl,--disable-new-dtags -C link-arg=-Wl,-rpath,/tmp -o binaries/${ARCH}-rustc-rpath-tmp $RUST_SRC
 
 ls -la binaries/

@@ -3,7 +3,6 @@ set -ex
 
 ARCH=$1
 C_SRC=test/e2e/elf/testdata/main.c
-RUST_SRC=test/e2e/elf/testdata/main.rs
 mkdir -p binaries
 
 . test/e2e/elf/testdata/log-env.sh
@@ -23,9 +22,5 @@ build_c clang "-fno-pie -no-pie" no-pie
 build_c_strip clang "-fPIE -pie" pie-stripped
 
 gcc -c -o binaries/${ARCH}-gcc-relocatable.o $C_SRC
-
-rustc -C relocation-model=pic -o binaries/${ARCH}-rustc-pie $RUST_SRC
-rustc -C relocation-model=static -o binaries/${ARCH}-rustc-no-pie $RUST_SRC
-rustc -C relocation-model=pic -C strip=symbols -o binaries/${ARCH}-rustc-pie-stripped $RUST_SRC
 
 ls -la binaries/

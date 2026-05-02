@@ -2,7 +2,6 @@
 set -ex
 
 C_SRC=test/e2e/elf/testdata/main.c
-RUST_SRC=test/e2e/elf/testdata/main.rs
 mkdir -p binaries
 
 . test/e2e/elf/testdata/log-env.sh
@@ -23,7 +22,5 @@ clang -mretpoline -fcf-protection=none -o binaries/clang-retpoline $C_SRC
 clang -fcf-protection=none -o binaries/clang-no-retpoline $C_SRC
 
 gcc -fcf-protection=branch -o binaries/gcc-cet-ibt $C_SRC
-
-rustc -o binaries/rustc-no-retpoline $RUST_SRC
 
 ls -la binaries/

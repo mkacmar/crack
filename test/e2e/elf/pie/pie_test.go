@@ -20,10 +20,6 @@ func TestPIERule(t *testing.T) {
 		{Binary: "amd64-clang-no-pie", Expect: e2e.Fail},
 		{Binary: "amd64-clang-pie-stripped", Expect: e2e.Pass},
 
-		{Binary: "amd64-rustc-pie", Expect: e2e.Pass},
-		{Binary: "amd64-rustc-no-pie", Expect: e2e.Fail},
-		{Binary: "amd64-rustc-pie-stripped", Expect: e2e.Pass},
-
 		{Binary: "amd64-gcc-old-pie", Expect: e2e.Pass},
 
 		{Binary: "arm64-gcc-pie-explicit", Expect: e2e.Pass},
@@ -38,10 +34,6 @@ func TestPIERule(t *testing.T) {
 		{Binary: "arm64-clang-no-pie", Expect: e2e.Fail},
 		{Binary: "arm64-clang-pie-stripped", Expect: e2e.Pass},
 
-		{Binary: "arm64-rustc-pie", Expect: e2e.Pass},
-		{Binary: "arm64-rustc-no-pie", Expect: e2e.Fail},
-		{Binary: "arm64-rustc-pie-stripped", Expect: e2e.Pass},
-
 		{Binary: "arm-gcc-pie-explicit", Expect: e2e.Pass},
 		{Binary: "arm-gcc-no-pie", Expect: e2e.Fail},
 		{Binary: "arm-gcc-static-pie", Expect: e2e.Pass},
@@ -54,8 +46,5 @@ func TestPIERule(t *testing.T) {
 		{Binary: "arm-clang-no-pie", Expect: e2e.Fail},
 		{Binary: "arm-clang-pie-stripped", Expect: e2e.Pass},
 
-		{Binary: "arm-rustc-pie", Expect: e2e.Pass},
-		{Binary: "arm-rustc-no-pie", Expect: e2e.Fail},
-		{Binary: "arm-rustc-pie-stripped", Expect: e2e.Pass},
 	})
 }

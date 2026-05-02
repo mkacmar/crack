@@ -3,7 +3,6 @@ set -ex
 
 ARCH=$1
 C_SRC=test/e2e/elf/testdata/main.c
-RUST_SRC=test/e2e/elf/testdata/main.rs
 mkdir -p binaries
 
 . test/e2e/elf/testdata/log-env.sh
@@ -17,9 +16,5 @@ gcc -c -o binaries/${ARCH}-gcc-relocatable.o $C_SRC
 build_c clang "-Wl,-z,stack-size=8388608" stack-limit
 build_c clang "" no-stack-limit
 clang -c -o binaries/${ARCH}-clang-relocatable.o $C_SRC
-
-rustc -o binaries/${ARCH}-rustc-no-stack-limit $RUST_SRC
-
-rustc -C link-arg=-z -C link-arg=stack-size=8388608 -o binaries/${ARCH}-rustc-stack-limit $RUST_SRC
 
 ls -la binaries/

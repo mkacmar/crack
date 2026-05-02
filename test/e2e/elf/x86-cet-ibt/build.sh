@@ -2,7 +2,6 @@
 set -ex
 
 C_SRC=test/e2e/elf/testdata/main.c
-RUST_SRC=test/e2e/elf/testdata/main.rs
 mkdir -p binaries
 
 . test/e2e/elf/testdata/log-env.sh
@@ -24,7 +23,5 @@ build_c_strip gcc full full-stripped
 build_c clang full
 build_c clang branch
 build_c clang none
-
-rustc -o binaries/rustc-default $RUST_SRC
 
 ls -la binaries/

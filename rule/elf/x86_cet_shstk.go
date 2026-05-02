@@ -13,7 +13,6 @@ const X86CETShadowStackRuleID = "x86-cet-shstk"
 //
 // References:
 //   - https://gcc.gnu.org/onlinedocs/gcc/x86-Options.html#index-fcf-protection
-//   - https://doc.rust-lang.org/beta/unstable-book/compiler-flags/cf-protection.html
 type X86CETShadowStackRule struct{}
 
 func (r X86CETShadowStackRule) ID() string   { return X86CETShadowStackRuleID }

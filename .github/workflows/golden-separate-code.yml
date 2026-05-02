@@ -26,10 +26,6 @@ jobs:
         with:
           platforms: arm
 
-      - name: Install Rust
-        if: ${{ !matrix.qemu }}
-        run: . test/e2e/install-rust.sh
-
       - name: Build binaries (native)
         if: ${{ !matrix.qemu }}
         run: sh test/e2e/elf/separate-code/build.sh ${{ matrix.arch }}
@@ -41,8 +37,7 @@ jobs:
             -v ${{ github.workspace }}:/workspace \
             -w /workspace \
             alpine:latest sh -c '
-              # rustup does not support armv7 musl so we use apk for stable rustc only
-              apk add --no-cache gcc clang musl-dev binutils rust &&
+              apk add --no-cache gcc clang musl-dev binutils &&
               sh test/e2e/elf/separate-code/build.sh ${{ matrix.arch }}
             '
 

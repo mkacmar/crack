@@ -73,8 +73,5 @@ func TestFortifySourceRule(t *testing.T) {
 		{Binary: "arm-gcc-fortify2-shared", Expect: e2e.Skip},
 		{Binary: "arm-gcc-no-fortify-shared", Expect: e2e.Skip},
 
-		{Binary: "amd64-rustc-no-fortify", Expect: e2e.Skip},
-		{Binary: "arm64-rustc-no-fortify", Expect: e2e.Skip},
-		{Binary: "arm-rustc-no-fortify", Expect: e2e.Skip},
 	})
 }

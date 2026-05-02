@@ -14,7 +14,6 @@ const ARMMTERuleID = "arm-mte"
 // References:
 //   - https://developer.arm.com/documentation/ddi0487/latest
 //   - https://llvm.org/docs/MemTagSanitizer.html
-//   - https://doc.rust-lang.org/beta/unstable-book/compiler-flags/sanitizer.html#memtagsanitizer
 type ARMMTERule struct{}
 
 func (r ARMMTERule) ID() string   { return ARMMTERuleID }

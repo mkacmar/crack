@@ -12,7 +12,7 @@ const ARMBTIRuleID = "arm-bti"
 // ARMBTIRule checks for ARM Branch Target Identification.
 //
 // References:
-//   - https://doc.rust-lang.org/beta/unstable-book/compiler-flags/branch-protection.html
+//   - https://developer.arm.com/documentation/ddi0487/latest
 type ARMBTIRule struct{}
 
 func (r ARMBTIRule) ID() string   { return ARMBTIRuleID }

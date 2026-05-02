@@ -2,7 +2,6 @@
 set -ex
 
 ARCH=$1
-RUST_SRC=test/e2e/elf/testdata/main.rs
 mkdir -p binaries
 
 . test/e2e/elf/testdata/log-env.sh
@@ -43,9 +42,6 @@ build_c_strip clang -fstack-protector-strong stack-protector-stripped $C_SRC
 build_c clang "-fstack-protector-strong -static" stack-protector-static $C_SRC
 build_c_strip clang "-fstack-protector-strong -static" stack-protector-static-stripped $C_SRC
 build_c clang "-flto -fstack-protector-strong" stack-protector-lto $C_SRC
-
-rustc -o binaries/${ARCH}-rustc-stack-protector $RUST_SRC
-rustc -C strip=symbols -o binaries/${ARCH}-rustc-stack-protector-stripped $RUST_SRC
 
 ls -la binaries/
 rm -f /tmp/vulnerable.c

@@ -17,7 +17,6 @@ const X86RetpolineRuleID = "x86-retpoline"
 // References:
 //   - https://gcc.gnu.org/onlinedocs/gcc/x86-Options.html#index-mindirect-branch
 //   - https://clang.llvm.org/docs/ClangCommandLineReference.html#cmdoption-clang-mretpoline
-//   - https://github.com/rust-lang/rust/issues/116852
 type X86RetpolineRule struct{}
 
 func (r X86RetpolineRule) ID() string   { return X86RetpolineRuleID }

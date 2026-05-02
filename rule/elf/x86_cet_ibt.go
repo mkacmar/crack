@@ -13,7 +13,6 @@ const X86CETIBTRuleID = "x86-cet-ibt"
 //
 // References:
 //   - https://gcc.gnu.org/onlinedocs/gcc/x86-Options.html#index-fcf-protection
-//   - https://doc.rust-lang.org/beta/unstable-book/compiler-flags/cf-protection.html
 type X86CETIBTRule struct{}
 
 func (r X86CETIBTRule) ID() string   { return X86CETIBTRuleID }

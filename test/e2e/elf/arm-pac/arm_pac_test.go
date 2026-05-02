@@ -15,6 +15,5 @@ func TestARMPACRule(t *testing.T) {
 		{Binary: "clang-pac-disabled", Expect: e2e.Fail},
 		{Binary: "clang-pac-stripped", Expect: e2e.Pass},
 
-		{Binary: "rustc-no-pac", Expect: e2e.Skip},
 	})
 }

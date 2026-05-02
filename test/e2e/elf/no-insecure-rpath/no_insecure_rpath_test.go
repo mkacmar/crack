@@ -80,19 +80,5 @@ func TestNoInsecureRPATHRule(t *testing.T) {
 		{Binary: "arm-clang-rpath-tmp", Expect: e2e.Fail},
 		{Binary: "arm-clang-relocatable.o", Expect: e2e.Skip},
 
-		{Binary: "amd64-rustc-no-rpath", Expect: e2e.Pass},
-		{Binary: "amd64-rustc-rpath-absolute", Expect: e2e.Pass},
-		{Binary: "amd64-rustc-rpath-dot", Expect: e2e.Fail},
-		{Binary: "amd64-rustc-rpath-tmp", Expect: e2e.Fail},
-
-		{Binary: "arm64-rustc-no-rpath", Expect: e2e.Pass},
-		{Binary: "arm64-rustc-rpath-absolute", Expect: e2e.Pass},
-		{Binary: "arm64-rustc-rpath-dot", Expect: e2e.Fail},
-		{Binary: "arm64-rustc-rpath-tmp", Expect: e2e.Fail},
-
-		{Binary: "arm-rustc-no-rpath", Expect: e2e.Pass},
-		{Binary: "arm-rustc-rpath-absolute", Expect: e2e.Pass},
-		{Binary: "arm-rustc-rpath-dot", Expect: e2e.Fail},
-		{Binary: "arm-rustc-rpath-tmp", Expect: e2e.Fail},
 	})
 }

@@ -15,7 +15,6 @@ const NXBitRuleID = "nx-bit"
 //
 // References:
 //   - https://gcc.gnu.org/onlinedocs/gcc/Link-Options.html#index-z
-//   - https://doc.rust-lang.org/rustc/exploit-mitigations.html#non-executable-memory-regions
 type NXBitRule struct{}
 
 func (r NXBitRule) ID() string   { return NXBitRuleID }
@@ -30,7 +29,6 @@ func (r NXBitRule) Applicability() rule.Applicability {
 		Compilers: map[toolchain.Compiler]rule.CompilerRequirement{
 			toolchain.GCC:   {MinVersion: toolchain.Version{Major: 3, Minor: 4}, DefaultVersion: toolchain.Version{Major: 3, Minor: 4}, Flag: "-z noexecstack"},
 			toolchain.Clang: {MinVersion: toolchain.Version{Major: 1, Minor: 0}, DefaultVersion: toolchain.Version{Major: 1, Minor: 0}, Flag: "-z noexecstack"},
-			toolchain.Rustc: {MinVersion: toolchain.Version{Major: 1, Minor: 0}, DefaultVersion: toolchain.Version{Major: 1, Minor: 0}, Flag: "-C link-arg=-Wl,-z,noexecstack"},
 		},
 	}
 }

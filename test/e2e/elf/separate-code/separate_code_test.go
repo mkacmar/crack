@@ -41,8 +41,5 @@ func TestSeparateCodeRule(t *testing.T) {
 		{Binary: "amd64-gcc7-no-separate-code", Expect: e2e.Fail},
 		{Binary: "arm64-gcc7-no-separate-code", Expect: e2e.Fail},
 
-		{Binary: "amd64-rustc-separate-code", Expect: e2e.Pass},
-		{Binary: "arm64-rustc-separate-code", Expect: e2e.Pass},
-		{Binary: "arm-rustc-separate-code", Expect: e2e.Pass},
 	})
 }

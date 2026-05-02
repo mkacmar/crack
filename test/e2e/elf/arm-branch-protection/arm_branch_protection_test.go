@@ -19,6 +19,5 @@ func TestARMBranchProtectionRule(t *testing.T) {
 		{Binary: "clang-no-branch-protection", Expect: e2e.Fail},
 		{Binary: "clang-branch-protection-stripped", Expect: e2e.Pass},
 
-		{Binary: "rustc-no-branch-protection", Expect: e2e.Skip},
 	})
 }

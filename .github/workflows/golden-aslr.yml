@@ -8,8 +8,6 @@ jobs:
     runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v4
-      - name: Install Rust
-        run: . test/e2e/install-rust.sh
       - name: Build binaries
         run: sh test/e2e/elf/aslr/build.sh amd64
       - uses: actions/upload-artifact@v4
@@ -21,8 +19,6 @@ jobs:
     runs-on: ubuntu-24.04-arm
     steps:
       - uses: actions/checkout@v4
-      - name: Install Rust
-        run: . test/e2e/install-rust.sh
       - name: Build binaries
         run: sh test/e2e/elf/aslr/build.sh arm64
       - uses: actions/upload-artifact@v4
@@ -43,8 +39,7 @@ jobs:
             -v ${{ github.workspace }}:/workspace \
             -w /workspace \
             alpine:latest sh -c '
-              # rustup does not support armv7 musl so we use apk for stable rustc only
-              apk add --no-cache gcc clang musl-dev binutils go rust &&
+              apk add --no-cache gcc clang musl-dev binutils go &&
               sh test/e2e/elf/aslr/build.sh arm
             '
       - uses: actions/upload-artifact@v4

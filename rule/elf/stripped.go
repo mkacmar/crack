@@ -30,7 +30,6 @@ func (r StrippedRule) Applicability() rule.Applicability {
 		Compilers: map[toolchain.Compiler]rule.CompilerRequirement{
 			toolchain.GCC:   {MinVersion: toolchain.Version{Major: 3, Minor: 0}, Flag: "-s"},
 			toolchain.Clang: {MinVersion: toolchain.Version{Major: 1, Minor: 0}, Flag: "-s"},
-			toolchain.Rustc: {MinVersion: toolchain.Version{Major: 1, Minor: 59}, Flag: "-C strip=symbols"},
 		},
 	}
 }

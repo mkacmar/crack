@@ -12,7 +12,6 @@ import (
 const NoDumpRuleID = "no-dump"
 
 // NoDumpRule checks if core dumps are disabled.
-// Rustc not supported: rustc 1.90+ defaults to rust-lld which silently ignores -z nodump.
 //
 // References:
 //   - https://sourceware.org/binutils/docs/ld/Options.html#index-z-keyword

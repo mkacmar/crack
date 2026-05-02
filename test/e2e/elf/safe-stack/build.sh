@@ -3,7 +3,6 @@ set -ex
 
 ARCH=$1
 C_SRC=test/e2e/elf/testdata/main.c
-RUST_SRC=test/e2e/elf/testdata/main.rs
 mkdir -p binaries
 
 . test/e2e/elf/testdata/log-env.sh
@@ -16,7 +15,5 @@ build_c_strip clang "-fsanitize=safe-stack" safestack-stripped
 
 build_c clang "" no-safestack
 build_c gcc "" no-safestack
-
-rustc -o binaries/${ARCH}-rustc-no-safestack $RUST_SRC
 
 ls -la binaries/

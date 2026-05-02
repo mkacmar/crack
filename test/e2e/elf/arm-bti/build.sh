@@ -8,7 +8,6 @@ if [ -z "$LIBC" ]; then
 fi
 
 C_SRC=test/e2e/elf/testdata/main.c
-RUST_SRC=test/e2e/elf/testdata/main.rs
 mkdir -p binaries
 
 . test/e2e/elf/testdata/log-env.sh
@@ -35,7 +34,5 @@ build_c_strip gcc "-mbranch-protection=bti -Wl,-z,force-bti" bti-stripped
 build_c clang "-mbranch-protection=bti -Wl,-z,force-bti" bti-enabled
 build_c clang "-mbranch-protection=none" bti-disabled
 build_c_strip clang "-mbranch-protection=bti -Wl,-z,force-bti" bti-stripped
-
-rustc -o binaries/${PREFIX}rustc-no-bti $RUST_SRC
 
 ls -la binaries/

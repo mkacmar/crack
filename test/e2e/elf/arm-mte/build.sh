@@ -14,7 +14,6 @@ CLANG=${NDK_DIR}/toolchains/llvm/prebuilt/linux-x86_64/bin/clang
 STRIP=${NDK_DIR}/toolchains/llvm/prebuilt/linux-x86_64/bin/llvm-strip
 TARGET=aarch64-linux-android35
 
-
 $CLANG --version
 
 $CLANG --target=$TARGET -march=armv8.5-a+memtag -fsanitize=memtag-stack,memtag-heap -o binaries/clang-mte $C_SRC

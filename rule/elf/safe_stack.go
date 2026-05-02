@@ -16,7 +16,6 @@ const SafeStackRuleID = "safe-stack"
 // References:
 //   - https://clang.llvm.org/docs/SafeStack.html
 //   - https://llvm.org/docs/SafeStack.html
-//   - https://doc.rust-lang.org/beta/unstable-book/compiler-flags/sanitizer.html#safestack
 type SafeStackRule struct{}
 
 func (r SafeStackRule) ID() string   { return SafeStackRuleID }

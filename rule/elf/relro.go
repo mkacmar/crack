@@ -29,7 +29,6 @@ func (r RELRORule) Applicability() rule.Applicability {
 		Compilers: map[toolchain.Compiler]rule.CompilerRequirement{
 			toolchain.GCC:   {MinVersion: toolchain.Version{Major: 4, Minor: 1}, DefaultVersion: toolchain.Version{Major: 6, Minor: 1}, Flag: "-Wl,-z,relro"},
 			toolchain.Clang: {MinVersion: toolchain.Version{Major: 3, Minor: 4}, DefaultVersion: toolchain.Version{Major: 3, Minor: 9}, Flag: "-Wl,-z,relro"},
-			toolchain.Rustc: {MinVersion: toolchain.Version{Major: 1, Minor: 21}, DefaultVersion: toolchain.Version{Major: 1, Minor: 21}, Flag: "-C link-arg=-z -C link-arg=relro"},
 		},
 	}
 }
