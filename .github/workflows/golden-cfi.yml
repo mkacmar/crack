@@ -11,5 +11,6 @@ jobs:
     uses: ./.github/workflows/golden-build.yml
     with:
       rule: cfi
-      # CFI requires lld which is not available in the Alpine ARM container
+      # No compiler-rt CFI support for arm/riscv64 in Alpine
       arm: false
+      riscv64: false

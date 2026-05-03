@@ -100,7 +100,7 @@ jobs:
         run: |
           docker run --rm --platform linux/riscv64 \
             -v "$PWD:/workspace" -w /workspace \
-            ${{ env.TOOLCHAIN }}gcc13-clang18-musl-riscv64:v1 \
+            ${{ env.TOOLCHAIN }}gcc14-clang19-musl-riscv64:v1 \
             sh test/e2e/elf/${{ inputs.rule }}/build.sh riscv64
       - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
         with:

@@ -11,4 +11,6 @@ jobs:
     uses: ./.github/workflows/golden-build.yml
     with:
       rule: safe-stack
+      # No compiler-rt SafeStack support for arm/riscv64 in Alpine
       arm: false
+      riscv64: false
