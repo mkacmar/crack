@@ -24,7 +24,31 @@ build_c clang "-fPIE -pie -Wl,-z,execstack" execstack
 build_c clang "-static -fno-pie -no-pie" static-no-pie
 
 gcc -fPIE -pie -Wl,-z,noexecstack -o binaries/${ARCH}-gcc-textrel-patched $C_SRC
-go run test/e2e/elf/aslr/add-textrel.go binaries/${ARCH}-gcc-textrel-patched
+# Patch DT_DEBUG -> DT_TEXTREL in the dynamic section.
+gcc -xc -o /tmp/patch-textrel - <<'EOF'
+#define _GNU_SOURCE
+#include <string.h>
+#include <stdio.h>
+#include <stdlib.h>
+int main(int argc, char **argv) {
+    FILE *f = fopen(argv[1], "r+b");
+    fseek(f, 0, SEEK_END);
+    long sz = ftell(f);
+    rewind(f);
+    char *buf = malloc(sz);
+    fread(buf, 1, sz, f);
+    unsigned long entry[2] = {21, 0};
+    char *p = memmem(buf, sz, entry, sizeof(entry));
+    if (!p) { fputs("DT_DEBUG not found\n", stderr); return 1; }
+    unsigned long tag = 22;
+    memcpy(p, &tag, sizeof(tag));
+    rewind(f);
+    fwrite(buf, 1, sz, f);
+    fclose(f);
+    return 0;
+}
+EOF
+/tmp/patch-textrel binaries/${ARCH}-gcc-textrel-patched
 
 gcc -c -o binaries/${ARCH}-gcc-relocatable.o $C_SRC
 

@@ -1,5 +1,8 @@
 name: "Golden: Fortify Source"
 
+permissions:
+  contents: read
+
 on:
   workflow_dispatch:
 

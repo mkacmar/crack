@@ -1,5 +1,8 @@
 name: "Golden: x86 CET IBT"
 
+permissions:
+  contents: read
+
 on:
   workflow_dispatch:
 

@@ -1,0 +1,7 @@
+FROM ubuntu:18.04@sha256:f97a5103cca28097326814718e711c9c41b54853c26959d73495e40b1dd608f2
+
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    gcc=4:7.4.0-1ubuntu2.3 \
+    binutils=2.30-21ubuntu1~18.04.9 \
+    libc6-dev=2.27-3ubuntu1.6 \
+    && rm -rf /var/lib/apt/lists/*

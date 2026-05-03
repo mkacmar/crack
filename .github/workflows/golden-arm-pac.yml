@@ -1,24 +1,26 @@
 name: "Golden: ARM PAC"
 
+permissions:
+  contents: read
+
 on:
   workflow_dispatch:
+
+env:
+  TOOLCHAIN: ghcr.io/${{ github.repository }}/toolchain-
 
 jobs:
   build:
     runs-on: ubuntu-24.04-arm
-    # Fedora's glibc has PAC support, Ubuntu's doesn't.
-    container:
-      image: fedora:latest
     steps:
-      - uses: actions/checkout@v4
-
-      - name: Install build tools
-        run: dnf install -y gcc clang binutils
-
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
       - name: Build binaries
-        run: sh test/e2e/elf/arm-pac/build.sh
-
-      - uses: actions/upload-artifact@v4
+        run: |
+          docker run --rm \
+            -v "$PWD:/workspace" -w /workspace \
+            ${{ env.TOOLCHAIN }}glibc-pac-arm64:v1 \
+            sh test/e2e/elf/arm-pac/build.sh
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
         with:
           name: arm-pac-binaries
           path: binaries/

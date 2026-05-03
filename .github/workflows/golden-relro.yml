@@ -1,5 +1,8 @@
 name: "Golden: RELRO"
 
+permissions:
+  contents: read
+
 on:
   workflow_dispatch:
 

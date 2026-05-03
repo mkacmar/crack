@@ -1,0 +1,7 @@
+FROM fedora:41@sha256:e04278bca37cf98cc645106d1bc4e099db65991c2bc9c086d0664896cebe230c
+
+RUN dnf install -y \
+    gcc-14.3.1-4.fc41 \
+    clang-19.1.7-5.fc41 \
+    binutils-2.43.1-14.fc41 \
+    && dnf clean all

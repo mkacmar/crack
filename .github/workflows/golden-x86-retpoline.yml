@@ -1,5 +1,8 @@
 name: "Golden: x86 Retpoline"
 
+permissions:
+  contents: read
+
 on:
   workflow_dispatch:
 

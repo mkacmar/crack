@@ -1,5 +1,13 @@
 name: "Golden: Build"
 
+# actions/checkout v6.0.2: de0fac2e4500dabe0009e67214ff5f5447ce83dd
+# actions/download-artifact v4.3.0: d3f86a106a0bac45b974a628896c90dbdf5c8093
+# actions/upload-artifact v4.6.2: ea165f8d65b6e75b540449e92b4886f43607fa02
+# docker/setup-qemu-action v4.0.0: ce360397dd3f832beb865e1373c09c0e9f86d70a
+
+permissions:
+  contents: read
+
 on:
   workflow_call:
     inputs:
@@ -19,17 +27,22 @@ on:
         type: boolean
         default: true
 
+env:
+  TOOLCHAIN: ghcr.io/${{ github.repository }}/toolchain-
+
 jobs:
   build-amd64:
     if: inputs.amd64
     runs-on: ubuntu-24.04
     steps:
-      - uses: actions/checkout@v4
-      - name: Install lld
-        run: sudo apt-get update && sudo apt-get install -y lld
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
       - name: Build binaries
-        run: sh test/e2e/elf/${{ inputs.rule }}/build.sh amd64
-      - uses: actions/upload-artifact@v4
+        run: |
+          docker run --rm \
+            -v "$PWD:/workspace" -w /workspace \
+            ${{ env.TOOLCHAIN }}gcc13-clang18-amd64:v1 \
+            sh test/e2e/elf/${{ inputs.rule }}/build.sh amd64
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
         with:
           name: binaries-amd64
           path: binaries/
@@ -38,12 +51,14 @@ jobs:
     if: inputs.arm64
     runs-on: ubuntu-24.04-arm
     steps:
-      - uses: actions/checkout@v4
-      - name: Install lld
-        run: sudo apt-get update && sudo apt-get install -y lld
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
       - name: Build binaries
-        run: sh test/e2e/elf/${{ inputs.rule }}/build.sh arm64
-      - uses: actions/upload-artifact@v4
+        run: |
+          docker run --rm \
+            -v "$PWD:/workspace" -w /workspace \
+            ${{ env.TOOLCHAIN }}gcc13-clang18-arm64:v1 \
+            sh test/e2e/elf/${{ inputs.rule }}/build.sh arm64
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
         with:
           name: binaries-arm64
           path: binaries/
@@ -52,32 +67,28 @@ jobs:
     if: inputs.arm
     runs-on: ubuntu-24.04
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
       - name: Set up QEMU
-        uses: docker/setup-qemu-action@v3
+        uses: docker/setup-qemu-action@ce360397dd3f832beb865e1373c09c0e9f86d70a
         with:
           platforms: arm
       - name: Build binaries
         run: |
           docker run --rm --platform linux/arm/v7 \
-            -v ${{ github.workspace }}:/workspace \
-            -w /workspace \
-            alpine:latest sh -c '
-              apk add --no-cache gcc clang musl-dev binutils &&
-              sh test/e2e/elf/${{ inputs.rule }}/build.sh arm
-            '
-      - uses: actions/upload-artifact@v4
+            -v "$PWD:/workspace" -w /workspace \
+            ${{ env.TOOLCHAIN }}gcc13-clang18-musl-armv7:v1 \
+            sh test/e2e/elf/${{ inputs.rule }}/build.sh arm
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
         with:
           name: binaries-arm
           path: binaries/
 
   merge:
     runs-on: ubuntu-latest
-    # Run even when some build jobs are skipped
     if: always() && !failure() && !cancelled()
     needs: [build-amd64, build-arm64, build-arm]
     steps:
-      - uses: actions/download-artifact@v4
+      - uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093
         with:
           path: all-binaries
           pattern: binaries-*
@@ -86,7 +97,7 @@ jobs:
       - name: List all binaries
         run: ls -la all-binaries/
 
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
         with:
           name: ${{ inputs.rule }}-binaries
           path: all-binaries/

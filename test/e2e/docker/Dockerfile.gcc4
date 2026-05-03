@@ -1,0 +1,9 @@
+FROM debian:jessie@sha256:23f6c1ca631220b4a17c659e70e4c20092965590b406b1fb02780475680622f4
+
+RUN echo "deb http://archive.debian.org/debian jessie main" > /etc/apt/sources.list && \
+    echo "deb http://archive.debian.org/debian-security jessie/updates main" >> /etc/apt/sources.list && \
+    apt-get -o Acquire::Check-Valid-Until=false update && \
+    apt-get install -y --force-yes \
+    gcc=4:4.9.2-2 \
+    binutils=2.25-5+deb8u1 \
+    && rm -rf /var/lib/apt/lists/*

@@ -1,0 +1,84 @@
+name: "Build Toolchain Images"
+
+# actions/checkout v6.0.2: de0fac2e4500dabe0009e67214ff5f5447ce83dd
+# docker/build-push-action v7.1.0: bcafcacb16a39f128d818304e6c9c0c18556b85f
+# docker/login-action v4.1.0: 4907a6ddec9925e35a0a9e82d7399ccc52663121
+# docker/setup-buildx-action v4.0.0: 4d04d5d9486b7bd6fa91e7baf45bbb4f8b9deedd
+# docker/setup-qemu-action v4.0.0: ce360397dd3f832beb865e1373c09c0e9f86d70a
+
+on:
+  workflow_dispatch:
+
+env:
+  REGISTRY: ghcr.io
+  IMAGE_PREFIX: ghcr.io/${{ github.repository }}/toolchain-
+
+permissions:
+  contents: read
+  packages: write
+
+jobs:
+  build:
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - image: gcc13-clang18-amd64
+            tag: v1
+            platform: linux/amd64
+            runner: ubuntu-24.04
+          - image: gcc13-clang18-arm64
+            tag: v1
+            platform: linux/arm64
+            runner: ubuntu-24.04-arm
+          - image: gcc13-clang18-musl-armv7
+            tag: v1
+            platform: linux/arm/v7
+            runner: ubuntu-24.04
+            qemu: true
+          - image: gcc13-clang18-musl-arm64
+            tag: v1
+            platform: linux/arm64
+            runner: ubuntu-24.04-arm
+          - image: gcc4
+            tag: v1
+            platform: linux/amd64
+            runner: ubuntu-24.04
+          - image: gcc7-arm64
+            tag: v1
+            platform: linux/arm64
+            runner: ubuntu-24.04-arm
+          - image: android-ndk-r27c
+            tag: v1
+            platform: linux/amd64
+            runner: ubuntu-24.04
+          - image: glibc-pac-arm64
+            tag: v1
+            platform: linux/arm64
+            runner: ubuntu-24.04-arm
+    runs-on: ${{ matrix.runner }}
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
+      - name: Fail if tag already exists
+        run: |
+          if docker manifest inspect ${{ env.IMAGE_PREFIX }}${{ matrix.image }}:${{ matrix.tag }} > /dev/null 2>&1; then
+            echo "::error::Tag ${{ matrix.image }}:${{ matrix.tag }} already exists. Bump the version to push a new image."
+            exit 1
+          fi
+      - uses: docker/setup-qemu-action@ce360397dd3f832beb865e1373c09c0e9f86d70a
+        if: matrix.qemu
+        with:
+          platforms: arm
+      - uses: docker/setup-buildx-action@4d04d5d9486b7bd6fa91e7baf45bbb4f8b9deedd
+      - uses: docker/login-action@4907a6ddec9925e35a0a9e82d7399ccc52663121
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+      - uses: docker/build-push-action@bcafcacb16a39f128d818304e6c9c0c18556b85f
+        with:
+          context: test/e2e/docker
+          file: test/e2e/docker/Dockerfile.${{ matrix.image }}
+          platforms: ${{ matrix.platform }}
+          push: true
+          tags: ${{ env.IMAGE_PREFIX }}${{ matrix.image }}:${{ matrix.tag }}

@@ -1,5 +1,8 @@
 name: "Golden: SafeStack"
 
+permissions:
+  contents: read
+
 on:
   workflow_dispatch:
 

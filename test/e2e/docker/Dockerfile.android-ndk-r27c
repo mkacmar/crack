@@ -1,0 +1,17 @@
+FROM ubuntu:24.04@sha256:cdb5fd928fced577cfecf12c8966e830fcdf42ee481fb0b91904eeddc2fe5eff
+
+ARG DEBIAN_FRONTEND=noninteractive
+ARG NDK_VERSION=r27c
+
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    wget \
+    unzip \
+    ca-certificates \
+    && rm -rf /var/lib/apt/lists/*
+
+RUN wget -q https://dl.google.com/android/repository/android-ndk-${NDK_VERSION}-linux.zip && \
+    unzip -q android-ndk-${NDK_VERSION}-linux.zip -d /opt && \
+    rm android-ndk-${NDK_VERSION}-linux.zip && \
+    ln -s /opt/android-ndk-${NDK_VERSION} /opt/android-ndk
+
+ENV NDK_DIR=/opt/android-ndk

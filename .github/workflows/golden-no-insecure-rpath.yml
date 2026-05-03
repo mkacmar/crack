@@ -1,5 +1,8 @@
 name: "Golden: No Insecure RPATH"
 
+permissions:
+  contents: read
+
 on:
   workflow_dispatch:
 

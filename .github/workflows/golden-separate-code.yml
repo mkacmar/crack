@@ -1,49 +1,61 @@
 name: "Golden: Separate Code"
 
+permissions:
+  contents: read
+
 on:
   workflow_dispatch:
 
+env:
+  TOOLCHAIN: ghcr.io/${{ github.repository }}/toolchain-
+
 jobs:
-  build:
-    strategy:
-      matrix:
-        include:
-          - arch: amd64
-            runner: ubuntu-24.04
-          - arch: arm64
-            runner: ubuntu-24.04-arm
-          - arch: arm
-            runner: ubuntu-24.04
-            qemu: true
-
-    runs-on: ${{ matrix.runner }}
+  build-amd64:
+    runs-on: ubuntu-24.04
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
+      - name: Build binaries
+        run: |
+          docker run --rm \
+            -v "$PWD:/workspace" -w /workspace \
+            ${{ env.TOOLCHAIN }}gcc13-clang18-amd64:v1 \
+            sh test/e2e/elf/separate-code/build.sh amd64
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: binaries-amd64
+          path: binaries/
 
-      - name: Set up QEMU
-        if: matrix.qemu
-        uses: docker/setup-qemu-action@v3
+  build-arm64:
+    runs-on: ubuntu-24.04-arm
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
+      - name: Build binaries
+        run: |
+          docker run --rm \
+            -v "$PWD:/workspace" -w /workspace \
+            ${{ env.TOOLCHAIN }}gcc13-clang18-arm64:v1 \
+            sh test/e2e/elf/separate-code/build.sh arm64
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: binaries-arm64
+          path: binaries/
+
+  build-arm:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
+      - uses: docker/setup-qemu-action@ce360397dd3f832beb865e1373c09c0e9f86d70a
         with:
           platforms: arm
-
-      - name: Build binaries (native)
-        if: ${{ !matrix.qemu }}
-        run: sh test/e2e/elf/separate-code/build.sh ${{ matrix.arch }}
-
-      - name: Build binaries (QEMU)
-        if: matrix.qemu
+      - name: Build binaries
         run: |
           docker run --rm --platform linux/arm/v7 \
-            -v ${{ github.workspace }}:/workspace \
-            -w /workspace \
-            alpine:latest sh -c '
-              apk add --no-cache gcc clang musl-dev binutils &&
-              sh test/e2e/elf/separate-code/build.sh ${{ matrix.arch }}
-            '
-
-      - uses: actions/upload-artifact@v4
+            -v "$PWD:/workspace" -w /workspace \
+            ${{ env.TOOLCHAIN }}gcc13-clang18-musl-armv7:v1 \
+            sh test/e2e/elf/separate-code/build.sh arm
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
         with:
-          name: binaries-${{ matrix.arch }}
+          name: binaries-arm
           path: binaries/
 
   build-noseparate:
@@ -51,43 +63,38 @@ jobs:
       matrix:
         include:
           - arch: amd64
-            image: ubuntu:18.04
+            runner: ubuntu-24.04
+            image: gcc4
+            image_tag: v1
+            cmd: gcc -o binaries/amd64-gcc4-no-separate-code test/e2e/elf/testdata/main.c
           - arch: arm64
-            image: arm64v8/ubuntu:18.04
-            platform: linux/arm64
-
-    runs-on: ubuntu-latest
+            runner: ubuntu-24.04-arm
+            image: gcc7-arm64
+            image_tag: v1
+            cmd: gcc -o binaries/arm64-gcc7-no-separate-code test/e2e/elf/testdata/main.c
+    runs-on: ${{ matrix.runner }}
     steps:
-      - uses: actions/checkout@v4
-
-      - name: Set up QEMU
-        if: matrix.platform
-        uses: docker/setup-qemu-action@v3
-        with:
-          platforms: arm64
-
-      - name: Build with older toolchain (GCC 7 / binutils 2.30)
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
+      - name: Build without separate-code
         run: |
-          docker run --rm ${{ matrix.platform && format('--platform {0}', matrix.platform) || '' }} \
-            -v ${{ github.workspace }}:/workspace \
-            -w /workspace \
-            ${{ matrix.image }} sh -c '
-              apt-get update && apt-get install -y gcc
+          docker run --rm \
+            -v "$PWD:/workspace" -w /workspace \
+            ${{ env.TOOLCHAIN }}${{ matrix.image }}:${{ matrix.image_tag }} \
+            sh -c '
               . test/e2e/elf/testdata/log-env.sh
               mkdir -p binaries
-              gcc -o binaries/${{ matrix.arch }}-gcc7-no-separate-code test/e2e/elf/testdata/main.c
+              ${{ matrix.cmd }}
             '
-
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
         with:
           name: binaries-noseparate-${{ matrix.arch }}
           path: binaries/
 
   merge:
     runs-on: ubuntu-latest
-    needs: [build, build-noseparate]
+    needs: [build-amd64, build-arm64, build-arm, build-noseparate]
     steps:
-      - uses: actions/download-artifact@v4
+      - uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093
         with:
           path: all-binaries
           pattern: binaries-*
@@ -96,7 +103,7 @@ jobs:
       - name: List all binaries
         run: ls -la all-binaries/
 
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
         with:
           name: separate-code-binaries
           path: all-binaries/

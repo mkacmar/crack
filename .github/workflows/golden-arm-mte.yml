@@ -1,23 +1,26 @@
 name: "Golden: ARM MTE"
 
+permissions:
+  contents: read
+
 on:
   workflow_dispatch:
 
 env:
-  NDK_VERSION: r27
+  TOOLCHAIN: ghcr.io/${{ github.repository }}/toolchain-
 
 jobs:
   build:
     runs-on: ubuntu-24.04
     steps:
-      - uses: actions/checkout@v4
-      - name: Download Android NDK
-        run: |
-          wget -q https://dl.google.com/android/repository/android-ndk-${NDK_VERSION}-linux.zip
-          unzip -q android-ndk-${NDK_VERSION}-linux.zip
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
       - name: Build binaries
-        run: sh test/e2e/elf/arm-mte/build.sh android-ndk-${NDK_VERSION}
-      - uses: actions/upload-artifact@v4
+        run: |
+          docker run --rm \
+            -v "$PWD:/workspace" -w /workspace \
+            ${{ env.TOOLCHAIN }}android-ndk-r27c:v1 \
+            sh test/e2e/elf/arm-mte/build.sh /opt/android-ndk
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
         with:
           name: arm-mte-binaries
           path: binaries/

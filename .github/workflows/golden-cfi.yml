@@ -1,5 +1,8 @@
 name: "Golden: CFI"
 
+permissions:
+  contents: read
+
 on:
   workflow_dispatch:
 
