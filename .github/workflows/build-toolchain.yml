@@ -8,6 +8,12 @@ name: "Build Toolchain Images"
 
 on:
   workflow_dispatch:
+    inputs:
+      images:
+        description: "Comma-separated images to build, or 'all'"
+        required: true
+        default: "all"
+        type: string
 
 env:
   REGISTRY: ghcr.io
@@ -66,12 +72,6 @@ jobs:
     runs-on: ${{ matrix.runner }}
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
-      - name: Fail if tag already exists
-        run: |
-          if docker manifest inspect ${{ env.IMAGE_PREFIX }}${{ matrix.image }}:${{ matrix.tag }} > /dev/null 2>&1; then
-            echo "::error::Tag ${{ matrix.image }}:${{ matrix.tag }} already exists. Bump the version to push a new image."
-            exit 1
-          fi
       - uses: docker/setup-qemu-action@ce360397dd3f832beb865e1373c09c0e9f86d70a
         if: matrix.qemu
         with:
@@ -82,10 +82,16 @@ jobs:
           registry: ${{ env.REGISTRY }}
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
-      - uses: docker/build-push-action@bcafcacb16a39f128d818304e6c9c0c18556b85f
-        with:
-          context: test/e2e/docker
-          file: test/e2e/docker/Dockerfile.${{ matrix.image }}
-          platforms: ${{ matrix.platform }}
-          push: true
-          tags: ${{ env.IMAGE_PREFIX }}${{ matrix.image }}:${{ matrix.tag }}
+      - name: Build and push
+        if: inputs.images == 'all' || contains(format(',{0},', inputs.images), format(',{0},', matrix.image))
+        run: |
+          if docker manifest inspect ${{ env.IMAGE_PREFIX }}${{ matrix.image }}:${{ matrix.tag }} > /dev/null 2>&1; then
+            echo "::error::Tag ${{ matrix.image }}:${{ matrix.tag }} already exists. Bump the version."
+            exit 1
+          fi
+          docker buildx build \
+            --platform ${{ matrix.platform }} \
+            --push \
+            -t ${{ env.IMAGE_PREFIX }}${{ matrix.image }}:${{ matrix.tag }} \
+            -f test/e2e/docker/Dockerfile.${{ matrix.image }} \
+            test/e2e/docker/
