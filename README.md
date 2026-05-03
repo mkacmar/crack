@@ -3,11 +3,11 @@
 > **Note**: This is a v0 release, API may change.
 
 A tool to analyze ELF binaries for security hardening features.
-Focused on binaries compiled with `gcc` and `clang`.
 
-Binaries where the compiler cannot be detected (e.g. stripped) are analyzed
-by all rules, as the tool assumes gcc or clang by default. Binaries positively
-identified as non-gcc/clang are skipped.
+Focused on binaries compiled with `GCC` and `Clang` for `amd64`, `arm64`, `arm`, and `riscv`.
+
+Binaries where the compiler cannot be detected (e.g. stripped) are analyzed by all rules, as the tool assumes GCC/Clang by default.
+Binaries positively identified as non-GCC/Clang are skipped.
 
 Based on recommendations from:
 - [OpenSSF Compiler Options Hardening Guide](https://best.openssf.org/Compiler-Hardening-Guides/Compiler-Options-Hardening-Guide-for-C-and-C++.html)
