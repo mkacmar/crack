@@ -47,7 +47,7 @@ jobs:
             tag: v1
             platform: linux/arm64
             runner: ubuntu-24.04-arm
-          - image: gcc13-clang18-musl-riscv64
+          - image: gcc14-clang19-musl-riscv64
             tag: v1
             platform: linux/riscv64
             runner: ubuntu-24.04

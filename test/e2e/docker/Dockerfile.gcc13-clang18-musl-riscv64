@@ -1,9 +1,0 @@
-FROM alpine:3.20@sha256:c47cbcc0d9c7f68d8e19c8e4eb50252ff9722e504108d69e8c36d510e921fc26
-
-RUN apk add --no-cache \
-    gcc=13.2.1_git20240309-r1 \
-    clang18=18.1.6-r0 \
-    lld=17.0.6-r0 \
-    musl-dev=1.2.5-r3 \
-    binutils=2.42-r1 \
-    && ln -s /usr/bin/clang-18 /usr/bin/clang

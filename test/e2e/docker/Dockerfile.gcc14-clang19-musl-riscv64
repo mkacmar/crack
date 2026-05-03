@@ -1,0 +1,8 @@
+FROM alpine:3.21@sha256:eae9b783e97a9fb58fe8282dbf406d3854919e00895ad75940206ebe168dcfee
+
+RUN apk add --no-cache \
+    gcc=14.2.0-r4 \
+    clang19=19.1.4-r0 \
+    lld=19.1.4-r0 \
+    musl-dev=1.2.5-r11 \
+    binutils=2.43.1-r3
