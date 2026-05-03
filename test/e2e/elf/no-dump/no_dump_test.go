@@ -37,5 +37,15 @@ func TestNoDumpRule(t *testing.T) {
 		{Binary: "arm-clang-nodump-stripped", Expect: e2e.Pass},
 		{Binary: "arm-clang-default", Expect: e2e.Fail},
 		{Binary: "arm-clang-relocatable.o", Expect: e2e.Skip},
+
+		{Binary: "riscv64-gcc-nodump", Expect: e2e.Pass},
+		{Binary: "riscv64-gcc-nodump-stripped", Expect: e2e.Pass},
+		{Binary: "riscv64-gcc-default", Expect: e2e.Fail},
+		{Binary: "riscv64-gcc-relocatable.o", Expect: e2e.Skip},
+
+		{Binary: "riscv64-clang-nodump", Expect: e2e.Pass},
+		{Binary: "riscv64-clang-nodump-stripped", Expect: e2e.Pass},
+		{Binary: "riscv64-clang-default", Expect: e2e.Fail},
+		{Binary: "riscv64-clang-relocatable.o", Expect: e2e.Skip},
 	})
 }

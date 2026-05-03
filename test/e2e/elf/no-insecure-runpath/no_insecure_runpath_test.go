@@ -80,5 +80,29 @@ func TestNoInsecureRUNPATHRule(t *testing.T) {
 		{Binary: "arm-clang-runpath-tmp", Expect: e2e.Fail},
 		{Binary: "arm-clang-relocatable.o", Expect: e2e.Skip},
 
+		{Binary: "riscv64-gcc-no-runpath", Expect: e2e.Pass},
+		{Binary: "riscv64-gcc-runpath-absolute", Expect: e2e.Pass},
+		{Binary: "riscv64-gcc-runpath-multiple-absolute", Expect: e2e.Pass},
+		{Binary: "riscv64-gcc-runpath-dot", Expect: e2e.Fail},
+		{Binary: "riscv64-gcc-runpath-dotdot", Expect: e2e.Fail},
+		{Binary: "riscv64-gcc-runpath-relative", Expect: e2e.Fail},
+		{Binary: "riscv64-gcc-runpath-parent-relative", Expect: e2e.Fail},
+		{Binary: "riscv64-gcc-runpath-tmp", Expect: e2e.Fail},
+		{Binary: "riscv64-gcc-runpath-var-tmp", Expect: e2e.Fail},
+		{Binary: "riscv64-gcc-runpath-tmp-subdir", Expect: e2e.Fail},
+		{Binary: "riscv64-gcc-runpath-empty-component", Expect: e2e.Fail},
+		{Binary: "riscv64-gcc-runpath-mixed", Expect: e2e.Fail},
+		{Binary: "riscv64-gcc-runpath-bare-relative", Expect: e2e.Fail},
+		{Binary: "riscv64-gcc-runpath-subdir-relative", Expect: e2e.Fail},
+		{Binary: "riscv64-gcc-runpath-origin-relative", Expect: e2e.Pass},
+		{Binary: "riscv64-gcc-runpath-origin-parent", Expect: e2e.Fail},
+		{Binary: "riscv64-gcc-runpath-dev-shm", Expect: e2e.Fail},
+
+		{Binary: "riscv64-clang-no-runpath", Expect: e2e.Pass},
+		{Binary: "riscv64-clang-runpath-absolute", Expect: e2e.Pass},
+		{Binary: "riscv64-clang-runpath-dot", Expect: e2e.Fail},
+		{Binary: "riscv64-clang-runpath-tmp", Expect: e2e.Fail},
+		{Binary: "riscv64-clang-relocatable.o", Expect: e2e.Skip},
+
 	})
 }

@@ -38,5 +38,15 @@ func TestNoDLOpenRule(t *testing.T) {
 		{Binary: "arm-clang-default.so", Expect: e2e.Fail},
 		{Binary: "arm-clang-pie-executable", Expect: e2e.Skip},
 
+		{Binary: "riscv64-gcc-nodlopen.so", Expect: e2e.Pass},
+		{Binary: "riscv64-gcc-nodlopen-stripped.so", Expect: e2e.Pass},
+		{Binary: "riscv64-gcc-default.so", Expect: e2e.Fail},
+		{Binary: "riscv64-gcc-pie-executable", Expect: e2e.Skip},
+
+		{Binary: "riscv64-clang-nodlopen.so", Expect: e2e.Pass},
+		{Binary: "riscv64-clang-nodlopen-stripped.so", Expect: e2e.Pass},
+		{Binary: "riscv64-clang-default.so", Expect: e2e.Fail},
+		{Binary: "riscv64-clang-pie-executable", Expect: e2e.Skip},
+
 	})
 }

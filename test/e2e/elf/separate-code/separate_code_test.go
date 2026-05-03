@@ -38,6 +38,16 @@ func TestSeparateCodeRule(t *testing.T) {
 		{Binary: "arm-clang-separate-code-stripped", Expect: e2e.Pass},
 		{Binary: "arm-clang-relocatable.o", Expect: e2e.Skip},
 
+		{Binary: "riscv64-gcc-separate-code", Expect: e2e.Pass},
+		{Binary: "riscv64-gcc-separate-code-stripped", Expect: e2e.Pass},
+		{Binary: "riscv64-gcc-separate-code-static", Expect: e2e.Pass},
+		{Binary: "riscv64-gcc-separate-code-shared", Expect: e2e.Pass},
+		{Binary: "riscv64-gcc-relocatable.o", Expect: e2e.Skip},
+
+		{Binary: "riscv64-clang-separate-code", Expect: e2e.Pass},
+		{Binary: "riscv64-clang-separate-code-stripped", Expect: e2e.Pass},
+		{Binary: "riscv64-clang-relocatable.o", Expect: e2e.Skip},
+
 		{Binary: "amd64-gcc4-no-separate-code", Expect: e2e.Fail},
 		{Binary: "arm64-gcc7-no-separate-code", Expect: e2e.Fail},
 

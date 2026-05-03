@@ -55,5 +55,20 @@ func TestASLRRule(t *testing.T) {
 		{Binary: "arm-clang-execstack", Expect: e2e.Fail},
 		{Binary: "arm-clang-static-no-pie", Expect: e2e.Fail},
 
+		{Binary: "riscv64-gcc-aslr-full", Expect: e2e.Pass},
+		{Binary: "riscv64-gcc-no-pie", Expect: e2e.Fail},
+		{Binary: "riscv64-gcc-execstack", Expect: e2e.Fail},
+		{Binary: "riscv64-gcc-shared", Expect: e2e.Skip},
+		{Binary: "riscv64-gcc-static-pie", Expect: e2e.Pass},
+		{Binary: "riscv64-gcc-aslr-stripped", Expect: e2e.Pass},
+		{Binary: "riscv64-gcc-static-no-pie", Expect: e2e.Fail},
+		{Binary: "riscv64-gcc-textrel-patched", Expect: e2e.Fail},
+		{Binary: "riscv64-gcc-relocatable.o", Expect: e2e.Skip},
+
+		{Binary: "riscv64-clang-aslr-full", Expect: e2e.Pass},
+		{Binary: "riscv64-clang-no-pie", Expect: e2e.Fail},
+		{Binary: "riscv64-clang-execstack", Expect: e2e.Fail},
+		{Binary: "riscv64-clang-static-no-pie", Expect: e2e.Fail},
+
 	})
 }

@@ -41,5 +41,16 @@ func TestStrippedRule(t *testing.T) {
 		{Binary: "arm-clang-stripped", Expect: e2e.Pass},
 		{Binary: "arm-clang-strip-debug", Expect: e2e.Fail},
 
+		{Binary: "riscv64-gcc-not-stripped", Expect: e2e.Fail},
+		{Binary: "riscv64-gcc-stripped", Expect: e2e.Pass},
+		{Binary: "riscv64-gcc-strip-debug", Expect: e2e.Fail},
+		{Binary: "riscv64-gcc-strip-symbols", Expect: e2e.Pass},
+		{Binary: "riscv64-gcc-link-stripped", Expect: e2e.Pass},
+		{Binary: "riscv64-gcc-partial-stripped", Expect: e2e.Fail},
+
+		{Binary: "riscv64-clang-not-stripped", Expect: e2e.Fail},
+		{Binary: "riscv64-clang-stripped", Expect: e2e.Pass},
+		{Binary: "riscv64-clang-strip-debug", Expect: e2e.Fail},
+
 	})
 }

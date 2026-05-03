@@ -65,5 +65,24 @@ func TestStackCanaryRule(t *testing.T) {
 		{Binary: "arm-clang-stack-protector-static-stripped", Expect: e2e.Fail},
 		{Binary: "arm-clang-stack-protector-lto", Expect: e2e.Pass},
 
+		{Binary: "riscv64-gcc-stack-protector-strong", Expect: e2e.Pass},
+		{Binary: "riscv64-gcc-stack-protector-all", Expect: e2e.Pass},
+		{Binary: "riscv64-gcc-stack-protector", Expect: e2e.Pass},
+		{Binary: "riscv64-gcc-no-stack-protector", Expect: e2e.Fail},
+		{Binary: "riscv64-gcc-stack-protector-simple", Expect: e2e.Fail},
+		{Binary: "riscv64-gcc-stack-protector-all-simple", Expect: e2e.Pass},
+		{Binary: "riscv64-gcc-stack-protector-stripped", Expect: e2e.Pass},
+		{Binary: "riscv64-gcc-stack-protector-static", Expect: e2e.Pass},
+		{Binary: "riscv64-gcc-stack-protector-static-stripped", Expect: e2e.Fail},
+		{Binary: "riscv64-gcc-stack-protector-lto", Expect: e2e.Pass},
+
+		{Binary: "riscv64-clang-stack-protector-strong", Expect: e2e.Pass},
+		{Binary: "riscv64-clang-stack-protector-all", Expect: e2e.Pass},
+		{Binary: "riscv64-clang-no-stack-protector", Expect: e2e.Fail},
+		{Binary: "riscv64-clang-stack-protector-stripped", Expect: e2e.Pass},
+		{Binary: "riscv64-clang-stack-protector-static", Expect: e2e.Pass},
+		{Binary: "riscv64-clang-stack-protector-static-stripped", Expect: e2e.Fail},
+		{Binary: "riscv64-clang-stack-protector-lto", Expect: e2e.Pass},
+
 	})
 }

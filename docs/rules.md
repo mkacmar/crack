@@ -90,7 +90,7 @@ Checks if the binary is compatible with Address Space Layout Randomization (ASLR
 
 ### Platform
 
-amd64, arm, arm64, x86
+amd64, arm, arm64, riscv, x86
 
 ### Toolchain
 
@@ -131,7 +131,7 @@ Checks for FORTIFY_SOURCE buffer overflow protection. This glibc feature replace
 
 ### Platform
 
-amd64, arm, arm64, x86
+amd64, arm, arm64, riscv, x86
 
 ### Toolchain
 
@@ -152,7 +152,7 @@ Checks for full RELRO (Relocation Read-Only) protection. Full RELRO makes the Gl
 
 ### Platform
 
-amd64, arm, arm64, x86
+amd64, arm, arm64, riscv, x86
 
 ### Toolchain
 
@@ -173,7 +173,7 @@ Checks if the shared library has the DF_1_NOOPEN flag set to prevent loading via
 
 ### Platform
 
-amd64, arm, arm64, x86
+amd64, arm, arm64, riscv, x86
 
 ### Toolchain
 
@@ -194,7 +194,7 @@ Checks if the binary has the DF_1_NODUMP flag set to prevent dldump(3) from copy
 
 ### Platform
 
-amd64, arm, arm64, x86
+amd64, arm, arm64, riscv, x86
 
 ### Toolchain
 
@@ -215,7 +215,7 @@ Checks for insecure RPATH values that could enable library injection. RPATH take
 
 ### Platform
 
-amd64, arm, arm64, x86
+amd64, arm, arm64, riscv, x86
 
 ### Toolchain
 
@@ -236,7 +236,7 @@ Checks for insecure RUNPATH values that could enable library injection. Relative
 
 ### Platform
 
-amd64, arm, arm64, x86
+amd64, arm, arm64, riscv, x86
 
 ### Toolchain
 
@@ -257,7 +257,7 @@ Checks if the stack is marked non-executable (NX bit). This prevents stack-based
 
 ### Platform
 
-amd64, arm, arm64, x86
+amd64, arm, arm64, riscv, x86
 
 ### Toolchain
 
@@ -278,7 +278,7 @@ Checks if the binary is compiled as a Position Independent Executable (PIE). PIE
 
 ### Platform
 
-amd64, arm, arm64, x86
+amd64, arm, arm64, riscv, x86
 
 ### Toolchain
 
@@ -299,7 +299,7 @@ Checks for partial RELRO (Relocation Read-Only) protection. Partial RELRO reorde
 
 ### Platform
 
-amd64, arm, arm64, x86
+amd64, arm, arm64, riscv, x86
 
 ### Toolchain
 
@@ -340,7 +340,7 @@ Checks if code and data are in separate memory pages. This prevents code pages f
 
 ### Platform
 
-amd64, arm, arm64, x86
+amd64, arm, arm64, riscv, x86
 
 ### Toolchain
 
@@ -361,7 +361,7 @@ Checks for stack canary (stack protector) instrumentation. Stack canaries detect
 
 ### Platform
 
-amd64, arm, arm64, x86
+amd64, arm, arm64, riscv, x86
 
 ### Toolchain
 
@@ -382,7 +382,7 @@ Checks if an explicit stack size limit is set. Defining a maximum stack size hel
 
 ### Platform
 
-amd64, arm, arm64, x86
+amd64, arm, arm64, riscv, x86
 
 ### Toolchain
 
@@ -403,7 +403,7 @@ Checks if the binary has been stripped of symbol tables and debug information. S
 
 ### Platform
 
-amd64, arm, arm64, x86
+amd64, arm, arm64, riscv, x86
 
 ### Toolchain
 

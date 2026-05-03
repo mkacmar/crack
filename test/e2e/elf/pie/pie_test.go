@@ -46,5 +46,17 @@ func TestPIERule(t *testing.T) {
 		{Binary: "arm-clang-no-pie", Expect: e2e.Fail},
 		{Binary: "arm-clang-pie-stripped", Expect: e2e.Pass},
 
+		{Binary: "riscv64-gcc-pie-explicit", Expect: e2e.Pass},
+		{Binary: "riscv64-gcc-no-pie", Expect: e2e.Fail},
+		{Binary: "riscv64-gcc-static-pie", Expect: e2e.Pass},
+		{Binary: "riscv64-gcc-shared", Expect: e2e.Skip},
+		{Binary: "riscv64-gcc-pie-stripped", Expect: e2e.Pass},
+		{Binary: "riscv64-gcc-pie-strip-debug", Expect: e2e.Pass},
+		{Binary: "riscv64-gcc-relocatable.o", Expect: e2e.Skip},
+
+		{Binary: "riscv64-clang-pie-explicit", Expect: e2e.Pass},
+		{Binary: "riscv64-clang-no-pie", Expect: e2e.Fail},
+		{Binary: "riscv64-clang-pie-stripped", Expect: e2e.Pass},
+
 	})
 }
