@@ -13,6 +13,7 @@ var compilerPriority = map[toolchain.Compiler]int{
 	toolchain.GCC:   1,
 	toolchain.Clang: 2,
 	toolchain.Rustc: 3,
+	toolchain.Go:    4,
 }
 
 func isNotELFError(err error) bool {
@@ -22,6 +23,10 @@ func isNotELFError(err error) bool {
 }
 
 func detectToolchain(f *elf.File, detector toolchain.ELFDetector) (toolchain.Compiler, toolchain.Version) {
+	if f.Section(".go.buildinfo") != nil {
+		return toolchain.Go, toolchain.Version{}
+	}
+
 	comments := extractCompilerComments(f)
 
 	var bestComp toolchain.Compiler

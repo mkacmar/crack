@@ -16,6 +16,7 @@ const (
 	GCC     Compiler = "gcc"
 	Clang   Compiler = "clang"
 	Rustc   Compiler = "rustc"
+	Go      Compiler = "go"
 )
 
 func (c Compiler) String() string {
