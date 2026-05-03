@@ -13,3 +13,4 @@ jobs:
       rule: x86-cet-ibt
       arm64: false
       arm: false
+      riscv64: false

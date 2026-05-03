@@ -25,7 +25,7 @@ func (r FullRELRORule) Description() string {
 
 func (r FullRELRORule) Applicability() rule.Applicability {
 	return rule.Applicability{
-		Platform: binary.Platform{Architecture: binary.ArchAllX86 | binary.ArchAllARM},
+		Platform: binary.Platform{Architecture: binary.ArchAllX86 | binary.ArchAllARM | binary.ArchRISCV},
 		Compilers: map[toolchain.Compiler]rule.CompilerRequirement{
 			toolchain.GCC:   {MinVersion: toolchain.Version{Major: 4, Minor: 1}, DefaultVersion: toolchain.Version{Major: 6, Minor: 1}, Flag: "-Wl,-z,relro,-z,now"},
 			toolchain.Clang: {MinVersion: toolchain.Version{Major: 3, Minor: 4}, DefaultVersion: toolchain.Version{Major: 4, Minor: 0}, Flag: "-Wl,-z,relro,-z,now"},

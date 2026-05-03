@@ -13,3 +13,4 @@ jobs:
       rule: x86-cet-shstk
       arm64: false
       arm: false
+      riscv64: false

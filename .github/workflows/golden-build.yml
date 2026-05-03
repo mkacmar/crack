@@ -26,6 +26,10 @@ on:
         required: false
         type: boolean
         default: true
+      riscv64:
+        required: false
+        type: boolean
+        default: true
 
 env:
   TOOLCHAIN: ghcr.io/${{ github.repository }}/toolchain-
@@ -83,10 +87,30 @@ jobs:
           name: binaries-arm
           path: binaries/
 
+  build-riscv64:
+    if: inputs.riscv64
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@ce360397dd3f832beb865e1373c09c0e9f86d70a
+        with:
+          platforms: riscv64
+      - name: Build binaries
+        run: |
+          docker run --rm --platform linux/riscv64 \
+            -v "$PWD:/workspace" -w /workspace \
+            ${{ env.TOOLCHAIN }}gcc13-clang18-musl-riscv64:v1 \
+            sh test/e2e/elf/${{ inputs.rule }}/build.sh riscv64
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: binaries-riscv64
+          path: binaries/
+
   merge:
     runs-on: ubuntu-latest
     if: always() && !failure() && !cancelled()
-    needs: [build-amd64, build-arm64, build-arm]
+    needs: [build-amd64, build-arm64, build-arm, build-riscv64]
     steps:
       - uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093
         with:

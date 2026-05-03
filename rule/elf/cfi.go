@@ -42,7 +42,7 @@ func (r CFIRule) Description() string {
 
 func (r CFIRule) Applicability() rule.Applicability {
 	return rule.Applicability{
-		Platform: binary.Platform{Architecture: binary.ArchAllX86 | binary.ArchAllARM},
+		Platform: binary.Platform{Architecture: binary.ArchAllX86 | binary.ArchAllARM | binary.ArchRISCV},
 		Compilers: map[toolchain.Compiler]rule.CompilerRequirement{
 			toolchain.Clang: {MinVersion: toolchain.Version{Major: 6, Minor: 0}, Flag: "-fsanitize=cfi -flto -fvisibility=hidden"},
 		},

@@ -53,7 +53,7 @@ func (r FortifySourceRule) Description() string {
 
 func (r FortifySourceRule) Applicability() rule.Applicability {
 	return rule.Applicability{
-		Platform: binary.Platform{Architecture: binary.ArchAllX86 | binary.ArchAllARM},
+		Platform: binary.Platform{Architecture: binary.ArchAllX86 | binary.ArchAllARM | binary.ArchRISCV},
 		Compilers: map[toolchain.Compiler]rule.CompilerRequirement{
 			toolchain.GCC:   {MinVersion: toolchain.Version{Major: 12, Minor: 1}, Flag: "-D_FORTIFY_SOURCE=3 -O1"},
 			toolchain.Clang: {MinVersion: toolchain.Version{Major: 12, Minor: 0}, Flag: "-D_FORTIFY_SOURCE=3 -O1"},

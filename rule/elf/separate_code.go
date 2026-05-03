@@ -25,7 +25,7 @@ func (r SeparateCodeRule) Description() string {
 
 func (r SeparateCodeRule) Applicability() rule.Applicability {
 	return rule.Applicability{
-		Platform: binary.Platform{Architecture: binary.ArchAllX86 | binary.ArchAllARM},
+		Platform: binary.Platform{Architecture: binary.ArchAllX86 | binary.ArchAllARM | binary.ArchRISCV},
 		Compilers: map[toolchain.Compiler]rule.CompilerRequirement{
 			toolchain.GCC:   {MinVersion: toolchain.Version{Major: 8, Minor: 1}, DefaultVersion: toolchain.Version{Major: 8, Minor: 1}, Flag: "-Wl,-z,separate-code"},
 			toolchain.Clang: {MinVersion: toolchain.Version{Major: 6, Minor: 0}, DefaultVersion: toolchain.Version{Major: 6, Minor: 0}, Flag: "-Wl,-z,separate-code"},

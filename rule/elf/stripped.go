@@ -26,7 +26,7 @@ func (r StrippedRule) Description() string {
 
 func (r StrippedRule) Applicability() rule.Applicability {
 	return rule.Applicability{
-		Platform: binary.Platform{Architecture: binary.ArchAllX86 | binary.ArchAllARM},
+		Platform: binary.Platform{Architecture: binary.ArchAllX86 | binary.ArchAllARM | binary.ArchRISCV},
 		Compilers: map[toolchain.Compiler]rule.CompilerRequirement{
 			toolchain.GCC:   {MinVersion: toolchain.Version{Major: 3, Minor: 0}, Flag: "-s"},
 			toolchain.Clang: {MinVersion: toolchain.Version{Major: 1, Minor: 0}, Flag: "-s"},

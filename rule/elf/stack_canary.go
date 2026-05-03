@@ -26,7 +26,7 @@ func (r StackCanaryRule) Description() string {
 
 func (r StackCanaryRule) Applicability() rule.Applicability {
 	return rule.Applicability{
-		Platform: binary.Platform{Architecture: binary.ArchAllX86 | binary.ArchAllARM},
+		Platform: binary.Platform{Architecture: binary.ArchAllX86 | binary.ArchAllARM | binary.ArchRISCV},
 		Compilers: map[toolchain.Compiler]rule.CompilerRequirement{
 			toolchain.GCC:   {MinVersion: toolchain.Version{Major: 4, Minor: 9}, DefaultVersion: toolchain.Version{Major: 4, Minor: 9}, Flag: "-fstack-protector-strong"},
 			toolchain.Clang: {MinVersion: toolchain.Version{Major: 3, Minor: 5}, DefaultVersion: toolchain.Version{Major: 3, Minor: 5}, Flag: "-fstack-protector-strong"},
