@@ -24,7 +24,6 @@ import (
 var errNoPathsSpecified = fmt.Errorf("no paths specified")
 
 type outputOptions struct {
-	aggregate      bool
 	includePassed  bool
 	includeSkipped bool
 	exitZero       bool
@@ -69,7 +68,6 @@ Options:
 `, strings.Join(validCompilerNames(), ", "), strings.Join(validArchitectureNames(), ", "))
 
 	fmt.Fprint(os.Stderr, `Output options:
-      --aggregate             Aggregate findings into actionable recommendations
       --exit-zero             Exit with 0 even when findings are detected
       --include-passed        Include passing checks in output
       --include-skipped       Include skipped checks in output
@@ -232,8 +230,8 @@ func (a *App) runAnalyze(prog string, args []string) int {
 		WorkingDir:  workingDir,
 	}
 
-	if opts.aggregate || opts.sarifOutput != "" {
-		return a.processFullReport(resultsChan, opts, invocation, selectedRules)
+	if opts.sarifOutput != "" {
+		return a.processFullReport(resultsChan, opts, invocation)
 	}
 	return a.processStreaming(resultsChan, opts)
 }
@@ -248,7 +246,6 @@ func (a *App) setupAnalyzeFlags(prog string) (*flag.FlagSet, *outputOptions, *an
 	fs.StringVar(&cfg.targetCompiler, "target-compiler", "", "")
 	fs.StringVar(&cfg.inputFile, "input", "", "")
 	fs.StringVar(&opts.sarifOutput, "sarif", "", "")
-	fs.BoolVar(&opts.aggregate, "aggregate", false, "")
 	fs.BoolVar(&cfg.recursive, "recursive", false, "")
 	fs.StringVar(&cfg.logFile, "log", "", "")
 	fs.StringVar(&cfg.logLevel, "log-level", "error", "")

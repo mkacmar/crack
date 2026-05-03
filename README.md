@@ -65,7 +65,6 @@ For stripped binaries where detection fails, all loaded rules run.
 - `--include-passed` - Include passing checks in output
 - `--include-skipped` - Include skipped checks in output
 - `--sarif <file>` - Save detailed SARIF report to file
-- `--aggregate` - Aggregate findings into actionable recommendations
 - `--exit-zero` - Exit with 0 even when findings are detected
 
 The `--include-passed` and `--include-skipped` flags affect both text and SARIF output.

@@ -1,7 +1,6 @@
 package cli
 
 import (
-	"fmt"
 	"log/slog"
 	"os"
 	"time"
@@ -9,10 +8,9 @@ import (
 	"go.kacmar.sk/crack/internal/analyzer"
 	"go.kacmar.sk/crack/internal/output"
 	"go.kacmar.sk/crack/internal/suggestions"
-	"go.kacmar.sk/crack/rule"
 )
 
-func (a *App) processFullReport(resultsChan <-chan analyzer.FileResult, opts *outputOptions, invocation *output.InvocationInfo, rules []rule.ELFRule) int {
+func (a *App) processFullReport(resultsChan <-chan analyzer.FileResult, opts *outputOptions, invocation *output.InvocationInfo) int {
 	var results []analyzer.FileResult
 	var totalFailed int
 
@@ -24,18 +22,12 @@ func (a *App) processFullReport(resultsChan <-chan analyzer.FileResult, opts *ou
 		totalFailed += res.FailedRules()
 	}
 
-	// Decorate findings with suggestions
 	report := decorateReport(results)
 
-	if opts.aggregate {
-		agg := output.AggregateFindings(report, rules)
-		fmt.Print(agg.Format())
-	} else {
-		textFormatter := &output.TextFormatter{IncludePassed: opts.includePassed, IncludeSkipped: opts.includeSkipped}
-		if err := textFormatter.Format(report, os.Stdout); err != nil {
-			a.logger.Error("failed to format output", slog.Any("error", err))
-			return ExitError
-		}
+	textFormatter := &output.TextFormatter{IncludePassed: opts.includePassed, IncludeSkipped: opts.includeSkipped}
+	if err := textFormatter.Format(report, os.Stdout); err != nil {
+		a.logger.Error("failed to format output", slog.Any("error", err))
+		return ExitError
 	}
 
 	if opts.sarifOutput != "" {
