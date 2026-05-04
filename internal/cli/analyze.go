@@ -218,7 +218,7 @@ func (a *App) runAnalyze(prog string, args []string) int {
 		Workers: cfg.parallel,
 	})
 
-	ctx := context.Background()
+	ctx := cancelOnSignal(context.Background())
 	a.logger.Info("starting scan", slog.Int("paths", len(paths)), slog.Bool("recursive", cfg.recursive))
 
 	resultsChan := scan.ScanPaths(ctx, paths, cfg.recursive)
