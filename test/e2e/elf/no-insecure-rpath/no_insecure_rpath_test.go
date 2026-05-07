@@ -103,6 +103,5 @@ func TestNoInsecureRPATHRule(t *testing.T) {
 		{Binary: "riscv64-clang-rpath-dot", Expect: e2e.Fail},
 		{Binary: "riscv64-clang-rpath-tmp", Expect: e2e.Fail},
 		{Binary: "riscv64-clang-relocatable.o", Expect: e2e.Skip},
-
 	})
 }

@@ -50,6 +50,5 @@ func TestSeparateCodeRule(t *testing.T) {
 
 		{Binary: "amd64-gcc4-no-separate-code", Expect: e2e.Fail},
 		{Binary: "arm64-gcc7-no-separate-code", Expect: e2e.Fail},
-
 	})
 }

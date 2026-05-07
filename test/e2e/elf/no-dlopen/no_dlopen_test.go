@@ -47,6 +47,5 @@ func TestNoDLOpenRule(t *testing.T) {
 		{Binary: "riscv64-clang-nodlopen-stripped.so", Expect: e2e.Pass},
 		{Binary: "riscv64-clang-default.so", Expect: e2e.Fail},
 		{Binary: "riscv64-clang-pie-executable", Expect: e2e.Skip},
-
 	})
 }

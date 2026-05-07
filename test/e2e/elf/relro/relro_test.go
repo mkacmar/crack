@@ -71,6 +71,5 @@ func relroCases(partialExpect e2e.Expectation) []e2e.TestCase {
 		{Binary: "riscv64-clang-no-relro", Expect: e2e.Fail},
 		{Binary: "riscv64-clang-full-relro-stripped", Expect: e2e.Pass},
 		{Binary: "riscv64-clang-relocatable.o", Expect: e2e.Skip},
-
 	}
 }

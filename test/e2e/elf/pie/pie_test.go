@@ -57,6 +57,5 @@ func TestPIERule(t *testing.T) {
 		{Binary: "riscv64-clang-pie-explicit", Expect: e2e.Pass},
 		{Binary: "riscv64-clang-no-pie", Expect: e2e.Fail},
 		{Binary: "riscv64-clang-pie-stripped", Expect: e2e.Pass},
-
 	})
 }

@@ -72,6 +72,5 @@ func TestFortifySourceRule(t *testing.T) {
 		// musl shared libs: no PT_INTERP, musl detected via DT_NEEDED
 		{Binary: "arm-gcc-fortify2-shared", Expect: e2e.Skip},
 		{Binary: "arm-gcc-no-fortify-shared", Expect: e2e.Skip},
-
 	})
 }

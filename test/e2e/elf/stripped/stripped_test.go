@@ -51,6 +51,5 @@ func TestStrippedRule(t *testing.T) {
 		{Binary: "riscv64-clang-not-stripped", Expect: e2e.Fail},
 		{Binary: "riscv64-clang-stripped", Expect: e2e.Pass},
 		{Binary: "riscv64-clang-strip-debug", Expect: e2e.Fail},
-
 	})
 }

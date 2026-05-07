@@ -83,6 +83,5 @@ func TestStackCanaryRule(t *testing.T) {
 		{Binary: "riscv64-clang-stack-protector-static", Expect: e2e.Pass},
 		{Binary: "riscv64-clang-stack-protector-static-stripped", Expect: e2e.Fail},
 		{Binary: "riscv64-clang-stack-protector-lto", Expect: e2e.Pass},
-
 	})
 }

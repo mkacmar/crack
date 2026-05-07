@@ -51,6 +51,5 @@ func TestNXBitRule(t *testing.T) {
 		{Binary: "riscv64-clang-no-nx", Expect: e2e.Fail},
 		{Binary: "riscv64-clang-nx-stripped", Expect: e2e.Pass},
 		{Binary: "riscv64-clang-relocatable.o", Expect: e2e.Skip},
-
 	})
 }

@@ -20,6 +20,5 @@ func TestARMBTIRule(t *testing.T) {
 		{Binary: "musl-clang-bti-enabled", Expect: e2e.Pass},
 		{Binary: "musl-clang-bti-disabled", Expect: e2e.Fail},
 		{Binary: "musl-clang-bti-stripped", Expect: e2e.Pass},
-
 	})
 }

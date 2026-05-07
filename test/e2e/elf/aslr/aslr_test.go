@@ -69,6 +69,5 @@ func TestASLRRule(t *testing.T) {
 		{Binary: "riscv64-clang-no-pie", Expect: e2e.Fail},
 		{Binary: "riscv64-clang-execstack", Expect: e2e.Fail},
 		{Binary: "riscv64-clang-static-no-pie", Expect: e2e.Fail},
-
 	})
 }
