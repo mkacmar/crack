@@ -19,9 +19,13 @@ import (
 	"go.kacmar.sk/crack/internal/scanner"
 	"go.kacmar.sk/crack/rule"
 	"go.kacmar.sk/crack/rule/registry"
+	"go.kacmar.sk/debuginfod"
 )
 
 var errNoPathsSpecified = fmt.Errorf("no paths specified")
+
+// defaultDebuginfodServer is the public elfutils debuginfod server.
+const defaultDebuginfodServer = "https://debuginfod.elfutils.org"
 
 type outputOptions struct {
 	includePassed  bool
@@ -44,7 +48,6 @@ type analyzeConfig struct {
 	debuginfodCache   string
 	debuginfodTimeout time.Duration
 	debuginfodRetries int
-	debuginfodMaxSize int64
 	profile           profileConfig
 }
 
@@ -79,18 +82,17 @@ Logging options:
 
 `)
 
-	defaultCacheDir, err := debuginfo.DefaultCacheDir()
+	defaultCacheDir, err := debuginfod.DefaultCacheDir()
 	if err != nil {
 		defaultCacheDir = "(unavailable)"
 	}
 	fmt.Fprintf(os.Stderr, `Debuginfod options:
       --debuginfod                  Fetch debug symbols from debuginfod servers
       --debuginfod-cache string     Debuginfod cache directory (default "%s")
-      --debuginfod-max-size bytes   Max debug file size per download (default %d)
       --debuginfod-retries int      Debuginfod max retries per server (default %d)
       --debuginfod-servers string   Comma-separated debuginfod server URLs (default %q)
       --debuginfod-timeout duration Debuginfod HTTP timeout (default %v)
-`, defaultCacheDir, debuginfo.DefaultMaxFileSize, debuginfo.DefaultRetries, debuginfo.DefaultServerURL, debuginfo.DefaultTimeout)
+`, defaultCacheDir, debuginfo.DefaultMaxRetries, defaultDebuginfodServer, 30*time.Second)
 
 	if usage := profileUsage(); usage != "" {
 		fmt.Fprint(os.Stderr, usage)
@@ -254,11 +256,10 @@ func (a *App) setupAnalyzeFlags(prog string) (*flag.FlagSet, *outputOptions, *an
 	fs.IntVar(&cfg.parallel, "parallel", runtime.NumCPU(), "")
 	fs.BoolVar(&opts.exitZero, "exit-zero", false, "")
 	fs.BoolVar(&cfg.useDebuginfod, "debuginfod", false, "")
-	fs.StringVar(&cfg.debuginfodServers, "debuginfod-servers", debuginfo.DefaultServerURL, "")
+	fs.StringVar(&cfg.debuginfodServers, "debuginfod-servers", defaultDebuginfodServer, "")
 	fs.StringVar(&cfg.debuginfodCache, "debuginfod-cache", "", "")
-	fs.DurationVar(&cfg.debuginfodTimeout, "debuginfod-timeout", debuginfo.DefaultTimeout, "")
-	fs.IntVar(&cfg.debuginfodRetries, "debuginfod-retries", debuginfo.DefaultRetries, "")
-	fs.Int64Var(&cfg.debuginfodMaxSize, "debuginfod-max-size", debuginfo.DefaultMaxFileSize, "")
+	fs.DurationVar(&cfg.debuginfodTimeout, "debuginfod-timeout", 30*time.Second, "")
+	fs.IntVar(&cfg.debuginfodRetries, "debuginfod-retries", debuginfo.DefaultMaxRetries, "")
 	registerProfileFlags(fs, &cfg.profile)
 
 	fs.Usage = func() { a.printAnalyzeUsage(prog) }
@@ -281,7 +282,7 @@ func (a *App) setupLogging(logFile, logLevel string) (func(), error) {
 	return cleanup, nil
 }
 
-func (a *App) setupDebuginfod(cfg *analyzeConfig) (*debuginfo.Client, error) {
+func (a *App) setupDebuginfod(cfg *analyzeConfig) (*debuginfod.Client, error) {
 	if !cfg.useDebuginfod {
 		return nil, nil
 	}
@@ -294,11 +295,10 @@ func (a *App) setupDebuginfod(cfg *analyzeConfig) (*debuginfo.Client, error) {
 	}
 
 	return debuginfo.NewClient(debuginfo.Options{
-		ServerURLs:  filtered,
-		CacheDir:    cfg.debuginfodCache,
-		Timeout:     cfg.debuginfodTimeout,
-		MaxRetries:  cfg.debuginfodRetries,
-		MaxFileSize: cfg.debuginfodMaxSize,
-		Logger:      a.logger,
+		ServerURLs: filtered,
+		CacheDir:   cfg.debuginfodCache,
+		Timeout:    cfg.debuginfodTimeout,
+		MaxRetries: cfg.debuginfodRetries,
+		Logger:     a.logger,
 	})
 }
