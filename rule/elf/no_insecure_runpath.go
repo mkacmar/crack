@@ -1,11 +1,13 @@
 package elf
 
 import (
-	"debug/elf"
+	stdelf "debug/elf"
+
 	"fmt"
 	"strings"
 
 	"go.kacmar.sk/crack/binary"
+	"go.kacmar.sk/crack/binary/elf"
 	"go.kacmar.sk/crack/rule"
 	"go.kacmar.sk/crack/toolchain"
 )
@@ -32,18 +34,22 @@ func (r NoInsecureRUNPATHRule) Applicability() rule.Applicability {
 			toolchain.GCC:   {MinVersion: toolchain.Version{Major: 4, Minor: 1}, DefaultVersion: toolchain.Version{Major: 6, Minor: 1}, Flag: "-Wl,--enable-new-dtags -Wl,-rpath,/absolute/path"},
 			toolchain.Clang: {MinVersion: toolchain.Version{Major: 3, Minor: 4}, DefaultVersion: toolchain.Version{Major: 4, Minor: 0}, Flag: "-Wl,--enable-new-dtags -Wl,-rpath,/absolute/path"},
 		},
+		LibC: binary.LibCAll,
 	}
 }
 
-func (r NoInsecureRUNPATHRule) Execute(bin *binary.ELFBinary) rule.Result {
-	if bin.Type != elf.ET_EXEC && bin.Type != elf.ET_DYN {
+func (r NoInsecureRUNPATHRule) Execute(bin elf.Binary) rule.Result {
+	if bin.Type() != stdelf.ET_EXEC && bin.Type() != stdelf.ET_DYN {
 		return rule.Result{
 			Status:  rule.StatusSkipped,
 			Message: "Not an executable or shared library",
 		}
 	}
 
-	runpath := bin.DynString(elf.DT_RUNPATH)
+	runpath, err := elf.DynString(bin, stdelf.DT_RUNPATH)
+	if err != nil {
+		return rule.Skip("failed to read dynamic section", err)
+	}
 	if runpath == "" {
 		return rule.Result{
 			Status:  rule.StatusPassed,

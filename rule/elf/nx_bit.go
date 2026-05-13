@@ -1,9 +1,10 @@
 package elf
 
 import (
-	"debug/elf"
+	stdelf "debug/elf"
 
 	"go.kacmar.sk/crack/binary"
+	"go.kacmar.sk/crack/binary/elf"
 	"go.kacmar.sk/crack/rule"
 	"go.kacmar.sk/crack/toolchain"
 )
@@ -30,20 +31,21 @@ func (r NXBitRule) Applicability() rule.Applicability {
 			toolchain.GCC:   {MinVersion: toolchain.Version{Major: 3, Minor: 4}, DefaultVersion: toolchain.Version{Major: 3, Minor: 4}, Flag: "-z noexecstack"},
 			toolchain.Clang: {MinVersion: toolchain.Version{Major: 1, Minor: 0}, DefaultVersion: toolchain.Version{Major: 1, Minor: 0}, Flag: "-z noexecstack"},
 		},
+		LibC: binary.LibCAll,
 	}
 }
 
-func (r NXBitRule) Execute(bin *binary.ELFBinary) rule.Result {
-	if bin.Type != elf.ET_EXEC && bin.Type != elf.ET_DYN {
+func (r NXBitRule) Execute(bin elf.Binary) rule.Result {
+	if bin.Type() != stdelf.ET_EXEC && bin.Type() != stdelf.ET_DYN {
 		return rule.Result{
 			Status:  rule.StatusSkipped,
 			Message: "Not an executable or shared library",
 		}
 	}
 
-	for _, prog := range bin.Progs {
-		if prog.Type == elf.PT_GNU_STACK {
-			if (prog.Flags & elf.PF_X) == 0 {
+	for _, prog := range bin.Progs() {
+		if prog.Type == stdelf.PT_GNU_STACK {
+			if (prog.Flags & stdelf.PF_X) == 0 {
 				return rule.Result{
 					Status:  rule.StatusPassed,
 					Message: "NX enabled, stack non-executable",

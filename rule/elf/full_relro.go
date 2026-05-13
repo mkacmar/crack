@@ -1,9 +1,10 @@
 package elf
 
 import (
-	"debug/elf"
+	stdelf "debug/elf"
 
 	"go.kacmar.sk/crack/binary"
+	"go.kacmar.sk/crack/binary/elf"
 	"go.kacmar.sk/crack/rule"
 	"go.kacmar.sk/crack/toolchain"
 )
@@ -30,11 +31,12 @@ func (r FullRELRORule) Applicability() rule.Applicability {
 			toolchain.GCC:   {MinVersion: toolchain.Version{Major: 4, Minor: 1}, DefaultVersion: toolchain.Version{Major: 6, Minor: 1}, Flag: "-Wl,-z,relro,-z,now"},
 			toolchain.Clang: {MinVersion: toolchain.Version{Major: 3, Minor: 4}, DefaultVersion: toolchain.Version{Major: 4, Minor: 0}, Flag: "-Wl,-z,relro,-z,now"},
 		},
+		LibC: binary.LibCAll,
 	}
 }
 
-func (r FullRELRORule) Execute(bin *binary.ELFBinary) rule.Result {
-	if bin.Type != elf.ET_EXEC && bin.Type != elf.ET_DYN {
+func (r FullRELRORule) Execute(bin elf.Binary) rule.Result {
+	if bin.Type() != stdelf.ET_EXEC && bin.Type() != stdelf.ET_DYN {
 		return rule.Result{
 			Status:  rule.StatusSkipped,
 			Message: "Not an executable or shared library",
@@ -42,8 +44,8 @@ func (r FullRELRORule) Execute(bin *binary.ELFBinary) rule.Result {
 	}
 
 	hasRELRO := false
-	for _, prog := range bin.Progs {
-		if prog.Type == elf.PT_GNU_RELRO {
+	for _, prog := range bin.Progs() {
+		if prog.Type == stdelf.PT_GNU_RELRO {
 			hasRELRO = true
 			break
 		}
@@ -56,9 +58,19 @@ func (r FullRELRORule) Execute(bin *binary.ELFBinary) rule.Result {
 		}
 	}
 
-	if bin.HasDynTag(elf.DT_BIND_NOW) ||
-		bin.HasDynFlag(elf.DT_FLAGS, uint64(elf.DF_BIND_NOW)) ||
-		bin.HasDynFlag(elf.DT_FLAGS_1, uint64(elf.DF_1_NOW)) {
+	bindNow, err := elf.HasDynTag(bin, stdelf.DT_BIND_NOW)
+	if err != nil {
+		return rule.Skip("failed to read dynamic section", err)
+	}
+	dfBindNow, err := elf.HasDynFlag(bin, stdelf.DT_FLAGS, uint64(stdelf.DF_BIND_NOW))
+	if err != nil {
+		return rule.Skip("failed to read dynamic section", err)
+	}
+	df1Now, err := elf.HasDynFlag(bin, stdelf.DT_FLAGS_1, uint64(stdelf.DF_1_NOW))
+	if err != nil {
+		return rule.Skip("failed to read dynamic section", err)
+	}
+	if bindNow || dfBindNow || df1Now {
 		return rule.Result{
 			Status:  rule.StatusPassed,
 			Message: "Full RELRO enabled",

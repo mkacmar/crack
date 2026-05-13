@@ -12,6 +12,7 @@ const (
 	Applicable ApplicabilityResult = iota
 	NotApplicableArchitecture
 	NotApplicableCompiler
+	NotApplicableLibC
 )
 
 // String returns a human-readable skip message for non-applicable results.
@@ -21,33 +22,39 @@ func (r ApplicabilityResult) String() string {
 		return "architecture not applicable"
 	case NotApplicableCompiler:
 		return "compiler not applicable"
+	case NotApplicableLibC:
+		return "libc not applicable"
 	default:
 		return ""
 	}
 }
 
-// SkipMessage returns a detailed skip message including binary metadata.
-func (r ApplicabilityResult) SkipMessage(info binary.Info) string {
+// Reason describes why the rule is not applicable to the given classification.
+func (r ApplicabilityResult) Reason(profile binary.Profile) string {
 	switch r {
 	case NotApplicableArchitecture:
-		return "rule not applicable to " + info.Architecture.String() + " architecture"
+		return "rule not applicable to " + profile.Architecture.String() + " architecture"
 	case NotApplicableCompiler:
-		return "rule not applicable to " + info.Build.Compiler.String() + " binaries"
+		return "rule not applicable to " + profile.Toolchain.Compiler.String() + " binaries"
+	case NotApplicableLibC:
+		return "rule not applicable to " + profile.LibC.String() + " binaries"
 	default:
 		return ""
 	}
 }
 
 // CheckApplicability determines whether a rule applies to the binary.
-func CheckApplicability(app Applicability, info binary.Info) ApplicabilityResult {
-	if !info.Architecture.Matches(app.Platform.Architecture) {
+// When detection of an optional axis yields the Unknown sentinel (compiler, libc), the axis is skipped in the filter and the rule runs as best-effort.
+// Architecture has no such bypass because ELF machine detection cannot fail in practice.
+func CheckApplicability(app Applicability, profile binary.Profile) ApplicabilityResult {
+	if !profile.Architecture.Matches(app.Platform.Architecture) {
 		return NotApplicableArchitecture
 	}
 
-	if info.Build.Compiler != toolchain.Unknown {
+	if profile.Toolchain.Compiler != toolchain.Unknown {
 		hasCompiler := false
 		for comp := range app.Compilers {
-			if comp == info.Build.Compiler {
+			if comp == profile.Toolchain.Compiler {
 				hasCompiler = true
 				break
 			}
@@ -55,6 +62,10 @@ func CheckApplicability(app Applicability, info binary.Info) ApplicabilityResult
 		if len(app.Compilers) > 0 && !hasCompiler {
 			return NotApplicableCompiler
 		}
+	}
+
+	if profile.LibC != binary.LibCUnknown && !app.LibC.Matches(profile.LibC) {
+		return NotApplicableLibC
 	}
 
 	return Applicable

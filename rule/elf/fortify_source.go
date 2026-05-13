@@ -4,6 +4,7 @@ import (
 	"fmt"
 
 	"go.kacmar.sk/crack/binary"
+	"go.kacmar.sk/crack/binary/elf"
 	"go.kacmar.sk/crack/rule"
 	"go.kacmar.sk/crack/toolchain"
 )
@@ -58,22 +59,25 @@ func (r FortifySourceRule) Applicability() rule.Applicability {
 			toolchain.GCC:   {MinVersion: toolchain.Version{Major: 12, Minor: 1}, Flag: "-D_FORTIFY_SOURCE=3 -O1"},
 			toolchain.Clang: {MinVersion: toolchain.Version{Major: 12, Minor: 0}, Flag: "-D_FORTIFY_SOURCE=3 -O1"},
 		},
+		LibC: binary.LibCGlibc,
 	}
 }
 
-func (r FortifySourceRule) Execute(bin *binary.ELFBinary) rule.Result {
-	if bin.LibC == binary.LibCMusl {
-		return rule.Result{
-			Status:  rule.StatusSkipped,
-			Message: "musl libc, FORTIFY_SOURCE not supported",
-		}
+func (r FortifySourceRule) Execute(bin elf.Binary) rule.Result {
+	symbols, err := bin.Symbols()
+	if err != nil {
+		return rule.Skip("symbols unavailable", err)
+	}
+	dynSymbols, err := bin.DynSymbols()
+	if err != nil {
+		return rule.Skip("dynamic symbols unavailable", err)
 	}
 
 	allSymbols := make(map[string]struct{})
-	for _, sym := range bin.Symbols {
+	for _, sym := range symbols {
 		allSymbols[sym.Name] = struct{}{}
 	}
-	for _, sym := range bin.DynSymbols {
+	for _, sym := range dynSymbols {
 		allSymbols[sym.Name] = struct{}{}
 	}
 

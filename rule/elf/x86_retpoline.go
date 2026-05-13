@@ -1,10 +1,12 @@
 package elf
 
 import (
-	"debug/elf"
+	stdelf "debug/elf"
+
 	"strings"
 
 	"go.kacmar.sk/crack/binary"
+	"go.kacmar.sk/crack/binary/elf"
 	"go.kacmar.sk/crack/rule"
 	"go.kacmar.sk/crack/toolchain"
 )
@@ -32,11 +34,15 @@ func (r X86RetpolineRule) Applicability() rule.Applicability {
 			toolchain.GCC:   {MinVersion: toolchain.Version{Major: 7, Minor: 3}, Flag: "-mindirect-branch=thunk -mfunction-return=thunk"},
 			toolchain.Clang: {MinVersion: toolchain.Version{Major: 6, Minor: 0}, Flag: "-mretpoline"},
 		},
+		LibC: binary.LibCAll,
 	}
 }
 
-func (r X86RetpolineRule) Execute(bin *binary.ELFBinary) rule.Result {
-	hasCETIBT := bin.HasGNUProperty(binary.GNU_PROPERTY_X86_FEATURE_1_AND, binary.GNU_PROPERTY_X86_FEATURE_1_IBT)
+func (r X86RetpolineRule) Execute(bin elf.Binary) rule.Result {
+	hasCETIBT, err := elf.HasGNUProperty(bin, elf.GNU_PROPERTY_X86_FEATURE_1_AND, elf.GNU_PROPERTY_X86_FEATURE_1_IBT)
+	if err != nil {
+		return rule.Skip("failed to read GNU properties", err)
+	}
 	if hasCETIBT {
 		return rule.Result{
 			Status:  rule.StatusSkipped,
@@ -45,8 +51,8 @@ func (r X86RetpolineRule) Execute(bin *binary.ELFBinary) rule.Result {
 	}
 
 	hasSymtab := false
-	for _, sec := range bin.Sections {
-		if sec.Type == elf.SHT_SYMTAB {
+	for _, sec := range bin.Sections() {
+		if sec.Type == stdelf.SHT_SYMTAB {
 			hasSymtab = true
 			break
 		}
@@ -58,8 +64,17 @@ func (r X86RetpolineRule) Execute(bin *binary.ELFBinary) rule.Result {
 		}
 	}
 
+	symbols, err := bin.Symbols()
+	if err != nil {
+		return rule.Skip("symbols unavailable", err)
+	}
+	dynSymbols, err := bin.DynSymbols()
+	if err != nil {
+		return rule.Skip("dynamic symbols unavailable", err)
+	}
+
 	var hasGCCThunk, hasLLVMRetpoline bool
-	for _, sym := range append(bin.Symbols, bin.DynSymbols...) {
+	for _, sym := range append(symbols, dynSymbols...) {
 		switch {
 		case strings.Contains(sym.Name, "__x86_indirect_thunk"),
 			strings.Contains(sym.Name, "__x86_return_thunk"):

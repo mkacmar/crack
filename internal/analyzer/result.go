@@ -6,7 +6,10 @@ import (
 )
 
 // AnalysisResult contains findings and binary metadata from analysis.
+// Identity.SHA256 is left empty at this layer. The scanner fills it after hashing the file.
 type AnalysisResult struct {
-	Info     binary.Info
+	Format   binary.Format
+	Identity binary.Identity
+	Profile  binary.Profile
 	Findings []rule.Finding
 }

@@ -2,6 +2,7 @@ package elf
 
 import (
 	"go.kacmar.sk/crack/binary"
+	"go.kacmar.sk/crack/binary/elf"
 	"go.kacmar.sk/crack/rule"
 	"go.kacmar.sk/crack/toolchain"
 )
@@ -30,12 +31,19 @@ func (r ARMBranchProtectionRule) Applicability() rule.Applicability {
 			toolchain.GCC:   {MinVersion: toolchain.Version{Major: 10, Minor: 1}, Flag: "-mbranch-protection=standard"},
 			toolchain.Clang: {MinVersion: toolchain.Version{Major: 12, Minor: 0}, Flag: "-mbranch-protection=standard"},
 		},
+		LibC: binary.LibCAll,
 	}
 }
 
-func (r ARMBranchProtectionRule) Execute(bin *binary.ELFBinary) rule.Result {
-	hasPAC := bin.HasGNUProperty(binary.GNU_PROPERTY_AARCH64_FEATURE_1_AND, binary.GNU_PROPERTY_AARCH64_FEATURE_1_PAC)
-	hasBTI := bin.HasGNUProperty(binary.GNU_PROPERTY_AARCH64_FEATURE_1_AND, binary.GNU_PROPERTY_AARCH64_FEATURE_1_BTI)
+func (r ARMBranchProtectionRule) Execute(bin elf.Binary) rule.Result {
+	hasPAC, err := elf.HasGNUProperty(bin, elf.GNU_PROPERTY_AARCH64_FEATURE_1_AND, elf.GNU_PROPERTY_AARCH64_FEATURE_1_PAC)
+	if err != nil {
+		return rule.Skip("failed to read GNU properties", err)
+	}
+	hasBTI, err := elf.HasGNUProperty(bin, elf.GNU_PROPERTY_AARCH64_FEATURE_1_AND, elf.GNU_PROPERTY_AARCH64_FEATURE_1_BTI)
+	if err != nil {
+		return rule.Skip("failed to read GNU properties", err)
+	}
 
 	switch {
 	case hasPAC && hasBTI:

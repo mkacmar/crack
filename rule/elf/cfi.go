@@ -4,6 +4,7 @@ import (
 	"strings"
 
 	"go.kacmar.sk/crack/binary"
+	"go.kacmar.sk/crack/binary/elf"
 	"go.kacmar.sk/crack/rule"
 	"go.kacmar.sk/crack/toolchain"
 )
@@ -47,11 +48,16 @@ func (r CFIRule) Applicability() rule.Applicability {
 		Compilers: map[toolchain.Compiler]rule.CompilerRequirement{
 			toolchain.Clang: {MinVersion: toolchain.Version{Major: 6, Minor: 0}, Flag: "-fsanitize=cfi -flto -fvisibility=hidden"},
 		},
+		LibC: binary.LibCAll,
 	}
 }
 
-func (r CFIRule) Execute(bin *binary.ELFBinary) rule.Result {
-	for _, sym := range bin.DynSymbols {
+func (r CFIRule) Execute(bin elf.Binary) rule.Result {
+	dynSymbols, err := bin.DynSymbols()
+	if err != nil {
+		return rule.Skip("dynamic symbols unavailable", err)
+	}
+	for _, sym := range dynSymbols {
 		for _, cfiSym := range cfiCrossDSOSymbols {
 			if strings.Contains(sym.Name, cfiSym) {
 				return rule.Result{
@@ -62,14 +68,18 @@ func (r CFIRule) Execute(bin *binary.ELFBinary) rule.Result {
 		}
 	}
 
-	if len(bin.Symbols) == 0 {
+	symbols, err := bin.Symbols()
+	if err != nil {
+		return rule.Skip("symbols unavailable", err)
+	}
+	if len(symbols) == 0 {
 		return rule.Result{
 			Status:  rule.StatusSkipped,
 			Message: "Stripped binary, CFI detection limited",
 		}
 	}
 
-	for _, sym := range bin.Symbols {
+	for _, sym := range symbols {
 		for _, suffix := range cfiSuffixes {
 			if strings.HasSuffix(sym.Name, suffix) {
 				return rule.Result{

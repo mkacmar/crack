@@ -4,6 +4,7 @@ import (
 	"strings"
 
 	"go.kacmar.sk/crack/binary"
+	"go.kacmar.sk/crack/binary/elf"
 	"go.kacmar.sk/crack/rule"
 	"go.kacmar.sk/crack/toolchain"
 )
@@ -31,11 +32,20 @@ func (r SafeStackRule) Applicability() rule.Applicability {
 		Compilers: map[toolchain.Compiler]rule.CompilerRequirement{
 			toolchain.Clang: {MinVersion: toolchain.Version{Major: 3, Minor: 7}, Flag: "-fsanitize=safe-stack"},
 		},
+		LibC: binary.LibCAll,
 	}
 }
 
-func (r SafeStackRule) Execute(bin *binary.ELFBinary) rule.Result {
-	for _, sym := range append(bin.Symbols, bin.DynSymbols...) {
+func (r SafeStackRule) Execute(bin elf.Binary) rule.Result {
+	symbols, err := bin.Symbols()
+	if err != nil {
+		return rule.Skip("symbols unavailable", err)
+	}
+	dynSymbols, err := bin.DynSymbols()
+	if err != nil {
+		return rule.Skip("dynamic symbols unavailable", err)
+	}
+	for _, sym := range append(symbols, dynSymbols...) {
 		if strings.HasPrefix(sym.Name, "__safestack_") {
 			return rule.Result{
 				Status:  rule.StatusPassed,

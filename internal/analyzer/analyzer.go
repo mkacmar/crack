@@ -8,8 +8,9 @@ import (
 // FileResult contains analysis results for a single file (or arch slice for fat binaries).
 type FileResult struct {
 	Path     string
-	Info     binary.Info
-	SHA256   string
+	Format   binary.Format
+	Identity binary.Identity
+	Profile  binary.Profile
 	Findings []rule.Finding
 	Error    error
 	Skipped  bool

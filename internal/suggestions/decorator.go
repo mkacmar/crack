@@ -17,9 +17,9 @@ type DecoratedFinding struct {
 	Suggestion string
 }
 
-// Decorate enriches findings with suggestions based on rule applicability and build info.
+// Decorate enriches findings with suggestions based on rule applicability and classification.
 // Only failed findings get suggestions.
-func Decorate(findings []rule.Finding, info binary.Info) []DecoratedFinding {
+func Decorate(findings []rule.Finding, profile binary.Profile) []DecoratedFinding {
 	result := make([]DecoratedFinding, len(findings))
 
 	for i, f := range findings {
@@ -34,17 +34,17 @@ func Decorate(findings []rule.Finding, info binary.Info) []DecoratedFinding {
 			continue
 		}
 
-		result[i].Suggestion = buildSuggestion(info.Build, r.Applicability())
+		result[i].Suggestion = buildSuggestion(profile, r.Applicability())
 	}
 
 	return result
 }
 
-func buildSuggestion(build toolchain.BuildInfo, applicability rule.Applicability) string {
-	if build.Compiler == toolchain.Unknown {
+func buildSuggestion(profile binary.Profile, applicability rule.Applicability) string {
+	if profile.Toolchain.Compiler == toolchain.Unknown {
 		return buildGenericSuggestion(applicability)
 	}
-	return buildCompilerSuggestion(build, applicability)
+	return buildCompilerSuggestion(profile, applicability)
 }
 
 func buildGenericSuggestion(applicability rule.Applicability) string {
@@ -75,11 +75,11 @@ func getCompilerRequirement(compilers map[toolchain.Compiler]rule.CompilerRequir
 	return req, ok
 }
 
-func buildCompilerSuggestion(build toolchain.BuildInfo, applicability rule.Applicability) string {
-	req, ok := getCompilerRequirement(applicability.Compilers, build.Compiler)
+func buildCompilerSuggestion(profile binary.Profile, applicability rule.Applicability) string {
+	req, ok := getCompilerRequirement(applicability.Compilers, profile.Toolchain.Compiler)
 	if !ok {
 		other := toolchain.GCC
-		if build.Compiler == toolchain.GCC {
+		if profile.Toolchain.Compiler == toolchain.GCC {
 			other = toolchain.Clang
 		}
 		if otherReq, ok := getCompilerRequirement(applicability.Compilers, other); ok {
@@ -90,14 +90,14 @@ func buildCompilerSuggestion(build toolchain.BuildInfo, applicability rule.Appli
 	}
 
 	flag := req.Flag
-	compilerName := build.Compiler.String()
+	compilerName := profile.Toolchain.Compiler.String()
 
-	if !build.Version.IsAtLeast(req.MinVersion) {
+	if !profile.Toolchain.Version.IsAtLeast(req.MinVersion) {
 		return fmt.Sprintf("Requires %s %s+ (you have %s %s), update and use \"%s\".",
-			compilerName, req.MinVersion.String(), compilerName, build.Version.String(), flag)
+			compilerName, req.MinVersion.String(), compilerName, profile.Toolchain.Version.String(), flag)
 	}
 
-	if req.DefaultVersion != (toolchain.Version{}) && !build.Version.IsAtLeast(req.DefaultVersion) {
+	if req.DefaultVersion != (toolchain.Version{}) && !profile.Toolchain.Version.IsAtLeast(req.DefaultVersion) {
 		return fmt.Sprintf("Use \"%s\" (default in %s %s+).",
 			flag, compilerName, req.DefaultVersion.String())
 	}

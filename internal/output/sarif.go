@@ -255,7 +255,7 @@ func (f *SARIFFormatter) buildArtifacts(report *DecoratedReport) ([]SARIFArtifac
 	artifactHashes := make(map[string]string)
 	for _, res := range report.Results {
 		fileURI := toFileURI(res.Path)
-		artifactHashes[fileURI] = res.SHA256
+		artifactHashes[fileURI] = res.Identity.SHA256
 	}
 
 	uris := make([]string, 0, len(artifactHashes))

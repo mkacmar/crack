@@ -4,6 +4,7 @@ import (
 	"strings"
 
 	"go.kacmar.sk/crack/binary"
+	"go.kacmar.sk/crack/binary/elf"
 	"go.kacmar.sk/crack/rule"
 	"go.kacmar.sk/crack/toolchain"
 )
@@ -31,11 +32,20 @@ func (r StackCanaryRule) Applicability() rule.Applicability {
 			toolchain.GCC:   {MinVersion: toolchain.Version{Major: 4, Minor: 9}, DefaultVersion: toolchain.Version{Major: 4, Minor: 9}, Flag: "-fstack-protector-strong"},
 			toolchain.Clang: {MinVersion: toolchain.Version{Major: 3, Minor: 5}, DefaultVersion: toolchain.Version{Major: 3, Minor: 5}, Flag: "-fstack-protector-strong"},
 		},
+		LibC: binary.LibCAll,
 	}
 }
 
-func (r StackCanaryRule) Execute(bin *binary.ELFBinary) rule.Result {
-	for _, sym := range append(bin.Symbols, bin.DynSymbols...) {
+func (r StackCanaryRule) Execute(bin elf.Binary) rule.Result {
+	symbols, err := bin.Symbols()
+	if err != nil {
+		return rule.Skip("symbols unavailable", err)
+	}
+	dynSymbols, err := bin.DynSymbols()
+	if err != nil {
+		return rule.Skip("dynamic symbols unavailable", err)
+	}
+	for _, sym := range append(symbols, dynSymbols...) {
 		if strings.Contains(sym.Name, "__stack_chk_fail") ||
 			strings.Contains(sym.Name, "__stack_smash_handler") ||
 			strings.Contains(sym.Name, "__intel_security_cookie") {

@@ -1,9 +1,10 @@
 package elf
 
 import (
-	"debug/elf"
+	stdelf "debug/elf"
 
 	"go.kacmar.sk/crack/binary"
+	"go.kacmar.sk/crack/binary/elf"
 	"go.kacmar.sk/crack/rule"
 	"go.kacmar.sk/crack/toolchain"
 )
@@ -30,11 +31,12 @@ func (r SeparateCodeRule) Applicability() rule.Applicability {
 			toolchain.GCC:   {MinVersion: toolchain.Version{Major: 8, Minor: 1}, DefaultVersion: toolchain.Version{Major: 8, Minor: 1}, Flag: "-Wl,-z,separate-code"},
 			toolchain.Clang: {MinVersion: toolchain.Version{Major: 6, Minor: 0}, DefaultVersion: toolchain.Version{Major: 6, Minor: 0}, Flag: "-Wl,-z,separate-code"},
 		},
+		LibC: binary.LibCAll,
 	}
 }
 
-func (r SeparateCodeRule) Execute(bin *binary.ELFBinary) rule.Result {
-	if bin.Type != elf.ET_EXEC && bin.Type != elf.ET_DYN {
+func (r SeparateCodeRule) Execute(bin elf.Binary) rule.Result {
+	if bin.Type() != stdelf.ET_EXEC && bin.Type() != stdelf.ET_DYN {
 		return rule.Result{
 			Status:  rule.StatusSkipped,
 			Message: "Not an executable or shared library",
@@ -45,18 +47,18 @@ func (r SeparateCodeRule) Execute(bin *binary.ELFBinary) rule.Result {
 
 	var codePages, dataPages [][2]uint64
 
-	for _, prog := range bin.Progs {
-		if prog.Type != elf.PT_LOAD {
+	for _, prog := range bin.Progs() {
+		if prog.Type != stdelf.PT_LOAD {
 			continue
 		}
 
 		startPage := prog.Off / pageSize
 		endPage := (prog.Off + prog.Filesz + pageSize - 1) / pageSize
 
-		if (prog.Flags & elf.PF_X) != 0 {
+		if (prog.Flags & stdelf.PF_X) != 0 {
 			codePages = append(codePages, [2]uint64{startPage, endPage})
 		}
-		if (prog.Flags & elf.PF_W) != 0 {
+		if (prog.Flags & stdelf.PF_W) != 0 {
 			dataPages = append(dataPages, [2]uint64{startPage, endPage})
 		}
 	}

@@ -6,7 +6,7 @@ A tool to analyze ELF binaries for security hardening features.
 
 Focused on binaries compiled with `GCC` and `Clang` for `amd64`, `arm64`, `arm`, and `riscv`.
 
-Binaries where the compiler cannot be detected (e.g. stripped) are analyzed by all rules, as the tool assumes GCC/Clang by default.
+Binaries where the compiler cannot be detected (e.g. stripped) are analyzed by all loaded rules, since the compiler filter is bypassed when detection fails.
 
 Binaries identified as Go or Rust are skipped, as their hardening model differs from C/C++ compiler flags.
 
@@ -102,7 +102,7 @@ If you experience performance issues, please build from source with `make build`
 
 ## Programmatic Usage
 
-The public packages can be used as a library. See [API documentation](docs/api.md) for details on parsing binaries, running rules, writing custom rules, and custom compiler detection.
+The public packages can be used as a library. See [API documentation](docs/api.md) for details on parsing binaries, running rules, writing custom rules, custom compiler detection, supplying sections from custom sources, and wrapping the `Binary` input.
 
 
 ## License

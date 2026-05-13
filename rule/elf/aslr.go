@@ -1,9 +1,10 @@
 package elf
 
 import (
-	"debug/elf"
+	stdelf "debug/elf"
 
 	"go.kacmar.sk/crack/binary"
+	"go.kacmar.sk/crack/binary/elf"
 	"go.kacmar.sk/crack/rule"
 	"go.kacmar.sk/crack/toolchain"
 )
@@ -30,17 +31,18 @@ func (r ASLRRule) Applicability() rule.Applicability {
 			toolchain.GCC:   {MinVersion: toolchain.Version{Major: 4, Minor: 1}, DefaultVersion: toolchain.Version{Major: 6, Minor: 1}, Flag: "-fPIE -pie -z noexecstack"},
 			toolchain.Clang: {MinVersion: toolchain.Version{Major: 3, Minor: 4}, DefaultVersion: toolchain.Version{Major: 4, Minor: 0}, Flag: "-fPIE -pie -z noexecstack"},
 		},
+		LibC: binary.LibCAll,
 	}
 }
 
-func (r ASLRRule) Execute(bin *binary.ELFBinary) rule.Result {
-	switch bin.Type {
-	case elf.ET_EXEC:
+func (r ASLRRule) Execute(bin elf.Binary) rule.Result {
+	switch bin.Type() {
+	case stdelf.ET_EXEC:
 		return rule.Result{
 			Status:  rule.StatusFailed,
 			Message: "Not ASLR compatible, not PIE",
 		}
-	case elf.ET_DYN:
+	case stdelf.ET_DYN:
 	default:
 		return rule.Result{
 			Status:  rule.StatusSkipped,
@@ -48,10 +50,13 @@ func (r ASLRRule) Execute(bin *binary.ELFBinary) rule.Result {
 		}
 	}
 
-	isPIE := bin.HasDynFlag(elf.DT_FLAGS_1, uint64(elf.DF_1_PIE))
+	isPIE, err := elf.HasDynFlag(bin, stdelf.DT_FLAGS_1, uint64(stdelf.DF_1_PIE))
+	if err != nil {
+		return rule.Skip("failed to read dynamic section", err)
+	}
 	if !isPIE {
-		for _, prog := range bin.Progs {
-			if prog.Type == elf.PT_INTERP {
+		for _, prog := range bin.Progs() {
+			if prog.Type == stdelf.PT_INTERP {
 				isPIE = true
 				break
 			}
@@ -66,9 +71,9 @@ func (r ASLRRule) Execute(bin *binary.ELFBinary) rule.Result {
 	}
 
 	hasNXStack := false
-	for _, prog := range bin.Progs {
-		if prog.Type == elf.PT_GNU_STACK {
-			hasNXStack = (prog.Flags & elf.PF_X) == 0
+	for _, prog := range bin.Progs() {
+		if prog.Type == stdelf.PT_GNU_STACK {
+			hasNXStack = (prog.Flags & stdelf.PF_X) == 0
 			break
 		}
 	}
@@ -80,7 +85,11 @@ func (r ASLRRule) Execute(bin *binary.ELFBinary) rule.Result {
 		}
 	}
 
-	if bin.HasDynTag(elf.DT_TEXTREL) {
+	textrel, err := elf.HasDynTag(bin, stdelf.DT_TEXTREL)
+	if err != nil {
+		return rule.Skip("failed to read dynamic section", err)
+	}
+	if textrel {
 		return rule.Result{
 			Status:  rule.StatusFailed,
 			Message: "Not ASLR compatible, text relocations present",

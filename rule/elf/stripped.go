@@ -1,10 +1,12 @@
 package elf
 
 import (
-	"debug/elf"
+	stdelf "debug/elf"
+
 	"strings"
 
 	"go.kacmar.sk/crack/binary"
+	"go.kacmar.sk/crack/binary/elf"
 	"go.kacmar.sk/crack/rule"
 	"go.kacmar.sk/crack/toolchain"
 )
@@ -31,15 +33,16 @@ func (r StrippedRule) Applicability() rule.Applicability {
 			toolchain.GCC:   {MinVersion: toolchain.Version{Major: 3, Minor: 0}, Flag: "-s"},
 			toolchain.Clang: {MinVersion: toolchain.Version{Major: 1, Minor: 0}, Flag: "-s"},
 		},
+		LibC: binary.LibCAll,
 	}
 }
 
-func (r StrippedRule) Execute(bin *binary.ELFBinary) rule.Result {
+func (r StrippedRule) Execute(bin elf.Binary) rule.Result {
 	hasSymbolTable := false
 	hasDebugSections := false
 
-	for _, section := range bin.Sections {
-		if section.Type == elf.SHT_SYMTAB {
+	for _, section := range bin.Sections() {
+		if section.Type == stdelf.SHT_SYMTAB {
 			hasSymbolTable = true
 		}
 		if strings.HasPrefix(section.Name, ".debug_") ||

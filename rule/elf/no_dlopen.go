@@ -1,9 +1,10 @@
 package elf
 
 import (
-	"debug/elf"
+	stdelf "debug/elf"
 
 	"go.kacmar.sk/crack/binary"
+	"go.kacmar.sk/crack/binary/elf"
 	"go.kacmar.sk/crack/rule"
 	"go.kacmar.sk/crack/toolchain"
 )
@@ -30,25 +31,30 @@ func (r NoDLOpenRule) Applicability() rule.Applicability {
 			toolchain.GCC:   {MinVersion: toolchain.Version{Major: 4, Minor: 1}, Flag: "-Wl,-z,nodlopen"},
 			toolchain.Clang: {MinVersion: toolchain.Version{Major: 3, Minor: 4}, Flag: "-Wl,-z,nodlopen"},
 		},
+		LibC: binary.LibCAll,
 	}
 }
 
-func (r NoDLOpenRule) Execute(bin *binary.ELFBinary) rule.Result {
-	if bin.Type != elf.ET_DYN {
+func (r NoDLOpenRule) Execute(bin elf.Binary) rule.Result {
+	if bin.Type() != stdelf.ET_DYN {
 		return rule.Result{
 			Status:  rule.StatusSkipped,
 			Message: "Not a shared library, dlopen protection not applicable",
 		}
 	}
 
-	if bin.HasDynFlag(elf.DT_FLAGS_1, uint64(elf.DF_1_PIE)) {
+	pie, err := elf.HasDynFlag(bin, stdelf.DT_FLAGS_1, uint64(stdelf.DF_1_PIE))
+	if err != nil {
+		return rule.Skip("failed to read dynamic section", err)
+	}
+	if pie {
 		return rule.Result{
 			Status:  rule.StatusSkipped,
 			Message: "PIE executable, dlopen protection not applicable",
 		}
 	}
-	for _, prog := range bin.Progs {
-		if prog.Type == elf.PT_INTERP {
+	for _, prog := range bin.Progs() {
+		if prog.Type == stdelf.PT_INTERP {
 			return rule.Result{
 				Status:  rule.StatusSkipped,
 				Message: "PIE executable, dlopen protection not applicable",
@@ -56,7 +62,11 @@ func (r NoDLOpenRule) Execute(bin *binary.ELFBinary) rule.Result {
 		}
 	}
 
-	if bin.HasDynFlag(elf.DT_FLAGS_1, uint64(elf.DF_1_NOOPEN)) {
+	noopen, err := elf.HasDynFlag(bin, stdelf.DT_FLAGS_1, uint64(stdelf.DF_1_NOOPEN))
+	if err != nil {
+		return rule.Skip("failed to read dynamic section", err)
+	}
+	if noopen {
 		return rule.Result{
 			Status:  rule.StatusPassed,
 			Message: "dlopen disabled",

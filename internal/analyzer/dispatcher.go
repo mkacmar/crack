@@ -33,14 +33,16 @@ func NewDispatcher(opts DispatcherOptions) *Dispatcher {
 // Returns slice to handle fat/universal binaries (one result per arch slice).
 // Returns ErrUnsupportedFormat if no parser matches, other errors for parse failures.
 func (d *Dispatcher) Analyze(ctx context.Context, r io.ReaderAt) ([]AnalysisResult, error) {
-	if bin, err := binary.ParseELF(r); err == nil {
+	profile, buildID, findings, err := d.elf.Analyze(ctx, r)
+	if err == nil {
 		d.logger.Debug("parsed ELF binary",
-			slog.String("format", bin.Format.String()),
-			slog.String("arch", bin.Architecture.String()))
+			slog.String("format", binary.FormatELF.String()),
+			slog.String("arch", profile.Architecture.String()))
 
-		findings := d.elf.Analyze(ctx, bin)
 		return []AnalysisResult{{
-			Info:     bin.Info,
+			Format:   binary.FormatELF,
+			Identity: binary.Identity{BuildID: buildID},
+			Profile:  profile,
 			Findings: findings,
 		}}, nil
 	} else if !errors.Is(err, binary.ErrUnsupportedFormat) {

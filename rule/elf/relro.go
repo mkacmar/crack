@@ -1,9 +1,10 @@
 package elf
 
 import (
-	"debug/elf"
+	stdelf "debug/elf"
 
 	"go.kacmar.sk/crack/binary"
+	"go.kacmar.sk/crack/binary/elf"
 	"go.kacmar.sk/crack/rule"
 	"go.kacmar.sk/crack/toolchain"
 )
@@ -30,11 +31,12 @@ func (r RELRORule) Applicability() rule.Applicability {
 			toolchain.GCC:   {MinVersion: toolchain.Version{Major: 4, Minor: 1}, DefaultVersion: toolchain.Version{Major: 6, Minor: 1}, Flag: "-Wl,-z,relro"},
 			toolchain.Clang: {MinVersion: toolchain.Version{Major: 3, Minor: 4}, DefaultVersion: toolchain.Version{Major: 3, Minor: 9}, Flag: "-Wl,-z,relro"},
 		},
+		LibC: binary.LibCAll,
 	}
 }
 
-func (r RELRORule) Execute(bin *binary.ELFBinary) rule.Result {
-	if bin.Type != elf.ET_EXEC && bin.Type != elf.ET_DYN {
+func (r RELRORule) Execute(bin elf.Binary) rule.Result {
+	if bin.Type() != stdelf.ET_EXEC && bin.Type() != stdelf.ET_DYN {
 		return rule.Result{
 			Status:  rule.StatusSkipped,
 			Message: "Not an executable or shared library",
@@ -42,8 +44,8 @@ func (r RELRORule) Execute(bin *binary.ELFBinary) rule.Result {
 	}
 
 	hasRELRO := false
-	for _, prog := range bin.Progs {
-		if prog.Type == elf.PT_GNU_RELRO {
+	for _, prog := range bin.Progs() {
+		if prog.Type == stdelf.PT_GNU_RELRO {
 			hasRELRO = true
 			break
 		}

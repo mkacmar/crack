@@ -51,6 +51,12 @@ func (v Version) IsAtLeast(required Version) bool {
 	return v.Patch >= required.Patch
 }
 
+// Toolchain identifies the compiler and its version that produced a binary.
+type Toolchain struct {
+	Compiler Compiler
+	Version  Version
+}
+
 var (
 	ErrInvalidVersionFormat = errors.New("invalid version format")
 	ErrInvalidVersionMajor  = errors.New("invalid major version component")
@@ -80,13 +86,6 @@ func ParseVersion(s string) (Version, error) {
 	}
 
 	return Version{Major: major, Minor: minor, Patch: patch}, nil
-}
-
-// BuildInfo contains compiler metadata extracted from a binary.
-type BuildInfo struct {
-	BuildID  string
-	Compiler Compiler
-	Version  Version
 }
 
 // ELFDetector detects compiler info from ELF binaries.

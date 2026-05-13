@@ -1,7 +1,10 @@
 package rule
 
 import (
+	"fmt"
+
 	"go.kacmar.sk/crack/binary"
+	"go.kacmar.sk/crack/binary/elf"
 	"go.kacmar.sk/crack/toolchain"
 )
 
@@ -33,6 +36,13 @@ type Result struct {
 	Message string
 }
 
+func Skip(reason string, err error) Result {
+	return Result{
+		Status:  StatusSkipped,
+		Message: fmt.Sprintf("%s: %v", reason, err),
+	}
+}
+
 // Finding is a Result with rule metadata attached.
 type Finding struct {
 	Result
@@ -51,6 +61,7 @@ type CompilerRequirement struct {
 type Applicability struct {
 	Platform  binary.Platform
 	Compilers map[toolchain.Compiler]CompilerRequirement
+	LibC      binary.LibC
 }
 
 // Rule is a check that can be executed against a binary.
@@ -64,5 +75,5 @@ type Rule interface {
 // ELFRule is a Rule that operates on ELF binaries.
 type ELFRule interface {
 	Rule
-	Execute(bin *binary.ELFBinary) Result
+	Execute(bin elf.Binary) Result
 }

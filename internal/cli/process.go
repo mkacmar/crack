@@ -84,7 +84,7 @@ func decorateReport(results []analyzer.FileResult) *output.DecoratedReport {
 	for i, res := range results {
 		decorated[i] = output.DecoratedFileResult{
 			FileResult: res,
-			Findings:   suggestions.Decorate(res.Findings, res.Info),
+			Findings:   suggestions.Decorate(res.Findings, res.Profile),
 		}
 	}
 	return &output.DecoratedReport{Results: decorated}

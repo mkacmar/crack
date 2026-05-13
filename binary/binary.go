@@ -1,10 +1,16 @@
+// Package binary provides types for parsing and representing executable binaries.
 package binary
 
 import (
-	"fmt"
+	"errors"
+	"sort"
+	"strings"
 
 	"go.kacmar.sk/crack/toolchain"
 )
+
+// ErrUnsupportedFormat is returned when the file is not a supported binary format.
+var ErrUnsupportedFormat = errors.New("unsupported binary format")
 
 // Format identifies the executable format.
 type Format int
@@ -23,47 +29,55 @@ func (f Format) String() string {
 	}
 }
 
-// BitWidth represents the binary's word size.
-type BitWidth int
-
-const (
-	BitsUnknown BitWidth = 0
-	Bits32      BitWidth = 32
-	Bits64      BitWidth = 64
-)
-
-func (b BitWidth) String() string {
-	if b == BitsUnknown {
-		return "unknown"
-	}
-	return fmt.Sprintf("%d-bit", b)
-}
-
 // LibC identifies the C library the binary is linked against.
-type LibC int
+type LibC uint32
 
 const (
-	LibCUnknown LibC = iota
-	LibCGlibc
-	LibCMusl
+	LibCUnknown LibC = 0
+	LibCNone    LibC = 1 << 0
+	LibCGlibc   LibC = 1 << 1
+	LibCMusl    LibC = 1 << 2
+
+	LibCAll = LibCNone | LibCGlibc | LibCMusl
 )
+
+var libcNames = map[LibC]string{
+	LibCNone:  "none",
+	LibCGlibc: "glibc",
+	LibCMusl:  "musl",
+}
 
 func (l LibC) String() string {
-	switch l {
-	case LibCGlibc:
-		return "glibc"
-	case LibCMusl:
-		return "musl"
-	default:
-		return "unknown"
+	if name, ok := libcNames[l]; ok {
+		return name
 	}
+	var names []string
+	for libc, name := range libcNames {
+		if l&libc != 0 {
+			names = append(names, name)
+		}
+	}
+	if len(names) > 0 {
+		sort.Strings(names)
+		return strings.Join(names, ", ")
+	}
+	return "unknown"
 }
 
-// Info holds common metadata for any executable format.
-type Info struct {
-	Format       Format
+// Matches reports whether l has any overlap with target.
+func (l LibC) Matches(target LibC) bool {
+	return l&target != 0
+}
+
+// Profile holds the detected attributes of a binary.
+type Profile struct {
 	Architecture Architecture
-	Bits         BitWidth
-	Build        toolchain.BuildInfo
+	Toolchain    toolchain.Toolchain
 	LibC         LibC
+}
+
+// Identity contains the unique fingerprints of a binary artifact.
+type Identity struct {
+	BuildID string
+	SHA256  string
 }

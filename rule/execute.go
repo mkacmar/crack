@@ -3,15 +3,15 @@ package rule
 import "go.kacmar.sk/crack/binary"
 
 // Check runs all rules against binary metadata, using execFn to execute each rule.
-func Check[R Rule](rules []R, info binary.Info, execFn func(R) Result) []Finding {
+func Check[R Rule](rules []R, profile binary.Profile, execFn func(R) Result) []Finding {
 	findings := make([]Finding, 0, len(rules))
 
 	for _, r := range rules {
-		if reason := CheckApplicability(r.Applicability(), info); reason != Applicable {
+		if reason := CheckApplicability(r.Applicability(), profile); reason != Applicable {
 			findings = append(findings, Finding{
 				Result: Result{
 					Status:  StatusSkipped,
-					Message: reason.SkipMessage(info),
+					Message: reason.Reason(profile),
 				},
 				RuleID: r.ID(),
 				Name:   r.Name(),

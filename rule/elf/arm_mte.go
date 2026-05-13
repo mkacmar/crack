@@ -2,6 +2,7 @@ package elf
 
 import (
 	"go.kacmar.sk/crack/binary"
+	"go.kacmar.sk/crack/binary/elf"
 	"go.kacmar.sk/crack/rule"
 	"go.kacmar.sk/crack/toolchain"
 )
@@ -28,12 +29,13 @@ func (r ARMMTERule) Applicability() rule.Applicability {
 		Compilers: map[toolchain.Compiler]rule.CompilerRequirement{
 			toolchain.Clang: {MinVersion: toolchain.Version{Major: 12, Minor: 0}, Flag: "-march=armv8.5-a+memtag -fsanitize=memtag"},
 		},
+		LibC: binary.LibCAll,
 	}
 }
 
-func (r ARMMTERule) Execute(bin *binary.ELFBinary) rule.Result {
+func (r ARMMTERule) Execute(bin elf.Binary) rule.Result {
 	hasMTE := false
-	for _, sec := range bin.Sections {
+	for _, sec := range bin.Sections() {
 		if sec.Name == ".note.android.memtag" {
 			hasMTE = true
 			break

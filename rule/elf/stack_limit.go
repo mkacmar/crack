@@ -1,10 +1,12 @@
 package elf
 
 import (
-	"debug/elf"
+	stdelf "debug/elf"
+
 	"fmt"
 
 	"go.kacmar.sk/crack/binary"
+	"go.kacmar.sk/crack/binary/elf"
 	"go.kacmar.sk/crack/rule"
 	"go.kacmar.sk/crack/toolchain"
 )
@@ -31,11 +33,12 @@ func (r StackLimitRule) Applicability() rule.Applicability {
 			toolchain.GCC:   {MinVersion: toolchain.Version{Major: 4, Minor: 1}, Flag: "-Wl,-z,stack-size=<bytes>"},
 			toolchain.Clang: {MinVersion: toolchain.Version{Major: 3, Minor: 4}, Flag: "-Wl,-z,stack-size=<bytes>"},
 		},
+		LibC: binary.LibCAll,
 	}
 }
 
-func (r StackLimitRule) Execute(bin *binary.ELFBinary) rule.Result {
-	if bin.Type != elf.ET_EXEC && bin.Type != elf.ET_DYN {
+func (r StackLimitRule) Execute(bin elf.Binary) rule.Result {
+	if bin.Type() != stdelf.ET_EXEC && bin.Type() != stdelf.ET_DYN {
 		return rule.Result{
 			Status:  rule.StatusSkipped,
 			Message: "Not an executable or shared library",
@@ -44,8 +47,8 @@ func (r StackLimitRule) Execute(bin *binary.ELFBinary) rule.Result {
 
 	var stackSize uint64
 
-	for _, prog := range bin.Progs {
-		if prog.Type == elf.PT_GNU_STACK {
+	for _, prog := range bin.Progs() {
+		if prog.Type == stdelf.PT_GNU_STACK {
 			stackSize = prog.Memsz
 			break
 		}

@@ -14,6 +14,7 @@ import (
 
 	"golang.org/x/sync/errgroup"
 
+	"go.kacmar.sk/crack/binary"
 	"go.kacmar.sk/crack/internal/analyzer"
 )
 
@@ -122,8 +123,9 @@ func (s *Scanner) scanFile(ctx context.Context, path string) []analyzer.FileResu
 	for i, r := range results {
 		fileResults[i] = analyzer.FileResult{
 			Path:     path,
-			Info:     r.Info,
-			SHA256:   hash,
+			Format:   r.Format,
+			Identity: binary.Identity{BuildID: r.Identity.BuildID, SHA256: hash},
+			Profile:  r.Profile,
 			Findings: r.Findings,
 		}
 	}

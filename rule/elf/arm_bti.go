@@ -2,6 +2,7 @@ package elf
 
 import (
 	"go.kacmar.sk/crack/binary"
+	"go.kacmar.sk/crack/binary/elf"
 	"go.kacmar.sk/crack/rule"
 	"go.kacmar.sk/crack/toolchain"
 )
@@ -28,11 +29,15 @@ func (r ARMBTIRule) Applicability() rule.Applicability {
 			toolchain.GCC:   {MinVersion: toolchain.Version{Major: 10, Minor: 1}, Flag: "-mbranch-protection=bti"},
 			toolchain.Clang: {MinVersion: toolchain.Version{Major: 12, Minor: 0}, Flag: "-mbranch-protection=bti"},
 		},
+		LibC: binary.LibCAll,
 	}
 }
 
-func (r ARMBTIRule) Execute(bin *binary.ELFBinary) rule.Result {
-	hasBTI := bin.HasGNUProperty(binary.GNU_PROPERTY_AARCH64_FEATURE_1_AND, binary.GNU_PROPERTY_AARCH64_FEATURE_1_BTI)
+func (r ARMBTIRule) Execute(bin elf.Binary) rule.Result {
+	hasBTI, err := elf.HasGNUProperty(bin, elf.GNU_PROPERTY_AARCH64_FEATURE_1_AND, elf.GNU_PROPERTY_AARCH64_FEATURE_1_BTI)
+	if err != nil {
+		return rule.Skip("failed to read GNU properties", err)
+	}
 
 	if hasBTI {
 		return rule.Result{

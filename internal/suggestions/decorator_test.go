@@ -12,14 +12,14 @@ import (
 func TestBuildSuggestion(t *testing.T) {
 	tests := []struct {
 		name          string
-		build         toolchain.BuildInfo
+		profile       binary.Profile
 		applicability rule.Applicability
 		wantContain   []string
 		wantExact     string
 	}{
 		{
-			name:  "unknown compiler shows both options",
-			build: toolchain.BuildInfo{Compiler: toolchain.Unknown},
+			name:    "unknown compiler shows both options",
+			profile: binary.Profile{Toolchain: toolchain.Toolchain{Compiler: toolchain.Unknown}},
 			applicability: rule.Applicability{
 				Platform: binary.PlatformAll,
 				Compilers: map[toolchain.Compiler]rule.CompilerRequirement{
@@ -31,9 +31,11 @@ func TestBuildSuggestion(t *testing.T) {
 		},
 		{
 			name: "compiler below minimum version",
-			build: toolchain.BuildInfo{
-				Compiler: toolchain.GCC,
-				Version:  toolchain.Version{Major: 4, Minor: 8},
+			profile: binary.Profile{
+				Toolchain: toolchain.Toolchain{
+					Compiler: toolchain.GCC,
+					Version:  toolchain.Version{Major: 4, Minor: 8},
+				},
 			},
 			applicability: rule.Applicability{
 				Platform: binary.PlatformAll,
@@ -45,9 +47,11 @@ func TestBuildSuggestion(t *testing.T) {
 		},
 		{
 			name: "compiler above min but below default version",
-			build: toolchain.BuildInfo{
-				Compiler: toolchain.GCC,
-				Version:  toolchain.Version{Major: 10, Minor: 0},
+			profile: binary.Profile{
+				Toolchain: toolchain.Toolchain{
+					Compiler: toolchain.GCC,
+					Version:  toolchain.Version{Major: 10, Minor: 0},
+				},
 			},
 			applicability: rule.Applicability{
 				Platform: binary.PlatformAll,
@@ -63,9 +67,11 @@ func TestBuildSuggestion(t *testing.T) {
 		},
 		{
 			name: "compiler has no default version",
-			build: toolchain.BuildInfo{
-				Compiler: toolchain.Clang,
-				Version:  toolchain.Version{Major: 15, Minor: 0},
+			profile: binary.Profile{
+				Toolchain: toolchain.Toolchain{
+					Compiler: toolchain.Clang,
+					Version:  toolchain.Version{Major: 15, Minor: 0},
+				},
 			},
 			applicability: rule.Applicability{
 				Platform: binary.PlatformAll,
@@ -77,9 +83,11 @@ func TestBuildSuggestion(t *testing.T) {
 		},
 		{
 			name: "feature not supported by detected compiler",
-			build: toolchain.BuildInfo{
-				Compiler: toolchain.GCC,
-				Version:  toolchain.Version{Major: 12, Minor: 0},
+			profile: binary.Profile{
+				Toolchain: toolchain.Toolchain{
+					Compiler: toolchain.GCC,
+					Version:  toolchain.Version{Major: 12, Minor: 0},
+				},
 			},
 			applicability: rule.Applicability{
 				Platform: binary.PlatformAll,
@@ -91,9 +99,11 @@ func TestBuildSuggestion(t *testing.T) {
 		},
 		{
 			name: "compiler above default version",
-			build: toolchain.BuildInfo{
-				Compiler: toolchain.GCC,
-				Version:  toolchain.Version{Major: 14, Minor: 0},
+			profile: binary.Profile{
+				Toolchain: toolchain.Toolchain{
+					Compiler: toolchain.GCC,
+					Version:  toolchain.Version{Major: 14, Minor: 0},
+				},
 			},
 			applicability: rule.Applicability{
 				Platform: binary.PlatformAll,
@@ -109,7 +119,7 @@ func TestBuildSuggestion(t *testing.T) {
 		},
 		{
 			name:          "empty requirements",
-			build:         toolchain.BuildInfo{Compiler: toolchain.GCC, Version: toolchain.Version{Major: 12, Minor: 0}},
+			profile:       binary.Profile{Toolchain: toolchain.Toolchain{Compiler: toolchain.GCC, Version: toolchain.Version{Major: 12, Minor: 0}}},
 			applicability: rule.Applicability{Platform: binary.PlatformAll, Compilers: nil},
 			wantExact:     "Feature not supported by detected compilers.",
 		},
@@ -117,7 +127,7 @@ func TestBuildSuggestion(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			result := buildSuggestion(tt.build, tt.applicability)
+			result := buildSuggestion(tt.profile, tt.applicability)
 
 			if tt.wantExact != "" {
 				if result != tt.wantExact {
