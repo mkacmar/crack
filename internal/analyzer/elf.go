@@ -9,23 +9,22 @@ import (
 	"go.kacmar.sk/crack/binary/elf"
 	"go.kacmar.sk/crack/internal/debuginfo"
 	"go.kacmar.sk/crack/rule"
-	"go.kacmar.sk/debuginfod"
 )
 
 // ELFAnalyzer runs ELF-specific analysis and returns findings.
 type ELFAnalyzer struct {
-	rules            []rule.ELFRule
-	debuginfodClient *debuginfod.Client
-	detector         elf.ToolchainDetector
-	logger           *slog.Logger
+	rules    []rule.ELFRule
+	sources  []debuginfo.Source
+	detector elf.ToolchainDetector
+	logger   *slog.Logger
 }
 
 // ELFAnalyzerOptions configures ELFAnalyzer creation.
 type ELFAnalyzerOptions struct {
-	Rules            []rule.ELFRule
-	DebuginfodClient *debuginfod.Client
-	Detector         elf.ToolchainDetector
-	Logger           *slog.Logger
+	Rules    []rule.ELFRule
+	Sources  []debuginfo.Source
+	Detector elf.ToolchainDetector
+	Logger   *slog.Logger
 }
 
 // NewELFAnalyzer creates an ELF analyzer with the given options.
@@ -35,10 +34,10 @@ func NewELFAnalyzer(opts ELFAnalyzerOptions) *ELFAnalyzer {
 		detector = elf.DefaultToolchainDetector{}
 	}
 	return &ELFAnalyzer{
-		rules:            opts.Rules,
-		debuginfodClient: opts.DebuginfodClient,
-		detector:         detector,
-		logger:           opts.Logger.With(slog.String("component", "elf-analyzer")),
+		rules:    opts.Rules,
+		sources:  opts.Sources,
+		detector: detector,
+		logger:   opts.Logger.With(slog.String("component", "elf-analyzer")),
 	}
 }
 
@@ -62,14 +61,25 @@ func (a *ELFAnalyzer) Analyze(ctx context.Context, r io.ReaderAt) (binary.Profil
 	return profile, bin.BuildID(), findings, nil
 }
 
-// resolverFactory builds a Resolver for a given build ID, scoped to ctx and the analyzer's debuginfod client.
-// Returns nil for binaries without a build ID or when no client is configured. The binary then operates without remote section fetching.
+// resolverFactory builds a Resolver for a given build ID, scoped to ctx.
+// Composes the configured sources in declared order, chaining them when more than one applies.
+// Returns nil for binaries without a build ID or when no source is configured.
 func (a *ELFAnalyzer) resolverFactory(ctx context.Context) func(buildID string) elf.Resolver {
 	return func(buildID string) elf.Resolver {
-		if buildID == "" || a.debuginfodClient == nil {
+		if buildID == "" || len(a.sources) == 0 {
 			return nil
 		}
-		a.logger.Debug("resolver attached", slog.String("build_id", buildID))
-		return debuginfo.NewResolver(ctx, buildID, a.debuginfodClient, a.logger)
+
+		resolvers := make([]elf.Resolver, 0, len(a.sources))
+		for _, src := range a.sources {
+			resolvers = append(resolvers, src.ResolverFor(ctx, buildID))
+		}
+
+		if len(resolvers) == 1 {
+			a.logger.Debug("resolver attached", slog.String("build_id", buildID))
+			return resolvers[0]
+		}
+		a.logger.Debug("resolver chain attached", slog.String("build_id", buildID), slog.Int("sources", len(resolvers)))
+		return debuginfo.Chain(resolvers)
 	}
 }

@@ -1,66 +1,65 @@
 package debuginfo
 
 import (
+	"context"
+	"errors"
 	"fmt"
-	"net/http"
-	"time"
-
+	"io"
 	"log/slog"
 
-	"go.kacmar.sk/crack/internal/version"
+	"go.kacmar.sk/crack/binary/elf"
 	"go.kacmar.sk/debuginfod"
 )
 
-func userAgent() string {
-	return "crack/" + version.Version + " (Compiler Hardening Checker; +https://github.com/mkacmar/crack)"
+// DebuginfodSource resolves ELF sections via a debuginfod client.
+type DebuginfodSource struct {
+	client *debuginfod.Client
+	logger *slog.Logger
 }
 
-// DefaultMaxRetries is the default number of additional retry rounds after the initial attempt.
-const DefaultMaxRetries = 2 // 3 total attempts (initial + 2 retries)
-
-type Options struct {
-	ServerURLs []string
-	CacheDir   string
-	Timeout    time.Duration
-	MaxRetries int
-	Logger     *slog.Logger
-}
-
-func NewClient(opts Options) (*debuginfod.Client, error) {
-	cacheDir := opts.CacheDir
-	if cacheDir == "" {
-		var err error
-		cacheDir, err = debuginfod.DefaultCacheDir()
-		if err != nil {
-			return nil, err
-		}
+// NewDebuginfodSource constructs a Source backed by the given debuginfod client.
+func NewDebuginfodSource(client *debuginfod.Client, logger *slog.Logger) *DebuginfodSource {
+	if client == nil {
+		panic("debuginfo.NewDebuginfodSource: nil client")
 	}
+	if logger == nil {
+		logger = slog.Default()
+	}
+	return &DebuginfodSource{client: client, logger: logger}
+}
 
-	cache, err := debuginfod.NewDiskCache(debuginfod.DiskCacheOptions{
-		Dir: cacheDir,
-	})
+// ResolverFor returns a Resolver scoped to the given context and build ID.
+func (s *DebuginfodSource) ResolverFor(ctx context.Context, buildID string) elf.Resolver {
+	if buildID == "" {
+		panic("debuginfo.DebuginfodSource.ResolverFor: empty buildID")
+	}
+	return &debuginfodResolver{ctx: ctx, buildID: buildID, client: s.client, logger: s.logger}
+}
+
+type debuginfodResolver struct {
+	ctx     context.Context
+	buildID string
+	client  *debuginfod.Client
+	logger  *slog.Logger
+}
+
+// FetchSection retrieves the named section's raw bytes via debuginfod.
+// Returns ErrSectionMissing when the server reports the artifact as not found.
+func (r *debuginfodResolver) FetchSection(name string) ([]byte, error) {
+	r.logger.Debug("debuginfod source fetching section", slog.String("build_id", r.buildID), slog.String("section", name))
+
+	rc, err := r.client.FetchSection(r.ctx, r.buildID, name)
 	if err != nil {
-		return nil, fmt.Errorf("failed to create cache: %w", err)
+		if errors.Is(err, debuginfod.ErrNotFound) {
+			return nil, elf.ErrSectionMissing
+		}
+		return nil, fmt.Errorf("debuginfod fetch %s: %w", name, err)
 	}
+	defer rc.Close()
 
-	timeout := opts.Timeout
-	if timeout == 0 {
-		timeout = 30 * time.Second
+	data, err := io.ReadAll(rc)
+	if err != nil {
+		return nil, fmt.Errorf("debuginfod read %s: %w", name, err)
 	}
-
-	maxRetries := opts.MaxRetries
-	if maxRetries < 1 {
-		maxRetries = DefaultMaxRetries
-	}
-
-	return debuginfod.NewClient(debuginfod.Options{
-		ServerURLs: opts.ServerURLs,
-		Cache:      cache,
-		HTTP: debuginfod.HTTPOptions{
-			Client:     &http.Client{Timeout: timeout},
-			MaxRetries: maxRetries,
-			UserAgent:  userAgent(),
-		},
-		Logger: opts.Logger,
-	})
+	return data, nil
 }

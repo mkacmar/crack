@@ -83,10 +83,19 @@ Fetch debug symbols from [debuginfod](https://sourceware.org/elfutils/Debuginfod
 
 - `--debuginfod` - Enable debuginfod integration
 - `--debuginfod-servers <urls>` - Comma-separated server URLs
-- `--debuginfod-cache <dir>` - Cache directory for downloaded symbols
+- `--debuginfod-cache-dir <dir>` - Cache directory for downloaded symbols
 - `--debuginfod-timeout <duration>` - HTTP timeout
 - `--debuginfod-retries <n>` - Max retries per server
 - `--debuginfod-max-size <bytes>` - Max debug file size per download
+
+### Local Debuginfo
+
+Resolve missing sections from a local build-id-indexed debug directory, the layout populated by distro debug packages (`dbgsym` on Debian/Ubuntu, `-debuginfo` on Fedora/RHEL/openSUSE).
+
+- `--local-debuginfo` - Enable local debuginfo lookup
+- `--local-debuginfo-dir <dir>` - Root directory of the local debuginfo store (default `/usr/lib/debug`)
+
+When both `--local-debuginfo` and `--debuginfod` are set, the local store is consulted first and debuginfod serves as a fallback for any sections it cannot supply.
 
 ### Profiling
 

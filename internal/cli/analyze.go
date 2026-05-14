@@ -48,6 +48,8 @@ type analyzeConfig struct {
 	debuginfodCache   string
 	debuginfodTimeout time.Duration
 	debuginfodRetries int
+	useLocalDebuginfo bool
+	localDebuginfoDir string
 	profile           profileConfig
 }
 
@@ -87,12 +89,18 @@ Logging options:
 		defaultCacheDir = "(unavailable)"
 	}
 	fmt.Fprintf(os.Stderr, `Debuginfod options:
-      --debuginfod                  Fetch debug symbols from debuginfod servers
-      --debuginfod-cache string     Debuginfod cache directory (default "%s")
-      --debuginfod-retries int      Debuginfod max retries per server (default %d)
-      --debuginfod-servers string   Comma-separated debuginfod server URLs (default %q)
-      --debuginfod-timeout duration Debuginfod HTTP timeout (default %v)
+      --debuginfod                    Fetch debug symbols from debuginfod servers
+      --debuginfod-cache-dir string   Debuginfod cache directory (default "%s")
+      --debuginfod-retries int        Debuginfod max retries per server (default %d)
+      --debuginfod-servers string     Comma-separated debuginfod server URLs (default %q)
+      --debuginfod-timeout duration   Debuginfod HTTP timeout (default %v)
 `, defaultCacheDir, debuginfo.DefaultMaxRetries, defaultDebuginfodServer, 30*time.Second)
+
+	fmt.Fprintf(os.Stderr, `
+Local debuginfo:
+      --local-debuginfo                Resolve missing sections from a local build-id-indexed debug directory
+      --local-debuginfo-dir string     Root directory of the local debuginfo store (default %q)
+`, debuginfo.DefaultBuildIDDir)
 
 	if usage := profileUsage(); usage != "" {
 		fmt.Fprint(os.Stderr, usage)
@@ -205,9 +213,9 @@ func (a *App) runAnalyze(prog string, args []string) int {
 	}
 
 	elfAnalyzer := analyzer.NewELFAnalyzer(analyzer.ELFAnalyzerOptions{
-		Rules:            selectedRules,
-		DebuginfodClient: debuginfodClient,
-		Logger:           a.logger,
+		Rules:   selectedRules,
+		Sources: a.buildDebuginfoSources(cfg, debuginfodClient),
+		Logger:  a.logger,
 	})
 
 	dispatcher := analyzer.NewDispatcher(analyzer.DispatcherOptions{
@@ -257,9 +265,12 @@ func (a *App) setupAnalyzeFlags(prog string) (*flag.FlagSet, *outputOptions, *an
 	fs.BoolVar(&opts.exitZero, "exit-zero", false, "")
 	fs.BoolVar(&cfg.useDebuginfod, "debuginfod", false, "")
 	fs.StringVar(&cfg.debuginfodServers, "debuginfod-servers", defaultDebuginfodServer, "")
+	fs.StringVar(&cfg.debuginfodCache, "debuginfod-cache-dir", "", "")
 	fs.StringVar(&cfg.debuginfodCache, "debuginfod-cache", "", "")
 	fs.DurationVar(&cfg.debuginfodTimeout, "debuginfod-timeout", 30*time.Second, "")
 	fs.IntVar(&cfg.debuginfodRetries, "debuginfod-retries", debuginfo.DefaultMaxRetries, "")
+	fs.BoolVar(&cfg.useLocalDebuginfo, "local-debuginfo", false, "")
+	fs.StringVar(&cfg.localDebuginfoDir, "local-debuginfo-dir", "", "")
 	registerProfileFlags(fs, &cfg.profile)
 
 	fs.Usage = func() { a.printAnalyzeUsage(prog) }
@@ -301,4 +312,20 @@ func (a *App) setupDebuginfod(cfg *analyzeConfig) (*debuginfod.Client, error) {
 		MaxRetries: cfg.debuginfodRetries,
 		Logger:     a.logger,
 	})
+}
+
+// buildDebuginfoSources assembles the configured debug-information sources in priority order.
+func (a *App) buildDebuginfoSources(cfg *analyzeConfig, client *debuginfod.Client) []debuginfo.Source {
+	var sources []debuginfo.Source
+	if cfg.useLocalDebuginfo {
+		root := cfg.localDebuginfoDir
+		if root == "" {
+			root = debuginfo.DefaultBuildIDDir
+		}
+		sources = append(sources, debuginfo.NewBuildIDDirSource(root, a.logger))
+	}
+	if client != nil {
+		sources = append(sources, debuginfo.NewDebuginfodSource(client, a.logger))
+	}
+	return sources
 }
