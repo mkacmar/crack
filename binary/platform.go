@@ -59,7 +59,8 @@ func (a Architecture) Matches(target Architecture) bool {
 	return a&target != 0
 }
 
-// ParseArchitecture converts a string to Architecture. Returns false if unknown.
+// ParseArchitecture converts a string to Architecture.
+// Returns false if unknown.
 func ParseArchitecture(s string) (Architecture, bool) {
 	for arch, name := range architectureNames {
 		if name == s {
@@ -78,11 +79,6 @@ type ISA struct {
 var (
 	ARM64v83 = ISA{Major: 8, Minor: 3}
 	ARM64v85 = ISA{Major: 8, Minor: 5}
-
-	AMD64v1 = ISA{Major: 1}
-	AMD64v2 = ISA{Major: 2}
-	AMD64v3 = ISA{Major: 3}
-	AMD64v4 = ISA{Major: 4}
 )
 
 func (i ISA) String() string {
@@ -92,7 +88,7 @@ func (i ISA) String() string {
 	return fmt.Sprintf("v%d", i.Major)
 }
 
-// ParseISA parses a version string like "v8.3" or "8.3" into an ISA.
+// ParseISA parses a version string into an ISA.
 func ParseISA(s string) (ISA, error) {
 	s = strings.TrimPrefix(s, "v")
 	parts := strings.Split(s, ".")
@@ -133,7 +129,6 @@ type Platform struct {
 var (
 	PlatformAll    = Platform{Architecture: ArchAll}
 	PlatformAllX86 = Platform{Architecture: ArchAllX86}
-	PlatformAllARM = Platform{Architecture: ArchAllARM}
 
 	PlatformARM64v83 = Platform{Architecture: ArchARM64, MinISA: ARM64v83}
 	PlatformARM64v85 = Platform{Architecture: ArchARM64, MinISA: ARM64v85}
