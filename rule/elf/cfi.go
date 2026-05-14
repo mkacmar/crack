@@ -75,7 +75,7 @@ func (r CFIRule) Execute(bin elf.Binary) rule.Result {
 	if len(symbols) == 0 {
 		return rule.Result{
 			Status:  rule.StatusSkipped,
-			Message: "Stripped binary, CFI detection limited",
+			Message: "Static symbols (.symtab) unavailable, cannot detect CFI",
 		}
 	}
 
