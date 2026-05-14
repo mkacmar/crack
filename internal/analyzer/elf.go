@@ -9,7 +9,6 @@ import (
 	"go.kacmar.sk/crack/binary/elf"
 	"go.kacmar.sk/crack/internal/debuginfo"
 	"go.kacmar.sk/crack/rule"
-	"go.kacmar.sk/crack/toolchain"
 	"go.kacmar.sk/debuginfod"
 )
 
@@ -17,7 +16,7 @@ import (
 type ELFAnalyzer struct {
 	rules            []rule.ELFRule
 	debuginfodClient *debuginfod.Client
-	detector         toolchain.ELFDetector
+	detector         elf.ToolchainDetector
 	logger           *slog.Logger
 }
 
@@ -25,7 +24,7 @@ type ELFAnalyzer struct {
 type ELFAnalyzerOptions struct {
 	Rules            []rule.ELFRule
 	DebuginfodClient *debuginfod.Client
-	Detector         toolchain.ELFDetector
+	Detector         elf.ToolchainDetector
 	Logger           *slog.Logger
 }
 
@@ -33,7 +32,7 @@ type ELFAnalyzerOptions struct {
 func NewELFAnalyzer(opts ELFAnalyzerOptions) *ELFAnalyzer {
 	detector := opts.Detector
 	if detector == nil {
-		detector = toolchain.ELFCommentDetector{}
+		detector = elf.DefaultToolchainDetector{}
 	}
 	return &ELFAnalyzer{
 		rules:            opts.Rules,
@@ -54,13 +53,7 @@ func (a *ELFAnalyzer) Analyze(ctx context.Context, r io.ReaderAt) (binary.Profil
 	profile := binary.Profile{
 		Architecture: elf.DetectArchitecture(bin),
 		LibC:         elf.DetectLibC(bin),
-		Toolchain:    elf.DetectToolchain(bin, a.detector),
-	}
-	if profile.Toolchain.Compiler == toolchain.Unknown {
-		if tc := elf.DetectToolchainFromDWARF(bin, a.detector); tc.Compiler != toolchain.Unknown {
-			profile.Toolchain = tc
-			a.logger.Debug("detected toolchain from DWARF", slog.String("compiler", tc.Compiler.String()), slog.String("version", tc.Version.String()))
-		}
+		Toolchain:    a.detector.Detect(bin),
 	}
 
 	findings := rule.Check(a.rules, profile, func(r rule.ELFRule) rule.Result {

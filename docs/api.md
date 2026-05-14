@@ -17,7 +17,7 @@ bin, _ := elf.Open(f)
 profile := binary.Profile{
     Architecture: elf.DetectArchitecture(bin),
     LibC:         elf.DetectLibC(bin),
-    Toolchain:    elf.DetectToolchain(bin, toolchain.ELFCommentDetector{}),
+    Toolchain:    elf.DefaultToolchainDetector{}.Detect(bin),
 }
 
 rules := registry.Where[rule.ELFRule](nil)
@@ -62,18 +62,17 @@ func (r MinStackSizeRule) Execute(bin elf.Binary) rule.Result {
 
 ## Custom Compiler Detection
 
-To detect custom compilers, implement [`ELFDetector`](https://pkg.go.dev/go.kacmar.sk/crack/toolchain#ELFDetector) and pass it to [`DetectToolchain`](https://pkg.go.dev/go.kacmar.sk/crack/binary/elf#DetectToolchain). This enables applicability checks for binaries built with internal or proprietary compilers:
+Toolchain detection has two extension points. To recognize a private compiler that signs `.comment` or DWARF `DW_AT_producer`, implement [`StringDetector`](https://pkg.go.dev/go.kacmar.sk/crack/toolchain#StringDetector) and set it on [`DefaultToolchainDetector`](https://pkg.go.dev/go.kacmar.sk/crack/binary/elf#DefaultToolchainDetector):
 
 ```go
-// AcmeDetector detects Acme Corp's internal compiler, falling back to standard detection.
-type AcmeDetector struct {
-    fallback toolchain.ELFCommentDetector
+// AcmeStringDetector recognizes Acme Corp's internal compiler, falling back to standard detection.
+type AcmeStringDetector struct {
+    fallback toolchain.DefaultStringDetector
 }
 
-func (d AcmeDetector) Detect(comment string) (toolchain.Compiler, toolchain.Version) {
-    // Acme compiler writes "ACME C Compiler 2.3.1" in .comment section
-    if strings.Contains(comment, "ACME C Compiler") {
-        parts := strings.Fields(comment)
+func (d AcmeStringDetector) Detect(s string) (toolchain.Compiler, toolchain.Version) {
+    if strings.Contains(s, "ACME C Compiler") {
+        parts := strings.Fields(s)
         if len(parts) >= 4 {
             if v, err := toolchain.ParseVersion(parts[3]); err == nil {
                 return toolchain.Compiler("acme-cc"), v
@@ -81,11 +80,29 @@ func (d AcmeDetector) Detect(comment string) (toolchain.Compiler, toolchain.Vers
         }
         return toolchain.Compiler("acme-cc"), toolchain.Version{}
     }
-    return d.fallback.Detect(comment)
+    return d.fallback.Detect(s)
 }
 
-bin, _ := elf.Open(f)
-tc := elf.DetectToolchain(bin, AcmeDetector{})
+detector := elf.DefaultToolchainDetector{StringDetector: AcmeStringDetector{}}
+tc := detector.Detect(bin)
+```
+
+To use a different evidence source entirely (e.g. recognize a compiler by a dedicated section, similar to how Go is recognized via `.go.buildinfo`), implement [`ToolchainDetector`](https://pkg.go.dev/go.kacmar.sk/crack/binary/elf#ToolchainDetector) directly:
+
+```go
+type AcmeToolchainDetector struct {
+    fallback elf.ToolchainDetector
+}
+
+func (d AcmeToolchainDetector) Detect(b elf.Binary) toolchain.Toolchain {
+    if _, err := elf.FindSection(b, ".acme.buildinfo"); err == nil {
+        return toolchain.Toolchain{Compiler: toolchain.Compiler("acme-cc")}
+    }
+    return d.fallback.Detect(b)
+}
+
+detector := AcmeToolchainDetector{fallback: elf.DefaultToolchainDetector{}}
+tc := detector.Detect(bin)
 ```
 
 ## Custom Section Resolver

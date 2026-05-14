@@ -88,15 +88,15 @@ func ParseVersion(s string) (Version, error) {
 	return Version{Major: major, Minor: minor, Patch: patch}, nil
 }
 
-// ELFDetector detects compiler info from ELF binaries.
-type ELFDetector interface {
-	Detect(comment string) (Compiler, Version)
+// StringDetector classifies a free-form producer string into a compiler and version.
+type StringDetector interface {
+	Detect(s string) (Compiler, Version)
 }
 
-// ELFCommentDetector detects compiler from ELF .comment section.
-type ELFCommentDetector struct{}
+// DefaultStringDetector recognizes gcc, clang, and rustc from the strings their toolchains embed.
+type DefaultStringDetector struct{}
 
-func (ELFCommentDetector) Detect(comment string) (Compiler, Version) {
+func (DefaultStringDetector) Detect(comment string) (Compiler, Version) {
 	if comment == "" {
 		return Unknown, Version{}
 	}
