@@ -1,6 +1,7 @@
 package binary
 
 import (
+	"errors"
 	"fmt"
 	"sort"
 	"strconv"
@@ -88,24 +89,30 @@ func (i ISA) String() string {
 	return fmt.Sprintf("v%d", i.Major)
 }
 
+var (
+	ErrInvalidISAFormat = errors.New("invalid ISA format")
+	ErrInvalidISAMajor  = errors.New("invalid ISA major version component")
+	ErrInvalidISAMinor  = errors.New("invalid ISA minor version component")
+)
+
 // ParseISA parses a version string into an ISA.
 func ParseISA(s string) (ISA, error) {
 	s = strings.TrimPrefix(s, "v")
 	parts := strings.Split(s, ".")
 	if len(parts) > 2 {
-		return ISA{}, fmt.Errorf("invalid ISA format: %s", s)
+		return ISA{}, fmt.Errorf("%w: %s", ErrInvalidISAFormat, s)
 	}
 
 	major, err := strconv.Atoi(parts[0])
 	if err != nil {
-		return ISA{}, fmt.Errorf("invalid ISA major version: %s", parts[0])
+		return ISA{}, fmt.Errorf("%w: %w", ErrInvalidISAMajor, err)
 	}
 
 	var minor int
 	if len(parts) == 2 {
 		minor, err = strconv.Atoi(parts[1])
 		if err != nil {
-			return ISA{}, fmt.Errorf("invalid ISA minor version: %s", parts[1])
+			return ISA{}, fmt.Errorf("%w: %w", ErrInvalidISAMinor, err)
 		}
 	}
 

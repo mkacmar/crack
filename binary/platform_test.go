@@ -1,28 +1,37 @@
 package binary
 
-import "testing"
+import (
+	"errors"
+	"testing"
+)
 
 func TestParseISA(t *testing.T) {
 	tests := []struct {
 		in      string
 		want    ISA
-		wantErr bool
+		wantErr error
 	}{
-		{"v8.3", ISA{Major: 8, Minor: 3}, false},
-		{"8.3", ISA{Major: 8, Minor: 3}, false},
-		{"v8", ISA{Major: 8}, false},
-		{"1", ISA{Major: 1}, false},
-		{"v0.0", ISA{}, false},
-		{"v8.3.1", ISA{}, true},
-		{"vabc", ISA{}, true},
-		{"v8.x", ISA{}, true},
-		{"", ISA{}, true},
+		{"v8.3", ISA{Major: 8, Minor: 3}, nil},
+		{"8.3", ISA{Major: 8, Minor: 3}, nil},
+		{"v8", ISA{Major: 8}, nil},
+		{"1", ISA{Major: 1}, nil},
+		{"v0.0", ISA{}, nil},
+		{"v8.3.1", ISA{}, ErrInvalidISAFormat},
+		{"vabc", ISA{}, ErrInvalidISAMajor},
+		{"v8.x", ISA{}, ErrInvalidISAMinor},
+		{"", ISA{}, ErrInvalidISAMajor},
 	}
 	for _, tc := range tests {
 		t.Run(tc.in, func(t *testing.T) {
 			got, err := ParseISA(tc.in)
-			if (err != nil) != tc.wantErr {
-				t.Fatalf("ParseISA(%q) err = %v, wantErr = %v", tc.in, err, tc.wantErr)
+			if tc.wantErr != nil {
+				if !errors.Is(err, tc.wantErr) {
+					t.Fatalf("ParseISA(%q) err = %v, want %v", tc.in, err, tc.wantErr)
+				}
+				return
+			}
+			if err != nil {
+				t.Fatalf("ParseISA(%q): %v", tc.in, err)
 			}
 			if got != tc.want {
 				t.Errorf("ParseISA(%q) = %+v, want %+v", tc.in, got, tc.want)
