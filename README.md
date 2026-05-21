@@ -1,5 +1,9 @@
 # CRACK - Compiler Hardening Checker
 
+[![CI](https://github.com/mkacmar/crack/actions/workflows/ci.yml/badge.svg)](https://github.com/mkacmar/crack/actions/workflows/ci.yml)
+[![Go Reference](https://pkg.go.dev/badge/go.kacmar.sk/crack.svg)](https://pkg.go.dev/go.kacmar.sk/crack)
+[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
+
 > **Note**: This is a v0 release, API may change.
 
 A tool to analyze ELF binaries for security hardening features.
