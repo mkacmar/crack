@@ -19,7 +19,7 @@ import (
 	"go.kacmar.sk/crack/internal/scanner"
 	"go.kacmar.sk/crack/rule"
 	"go.kacmar.sk/crack/rule/registry"
-	"go.kacmar.sk/debuginfod"
+	"go.kacmar.sk/debuginfod/cache"
 )
 
 var errNoPathsSpecified = fmt.Errorf("no paths specified")
@@ -84,7 +84,7 @@ Logging options:
 
 `)
 
-	defaultCacheDir, err := debuginfod.DefaultCacheDir()
+	defaultCacheDir, err := debuginfo.DefaultCacheDir()
 	if err != nil {
 		defaultCacheDir = "(unavailable)"
 	}
@@ -206,7 +206,7 @@ func (a *App) runAnalyze(prog string, args []string) int {
 	}
 	defer closeLog()
 
-	debuginfodClient, err := a.setupDebuginfod(cfg)
+	debuginfodCache, err := a.setupDebuginfod(cfg)
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "Error: %v\n", err)
 		return ExitError
@@ -214,7 +214,7 @@ func (a *App) runAnalyze(prog string, args []string) int {
 
 	elfAnalyzer := analyzer.NewELFAnalyzer(analyzer.ELFAnalyzerOptions{
 		Rules:   selectedRules,
-		Sources: a.buildDebuginfoSources(cfg, debuginfodClient),
+		Sources: a.buildDebuginfoSources(cfg, debuginfodCache),
 		Logger:  a.logger,
 	})
 
@@ -293,7 +293,7 @@ func (a *App) setupLogging(logFile, logLevel string) (func(), error) {
 	return cleanup, nil
 }
 
-func (a *App) setupDebuginfod(cfg *analyzeConfig) (*debuginfod.Client, error) {
+func (a *App) setupDebuginfod(cfg *analyzeConfig) (*cache.DiskCache, error) {
 	if !cfg.useDebuginfod {
 		return nil, nil
 	}
@@ -305,7 +305,7 @@ func (a *App) setupDebuginfod(cfg *analyzeConfig) (*debuginfod.Client, error) {
 		}
 	}
 
-	return debuginfo.NewClient(debuginfo.Options{
+	return debuginfo.NewCache(debuginfo.Options{
 		ServerURLs: filtered,
 		CacheDir:   cfg.debuginfodCache,
 		Timeout:    cfg.debuginfodTimeout,
@@ -315,7 +315,7 @@ func (a *App) setupDebuginfod(cfg *analyzeConfig) (*debuginfod.Client, error) {
 }
 
 // buildDebuginfoSources assembles the configured debug-information sources in priority order.
-func (a *App) buildDebuginfoSources(cfg *analyzeConfig, client *debuginfod.Client) []debuginfo.Source {
+func (a *App) buildDebuginfoSources(cfg *analyzeConfig, debuginfodCache *cache.DiskCache) []debuginfo.Source {
 	var sources []debuginfo.Source
 	if cfg.useLocalDebuginfo {
 		root := cfg.localDebuginfoDir
@@ -324,8 +324,8 @@ func (a *App) buildDebuginfoSources(cfg *analyzeConfig, client *debuginfod.Clien
 		}
 		sources = append(sources, debuginfo.NewBuildIDDirSource(root, a.logger))
 	}
-	if client != nil {
-		sources = append(sources, debuginfo.NewDebuginfodSource(client, a.logger))
+	if debuginfodCache != nil {
+		sources = append(sources, debuginfo.NewDebuginfodSource(debuginfodCache, a.logger))
 	}
 	return sources
 }
