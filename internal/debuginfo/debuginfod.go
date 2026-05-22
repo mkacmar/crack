@@ -30,7 +30,7 @@ func DefaultCacheDir() (string, error) {
 }
 
 func userAgent() string {
-	return "crack/" + version.Version + " (Compiler Hardening Checker; +https://github.com/mkacmar/crack)"
+	return "crack/" + version.Version + " (Compiler Hardening Checker; +https://go.kacmar.sk/crack)"
 }
 
 type Options struct {
