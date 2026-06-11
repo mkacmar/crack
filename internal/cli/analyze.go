@@ -266,7 +266,6 @@ func (a *App) setupAnalyzeFlags(prog string) (*flag.FlagSet, *outputOptions, *an
 	fs.BoolVar(&cfg.useDebuginfod, "debuginfod", false, "")
 	fs.StringVar(&cfg.debuginfodServers, "debuginfod-servers", defaultDebuginfodServer, "")
 	fs.StringVar(&cfg.debuginfodCache, "debuginfod-cache-dir", "", "")
-	fs.StringVar(&cfg.debuginfodCache, "debuginfod-cache", "", "")
 	fs.DurationVar(&cfg.debuginfodTimeout, "debuginfod-timeout", 30*time.Second, "")
 	fs.IntVar(&cfg.debuginfodRetries, "debuginfod-retries", debuginfo.DefaultMaxRetries, "")
 	fs.BoolVar(&cfg.useLocalDebuginfo, "local-debuginfo", false, "")
