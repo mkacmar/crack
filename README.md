@@ -90,7 +90,6 @@ Fetch debug symbols from [debuginfod](https://sourceware.org/elfutils/Debuginfod
 - `--debuginfod-cache-dir <dir>` - Cache directory for downloaded symbols
 - `--debuginfod-timeout <duration>` - HTTP timeout
 - `--debuginfod-retries <n>` - Max retries per server
-- `--debuginfod-max-size <bytes>` - Max debug file size per download
 
 ### Local Debuginfo
 
