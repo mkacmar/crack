@@ -1,6 +1,7 @@
 package elf
 
 import (
+	"slices"
 	"strings"
 
 	"go.kacmar.sk/crack/binary"
@@ -45,7 +46,7 @@ func (r StackCanaryRule) Execute(bin elf.Binary) rule.Result {
 	if err != nil {
 		return rule.Skip("dynamic symbols unavailable", err)
 	}
-	for _, sym := range append(symbols, dynSymbols...) {
+	for _, sym := range slices.Concat(symbols, dynSymbols) {
 		if strings.Contains(sym.Name, "__stack_chk_fail") ||
 			strings.Contains(sym.Name, "__stack_smash_handler") ||
 			strings.Contains(sym.Name, "__intel_security_cookie") {

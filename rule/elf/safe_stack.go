@@ -1,6 +1,7 @@
 package elf
 
 import (
+	"slices"
 	"strings"
 
 	"go.kacmar.sk/crack/binary"
@@ -45,7 +46,7 @@ func (r SafeStackRule) Execute(bin elf.Binary) rule.Result {
 	if err != nil {
 		return rule.Skip("dynamic symbols unavailable", err)
 	}
-	for _, sym := range append(symbols, dynSymbols...) {
+	for _, sym := range slices.Concat(symbols, dynSymbols) {
 		if strings.HasPrefix(sym.Name, "__safestack_") {
 			return rule.Result{
 				Status:  rule.StatusPassed,

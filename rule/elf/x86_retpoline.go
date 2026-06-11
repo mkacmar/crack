@@ -2,7 +2,7 @@ package elf
 
 import (
 	stdelf "debug/elf"
-
+	"slices"
 	"strings"
 
 	"go.kacmar.sk/crack/binary"
@@ -74,7 +74,7 @@ func (r X86RetpolineRule) Execute(bin elf.Binary) rule.Result {
 	}
 
 	var hasGCCThunk, hasLLVMRetpoline bool
-	for _, sym := range append(symbols, dynSymbols...) {
+	for _, sym := range slices.Concat(symbols, dynSymbols) {
 		switch {
 		case strings.Contains(sym.Name, "__x86_indirect_thunk"),
 			strings.Contains(sym.Name, "__x86_return_thunk"):
