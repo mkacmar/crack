@@ -1,6 +1,8 @@
 package rule
 
 import (
+	"slices"
+
 	"go.kacmar.sk/crack/binary"
 	"go.kacmar.sk/crack/toolchain"
 )
@@ -28,40 +30,27 @@ func (f *TargetFilter) isEmpty() bool {
 }
 
 func (f *TargetFilter) matches(app Applicability) bool {
-	if f.isEmpty() {
-		return true
-	}
+	return matchesAnyTarget(f.Platforms, app.matchesPlatform) &&
+		matchesAnyTarget(f.Compilers, app.matchesCompiler)
+}
 
-	for _, pt := range f.Platforms {
-		if !app.Platform.Architecture.Matches(pt.Architecture) {
-			return false
-		}
-		if pt.MaxISA != nil && app.Platform.MinISA.Major > 0 {
-			if !pt.MaxISA.IsAtLeast(app.Platform.MinISA) {
-				return false
-			}
-		}
-	}
+func matchesAnyTarget[T any](targets []T, matches func(T) bool) bool {
+	return len(targets) == 0 || slices.ContainsFunc(targets, matches)
+}
 
-	for _, ct := range f.Compilers {
-		hasCompiler := false
-		for comp, req := range app.Compilers {
-			if comp == ct.Compiler {
-				hasCompiler = true
-				if ct.MaxVersion != nil && req.MinVersion.Major > 0 {
-					if !ct.MaxVersion.IsAtLeast(req.MinVersion) {
-						return false
-					}
-				}
-				break
-			}
-		}
-		if !hasCompiler {
-			return false
-		}
+func (app Applicability) matchesPlatform(pt PlatformTarget) bool {
+	if !app.Platform.Architecture.Matches(pt.Architecture) {
+		return false
 	}
+	return pt.MaxISA == nil || app.Platform.MinISA.Major == 0 || pt.MaxISA.IsAtLeast(app.Platform.MinISA)
+}
 
-	return true
+func (app Applicability) matchesCompiler(ct CompilerTarget) bool {
+	req, ok := app.Compilers[ct.Compiler]
+	if !ok {
+		return false
+	}
+	return ct.MaxVersion == nil || req.MinVersion.Major == 0 || ct.MaxVersion.IsAtLeast(req.MinVersion)
 }
 
 // FilterRules returns only rules matching the filter. Returns all rules if filter is nil.
