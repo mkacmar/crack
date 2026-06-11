@@ -12,14 +12,19 @@ import (
 
 func (a *App) processFullReport(resultsChan <-chan analyzer.FileResult, opts *outputOptions, invocation *output.InvocationInfo) int {
 	var results []analyzer.FileResult
-	var totalFailed int
+	var hasFindings, hasErrors bool
 
 	for res := range resultsChan {
 		if res.Skipped {
 			continue
 		}
 		results = append(results, res)
-		totalFailed += res.FailedRules()
+		if res.FailedRules() > 0 {
+			hasFindings = true
+		}
+		if res.Error != nil {
+			hasErrors = true
+		}
 	}
 
 	report := decorateReport(results)
@@ -32,7 +37,7 @@ func (a *App) processFullReport(resultsChan <-chan analyzer.FileResult, opts *ou
 
 	if opts.sarifOutput != "" {
 		invocation.EndTime = time.Now()
-		invocation.Successful = totalFailed == 0
+		invocation.Successful = !hasErrors
 
 		sarifFormatter := &output.SARIFFormatter{
 			IncludePassed:  opts.includePassed,
@@ -52,31 +57,42 @@ func (a *App) processFullReport(resultsChan <-chan analyzer.FileResult, opts *ou
 		a.logger.Info("SARIF report saved", slog.String("path", opts.sarifOutput))
 	}
 
-	if totalFailed > 0 && !opts.exitZero {
-		return ExitFindings
-	}
-	return ExitSuccess
+	return exitCode(hasFindings, hasErrors, opts.exitZero)
 }
 
 func (a *App) processStreaming(resultsChan <-chan analyzer.FileResult, opts *outputOptions) int {
-	var totalFailed int
+	var hasFindings, hasErrors bool
 	textFormatter := &output.TextFormatter{IncludePassed: opts.includePassed, IncludeSkipped: opts.includeSkipped}
 
 	for res := range resultsChan {
 		if res.Skipped {
 			continue
 		}
-		totalFailed += res.FailedRules()
+		if res.FailedRules() > 0 {
+			hasFindings = true
+		}
+		if res.Error != nil {
+			hasErrors = true
+		}
 		report := decorateReport([]analyzer.FileResult{res})
 		if err := textFormatter.Format(report, os.Stdout); err != nil {
 			a.logger.Error("failed to format output", slog.Any("error", err))
 		}
 	}
 
-	if totalFailed > 0 && !opts.exitZero {
+	return exitCode(hasFindings, hasErrors, opts.exitZero)
+}
+
+// exitCode maps run outcomes to a process exit code, with file errors taking precedence over findings.
+func exitCode(hasFindings, hasErrors, exitZero bool) int {
+	switch {
+	case hasErrors:
+		return ExitError
+	case hasFindings && !exitZero:
 		return ExitFindings
+	default:
+		return ExitSuccess
 	}
-	return ExitSuccess
 }
 
 func decorateReport(results []analyzer.FileResult) *output.DecoratedReport {
