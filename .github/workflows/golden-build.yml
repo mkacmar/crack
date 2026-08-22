@@ -1,9 +1,9 @@
 name: "Golden: Build"
 
-# actions/checkout v6.0.2: de0fac2e4500dabe0009e67214ff5f5447ce83dd
-# actions/download-artifact v4.3.0: d3f86a106a0bac45b974a628896c90dbdf5c8093
-# actions/upload-artifact v4.6.2: ea165f8d65b6e75b540449e92b4886f43607fa02
-# docker/setup-qemu-action v4.0.0: ce360397dd3f832beb865e1373c09c0e9f86d70a
+# actions/checkout v7.0.1: 3d3c42e5aac5ba805825da76410c181273ba90b1
+# actions/download-artifact v8.0.1: 3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c
+# actions/upload-artifact v7.0.1: 043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
+# docker/setup-qemu-action v4.2.0: 96fe6ef7f33517b61c61be40b68a1882f3264fb8
 
 permissions:
   contents: read
@@ -39,14 +39,14 @@ jobs:
     if: inputs.amd64
     runs-on: ubuntu-24.04
     steps:
-      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
       - name: Build binaries
         run: |
           docker run --rm \
             -v "$PWD:/workspace" -w /workspace \
             ${{ env.TOOLCHAIN }}gcc13-clang18-amd64:v1 \
             sh test/e2e/elf/${{ inputs.rule }}/build.sh amd64
-      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
         with:
           name: binaries-amd64
           path: binaries/
@@ -55,14 +55,14 @@ jobs:
     if: inputs.arm64
     runs-on: ubuntu-24.04-arm
     steps:
-      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
       - name: Build binaries
         run: |
           docker run --rm \
             -v "$PWD:/workspace" -w /workspace \
             ${{ env.TOOLCHAIN }}gcc13-clang18-arm64:v1 \
             sh test/e2e/elf/${{ inputs.rule }}/build.sh arm64
-      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
         with:
           name: binaries-arm64
           path: binaries/
@@ -71,9 +71,9 @@ jobs:
     if: inputs.arm
     runs-on: ubuntu-24.04
     steps:
-      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
       - name: Set up QEMU
-        uses: docker/setup-qemu-action@ce360397dd3f832beb865e1373c09c0e9f86d70a
+        uses: docker/setup-qemu-action@96fe6ef7f33517b61c61be40b68a1882f3264fb8
         with:
           platforms: arm
       - name: Build binaries
@@ -82,7 +82,7 @@ jobs:
             -v "$PWD:/workspace" -w /workspace \
             ${{ env.TOOLCHAIN }}gcc13-clang18-musl-armv7:v1 \
             sh test/e2e/elf/${{ inputs.rule }}/build.sh arm
-      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
         with:
           name: binaries-arm
           path: binaries/
@@ -91,9 +91,9 @@ jobs:
     if: inputs.riscv64
     runs-on: ubuntu-24.04
     steps:
-      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
       - name: Set up QEMU
-        uses: docker/setup-qemu-action@ce360397dd3f832beb865e1373c09c0e9f86d70a
+        uses: docker/setup-qemu-action@96fe6ef7f33517b61c61be40b68a1882f3264fb8
         with:
           platforms: riscv64
       - name: Build binaries
@@ -102,7 +102,7 @@ jobs:
             -v "$PWD:/workspace" -w /workspace \
             ${{ env.TOOLCHAIN }}gcc14-clang19-musl-riscv64:v1 \
             sh test/e2e/elf/${{ inputs.rule }}/build.sh riscv64
-      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
         with:
           name: binaries-riscv64
           path: binaries/
@@ -112,7 +112,7 @@ jobs:
     if: always() && !failure() && !cancelled()
     needs: [build-amd64, build-arm64, build-arm, build-riscv64]
     steps:
-      - uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093
+      - uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c
         with:
           path: all-binaries
           pattern: binaries-*
@@ -121,7 +121,7 @@ jobs:
       - name: List all binaries
         run: ls -la all-binaries/
 
-      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
         with:
           name: ${{ inputs.rule }}-binaries
           path: all-binaries/
