@@ -166,6 +166,9 @@ func (a *App) runAnalyze(prog string, args []string) int {
 
 	fs, opts, cfg := a.setupAnalyzeFlags(prog)
 	if err := fs.Parse(args); err != nil {
+		if errors.Is(err, flag.ErrHelp) {
+			return ExitSuccess
+		}
 		return ExitError
 	}
 
@@ -247,7 +250,7 @@ func (a *App) runAnalyze(prog string, args []string) int {
 }
 
 func (a *App) setupAnalyzeFlags(prog string) (*flag.FlagSet, *outputOptions, *analyzeConfig) {
-	fs := flag.NewFlagSet("analyze", flag.ExitOnError)
+	fs := flag.NewFlagSet("analyze", flag.ContinueOnError)
 	opts := &outputOptions{}
 	cfg := &analyzeConfig{}
 
