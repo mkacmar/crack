@@ -39,25 +39,26 @@ func NewScanner(dispatcher *analyzer.Dispatcher, opts Options) *Scanner {
 
 func (s *Scanner) ScanPaths(ctx context.Context, paths []string, recursive bool) <-chan analyzer.FileResult {
 	var filesToScan []string
+	var failures []analyzer.FileResult
 
 	for _, path := range paths {
-		files, err := s.collectFiles(path, recursive)
-		if err != nil {
-			s.logger.Warn("failed to collect files", slog.String("path", path), slog.Any("error", err))
-			continue
+		files, failed := s.collectFiles(path, recursive)
+		for _, f := range failed {
+			s.logger.Warn("failed to collect files", slog.String("path", f.Path), slog.Any("error", f.Error))
 		}
 		filesToScan = append(filesToScan, files...)
+		failures = append(failures, failed...)
 	}
 
-	s.logger.Debug("collected files to scan", slog.Int("count", len(filesToScan)))
+	s.logger.Debug("collected files to scan", slog.Int("count", len(filesToScan)), slog.Int("failures", len(failures)))
 
-	return s.scanFiles(ctx, filesToScan)
+	return s.scanFiles(ctx, filesToScan, failures)
 }
 
-func (s *Scanner) scanFiles(ctx context.Context, files []string) <-chan analyzer.FileResult {
+func (s *Scanner) scanFiles(ctx context.Context, files []string, failures []analyzer.FileResult) <-chan analyzer.FileResult {
 	results := make(chan analyzer.FileResult)
 
-	if len(files) == 0 {
+	if len(files) == 0 && len(failures) == 0 {
 		close(results)
 		return results
 	}
@@ -65,6 +66,16 @@ func (s *Scanner) scanFiles(ctx context.Context, files []string) <-chan analyzer
 	s.logger.Debug("starting parallel scan", slog.Int("workers", s.workers), slog.Int("files", len(files)))
 
 	go func() {
+		defer close(results)
+
+		for _, res := range failures {
+			select {
+			case results <- res:
+			case <-ctx.Done():
+				return
+			}
+		}
+
 		g, ctx := errgroup.WithContext(ctx)
 		g.SetLimit(s.workers)
 
@@ -86,7 +97,6 @@ func (s *Scanner) scanFiles(ctx context.Context, files []string) <-chan analyzer
 		}
 
 		_ = g.Wait()
-		close(results)
 	}()
 
 	return results
@@ -132,10 +142,11 @@ func (s *Scanner) scanFile(ctx context.Context, path string) []analyzer.FileResu
 	return fileResults
 }
 
-func (s *Scanner) collectFiles(path string, recursive bool) ([]string, error) {
+// collectFiles returns the files found under path plus a result for every entry that could not be read.
+func (s *Scanner) collectFiles(path string, recursive bool) ([]string, []analyzer.FileResult) {
 	info, err := os.Stat(path)
 	if err != nil {
-		return nil, fmt.Errorf("failed to stat path: %w", err)
+		return nil, []analyzer.FileResult{{Path: path, Error: fmt.Errorf("failed to stat path: %w", err)}}
 	}
 
 	if !info.IsDir() {
@@ -143,24 +154,24 @@ func (s *Scanner) collectFiles(path string, recursive bool) ([]string, error) {
 	}
 
 	var files []string
+	var failures []analyzer.FileResult
 
 	if recursive {
-		err := filepath.WalkDir(path, func(p string, d fs.DirEntry, walkErr error) error {
+		// Reported and skipped: returning walkErr would abort the walk and discard the rest of the tree.
+		_ = filepath.WalkDir(path, func(p string, d fs.DirEntry, walkErr error) error {
 			if walkErr != nil {
-				return walkErr
+				failures = append(failures, analyzer.FileResult{Path: p, Error: fmt.Errorf("failed to walk directory: %w", walkErr)})
+				return nil
 			}
 			if !d.IsDir() {
 				files = append(files, p)
 			}
 			return nil
 		})
-		if err != nil {
-			return nil, fmt.Errorf("failed to walk directory: %w", err)
-		}
 	} else {
 		entries, err := os.ReadDir(path)
 		if err != nil {
-			return nil, fmt.Errorf("failed to read directory: %w", err)
+			return nil, []analyzer.FileResult{{Path: path, Error: fmt.Errorf("failed to read directory: %w", err)}}
 		}
 
 		for _, entry := range entries {
@@ -170,7 +181,7 @@ func (s *Scanner) collectFiles(path string, recursive bool) ([]string, error) {
 		}
 	}
 
-	return files, nil
+	return files, failures
 }
 
 func hashFile(f *os.File) (string, error) {
