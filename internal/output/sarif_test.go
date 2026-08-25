@@ -11,6 +11,28 @@ import (
 	"go.kacmar.sk/crack/rule"
 )
 
+// renderSARIF streams the given results through a SARIFWriter and parses the finished document.
+func renderSARIF(t *testing.T, inv *InvocationInfo, includePassed, includeSkipped bool, results ...DecoratedFileResult) SARIFReport {
+	t.Helper()
+
+	var buf bytes.Buffer
+	w := NewSARIFWriter(&buf, includePassed, includeSkipped)
+	for _, res := range results {
+		if err := w.Write(res); err != nil {
+			t.Fatalf("Write() error = %v", err)
+		}
+	}
+	if err := w.Close(inv); err != nil {
+		t.Fatalf("Close() error = %v", err)
+	}
+
+	var report SARIFReport
+	if err := json.Unmarshal(buf.Bytes(), &report); err != nil {
+		t.Fatalf("failed to parse SARIF output: %v\n%s", err, buf.String())
+	}
+	return report
+}
+
 func TestSARIFResultKind(t *testing.T) {
 	tests := []struct {
 		name           string
@@ -30,31 +52,18 @@ func TestSARIFResultKind(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			report := &DecoratedReport{
-				Results: []DecoratedFileResult{{
-					FileResult: analyzer.FileResult{Path: "/usr/bin/test"},
-					Findings: []suggestions.DecoratedFinding{{
-						Finding: rule.Finding{
-							Result: rule.Result{Status: tt.status, Message: "test message"},
-							RuleID: "test-rule",
-							Name:   "Test Rule",
-						},
-					}},
+			res := DecoratedFileResult{
+				FileResult: analyzer.FileResult{Path: "/usr/bin/test"},
+				Findings: []suggestions.DecoratedFinding{{
+					Finding: rule.Finding{
+						Result: rule.Result{Status: tt.status, Message: "test message"},
+						RuleID: "test-rule",
+						Name:   "Test Rule",
+					},
 				}},
 			}
 
-			formatter := &SARIFFormatter{IncludePassed: tt.includePassed, IncludeSkipped: tt.includeSkipped}
-
-			var buf bytes.Buffer
-			if err := formatter.Format(report, &buf); err != nil {
-				t.Fatalf("Format() error = %v", err)
-			}
-
-			var sarifReport SARIFReport
-			if err := json.Unmarshal(buf.Bytes(), &sarifReport); err != nil {
-				t.Fatalf("failed to parse SARIF output: %v", err)
-			}
-
+			sarifReport := renderSARIF(t, nil, tt.includePassed, tt.includeSkipped, res)
 			results := sarifReport.Runs[0].Results
 			if !tt.wantIncluded {
 				if len(results) != 0 {
@@ -82,41 +91,26 @@ func TestSARIFInvocation(t *testing.T) {
 	startTime := time.Date(2026, 1, 23, 10, 0, 0, 0, time.UTC)
 	endTime := time.Date(2026, 1, 23, 10, 5, 0, 0, time.UTC)
 
-	report := &DecoratedReport{
-		Results: []DecoratedFileResult{{
-			FileResult: analyzer.FileResult{Path: "/usr/bin/test"},
-			Findings: []suggestions.DecoratedFinding{{
-				Finding: rule.Finding{
-					Result: rule.Result{Status: rule.StatusPassed, Message: "test passed"},
-					RuleID: "test-rule",
-					Name:   "Test Rule",
-				},
-			}},
+	res := DecoratedFileResult{
+		FileResult: analyzer.FileResult{Path: "/usr/bin/test"},
+		Findings: []suggestions.DecoratedFinding{{
+			Finding: rule.Finding{
+				Result: rule.Result{Status: rule.StatusPassed, Message: "test passed"},
+				RuleID: "test-rule",
+				Name:   "Test Rule",
+			},
 		}},
 	}
 
 	t.Run("with invocation info", func(t *testing.T) {
-		formatter := &SARIFFormatter{
-			IncludePassed: true,
-			Invocation: &InvocationInfo{
-				CommandLine: "crack analyze --preset=recommended /usr/bin",
-				Arguments:   []string{"analyze", "--preset=recommended", "/usr/bin"},
-				StartTime:   startTime,
-				EndTime:     endTime,
-				WorkingDir:  "/home/user/project",
-				Successful:  true,
-			},
-		}
-
-		var buf bytes.Buffer
-		if err := formatter.Format(report, &buf); err != nil {
-			t.Fatalf("Format() error = %v", err)
-		}
-
-		var sarifReport SARIFReport
-		if err := json.Unmarshal(buf.Bytes(), &sarifReport); err != nil {
-			t.Fatalf("failed to parse SARIF output: %v", err)
-		}
+		sarifReport := renderSARIF(t, &InvocationInfo{
+			CommandLine: "crack analyze --preset=recommended /usr/bin",
+			Arguments:   []string{"analyze", "--preset=recommended", "/usr/bin"},
+			StartTime:   startTime,
+			EndTime:     endTime,
+			WorkingDir:  "/home/user/project",
+			Successful:  true,
+		}, true, false, res)
 
 		invocations := sarifReport.Runs[0].Invocations
 		if len(invocations) != 1 {
@@ -142,17 +136,7 @@ func TestSARIFInvocation(t *testing.T) {
 	})
 
 	t.Run("without invocation info", func(t *testing.T) {
-		formatter := &SARIFFormatter{IncludePassed: true, Invocation: nil}
-
-		var buf bytes.Buffer
-		if err := formatter.Format(report, &buf); err != nil {
-			t.Fatalf("Format() error = %v", err)
-		}
-
-		var sarifReport SARIFReport
-		if err := json.Unmarshal(buf.Bytes(), &sarifReport); err != nil {
-			t.Fatalf("failed to parse SARIF output: %v", err)
-		}
+		sarifReport := renderSARIF(t, nil, true, false, res)
 
 		if len(sarifReport.Runs[0].Invocations) != 0 {
 			t.Errorf("expected 0 invocations, got %d", len(sarifReport.Runs[0].Invocations))

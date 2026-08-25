@@ -243,10 +243,7 @@ func (a *App) runAnalyze(prog string, args []string) int {
 		WorkingDir:  workingDir,
 	}
 
-	if opts.sarifOutput != "" {
-		return a.processFullReport(resultsChan, opts, invocation)
-	}
-	return a.processStreaming(resultsChan, opts)
+	return a.processResults(ctx, resultsChan, opts, invocation)
 }
 
 func (a *App) setupAnalyzeFlags(prog string) (*flag.FlagSet, *outputOptions, *analyzeConfig) {

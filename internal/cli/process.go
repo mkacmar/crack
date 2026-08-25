@@ -1,6 +1,7 @@
 package cli
 
 import (
+	"context"
 	"log/slog"
 	"os"
 	"time"
@@ -10,60 +11,21 @@ import (
 	"go.kacmar.sk/crack/internal/suggestions"
 )
 
-func (a *App) processFullReport(resultsChan <-chan analyzer.FileResult, opts *outputOptions, invocation *output.InvocationInfo) int {
-	var results []analyzer.FileResult
-	var hasFindings, hasErrors bool
-
-	for res := range resultsChan {
-		if res.Skipped {
-			continue
-		}
-		results = append(results, res)
-		if res.FailedRules() > 0 {
-			hasFindings = true
-		}
-		if res.Error != nil {
-			hasErrors = true
-		}
-	}
-
-	report := decorateReport(results)
-
+func (a *App) processResults(ctx context.Context, resultsChan <-chan analyzer.FileResult, opts *outputOptions, invocation *output.InvocationInfo) int {
 	textFormatter := &output.TextFormatter{IncludePassed: opts.includePassed, IncludeSkipped: opts.includeSkipped}
-	if err := textFormatter.Format(report, os.Stdout); err != nil {
-		a.logger.Error("failed to format output", slog.Any("error", err))
-		return ExitError
-	}
 
+	var sarifWriter *output.SARIFWriter
 	if opts.sarifOutput != "" {
-		invocation.EndTime = time.Now()
-		invocation.Successful = !hasErrors
-
-		sarifFormatter := &output.SARIFFormatter{
-			IncludePassed:  opts.includePassed,
-			IncludeSkipped: opts.includeSkipped,
-			Invocation:     invocation,
-		}
 		f, err := os.Create(opts.sarifOutput)
 		if err != nil {
 			a.logger.Error("failed to create SARIF file", slog.String("path", opts.sarifOutput), slog.Any("error", err))
 			return ExitError
 		}
 		defer f.Close()
-		if err := sarifFormatter.Format(report, f); err != nil {
-			a.logger.Error("failed to write SARIF report", slog.Any("error", err))
-			return ExitError
-		}
-		a.logger.Info("SARIF report saved", slog.String("path", opts.sarifOutput))
+		sarifWriter = output.NewSARIFWriter(f, opts.includePassed, opts.includeSkipped)
 	}
 
-	return exitCode(hasFindings, hasErrors, opts.exitZero)
-}
-
-func (a *App) processStreaming(resultsChan <-chan analyzer.FileResult, opts *outputOptions) int {
 	var hasFindings, hasErrors bool
-	textFormatter := &output.TextFormatter{IncludePassed: opts.includePassed, IncludeSkipped: opts.includeSkipped}
-
 	for res := range resultsChan {
 		if res.Skipped {
 			continue
@@ -74,34 +36,49 @@ func (a *App) processStreaming(resultsChan <-chan analyzer.FileResult, opts *out
 		if res.Error != nil {
 			hasErrors = true
 		}
-		report := decorateReport([]analyzer.FileResult{res})
-		if err := textFormatter.Format(report, os.Stdout); err != nil {
+
+		decorated := output.DecoratedFileResult{
+			FileResult: res,
+			Findings:   suggestions.Decorate(res.Findings, res.Profile),
+		}
+
+		if err := textFormatter.Format(&output.DecoratedReport{Results: []output.DecoratedFileResult{decorated}}, os.Stdout); err != nil {
 			a.logger.Error("failed to format output", slog.Any("error", err))
+		}
+		if sarifWriter != nil {
+			if err := sarifWriter.Write(decorated); err != nil {
+				a.logger.Error("failed to write SARIF result", slog.Any("error", err))
+			}
 		}
 	}
 
-	return exitCode(hasFindings, hasErrors, opts.exitZero)
+	interrupted := ctx.Err() != nil
+
+	if sarifWriter != nil {
+		invocation.EndTime = time.Now()
+		invocation.Successful = !hasErrors && !interrupted
+		if interrupted {
+			sarifWriter.Notify("error", "Scan interrupted before completion, results are incomplete")
+		}
+		if err := sarifWriter.Close(invocation); err != nil {
+			a.logger.Error("failed to write SARIF report", slog.String("path", opts.sarifOutput), slog.Any("error", err))
+			return ExitError
+		}
+		a.logger.Info("SARIF report saved", slog.String("path", opts.sarifOutput))
+	}
+
+	return exitCode(hasFindings, hasErrors, interrupted, opts.exitZero)
 }
 
-// exitCode maps run outcomes to a process exit code, with file errors taking precedence over findings.
-func exitCode(hasFindings, hasErrors, exitZero bool) int {
+// exitCode maps run outcomes to a process exit code.
+// File errors and interruption take precedence over findings, and --exit-zero suppresses only findings.
+func exitCode(hasFindings, hasErrors, interrupted, exitZero bool) int {
 	switch {
-	case hasErrors:
+	case hasErrors, interrupted:
 		return ExitError
 	case hasFindings && !exitZero:
 		return ExitFindings
 	default:
 		return ExitSuccess
 	}
-}
-
-func decorateReport(results []analyzer.FileResult) *output.DecoratedReport {
-	decorated := make([]output.DecoratedFileResult, len(results))
-	for i, res := range results {
-		decorated[i] = output.DecoratedFileResult{
-			FileResult: res,
-			Findings:   suggestions.Decorate(res.Findings, res.Profile),
-		}
-	}
-	return &output.DecoratedReport{Results: decorated}
 }

@@ -76,6 +76,12 @@ The `--include-passed` and `--include-skipped` flags affect both text and SARIF 
 
 For programmatic access to results, use SARIF output (`--sarif`). [SARIF](https://sarifweb.azurewebsites.net/) (Static Analysis Results Interchange Format) is a standardized JSON format. We support SARIF version 2.1.0.
 
+Results are written as files are analyzed, so their order reflects the order analysis finished and varies between runs on the same input.
+Compare reports semantically rather than by diffing bytes.
+
+A scan that is interrupted still produces a valid report, marked `executionSuccessful: false` with an explanatory notification, and exits with code 1.
+A scan killed outright leaves a partial file behind, so treat a non-zero exit as a reason to discard the report rather than parse it.
+
 ### Logging Options
 
 - `--log <file>` - Write logs to file
@@ -109,8 +115,10 @@ If you experience performance issues, please build from source with `make build`
 ### Exit Codes
 
 - `0` - Success (no findings, or `--exit-zero` specified)
-- `1` - Error (invalid arguments, file errors, etc.)
+- `1` - Error (invalid arguments, file errors, interrupted scan)
 - `2` - Findings detected
+
+`--exit-zero` suppresses only the findings exit code. Errors and interrupted scans still exit with 1.
 
 ## Programmatic Usage
 

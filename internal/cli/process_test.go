@@ -7,6 +7,7 @@ func TestExitCode(t *testing.T) {
 		name        string
 		hasFindings bool
 		hasErrors   bool
+		interrupted bool
 		exitZero    bool
 		want        int
 	}{
@@ -17,12 +18,15 @@ func TestExitCode(t *testing.T) {
 		{name: "errors and findings", hasFindings: true, hasErrors: true, want: ExitError},
 		{name: "errors with exit-zero", hasErrors: true, exitZero: true, want: ExitError},
 		{name: "errors and findings with exit-zero", hasFindings: true, hasErrors: true, exitZero: true, want: ExitError},
+		{name: "interrupted run", interrupted: true, want: ExitError},
+		{name: "interrupted with exit-zero", interrupted: true, exitZero: true, want: ExitError},
+		{name: "interrupted with findings", interrupted: true, hasFindings: true, want: ExitError},
 	}
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if got := exitCode(tt.hasFindings, tt.hasErrors, tt.exitZero); got != tt.want {
-				t.Errorf("exitCode(%t, %t, %t) = %d, want %d", tt.hasFindings, tt.hasErrors, tt.exitZero, got, tt.want)
+			if got := exitCode(tt.hasFindings, tt.hasErrors, tt.interrupted, tt.exitZero); got != tt.want {
+				t.Errorf("exitCode(%t, %t, %t, %t) = %d, want %d", tt.hasFindings, tt.hasErrors, tt.interrupted, tt.exitZero, got, tt.want)
 			}
 		})
 	}
