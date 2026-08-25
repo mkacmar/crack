@@ -58,7 +58,7 @@ fmt:
 
 install-tools:
 	go install golang.org/x/tools/cmd/goimports@v0.49.0
-	go install honnef.co/go/tools/cmd/staticcheck@v0.7.0
+	go install honnef.co/go/tools/cmd/staticcheck@v0.8.1
 	go install github.com/securego/gosec/v2/cmd/gosec@v2.28.0
 
 doc:
