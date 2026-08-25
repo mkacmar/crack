@@ -31,7 +31,7 @@ func NewDispatcher(opts DispatcherOptions) *Dispatcher {
 
 // Analyze parses the binary and returns analysis results.
 // Returns slice to handle fat/universal binaries (one result per arch slice).
-// Returns ErrUnsupportedFormat if no parser matches, other errors for parse failures.
+// Returns ErrUnrecognizedFormat if no parser matches, other errors for parse failures.
 func (d *Dispatcher) Analyze(ctx context.Context, r io.ReaderAt) ([]AnalysisResult, error) {
 	profile, buildID, findings, err := d.elf.Analyze(ctx, r)
 	if err == nil {
