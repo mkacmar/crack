@@ -6,6 +6,7 @@ import (
 	json "encoding/json/v2"
 	"fmt"
 	"io"
+	"net/url"
 	"regexp"
 	"strings"
 	"time"
@@ -322,9 +323,9 @@ func buildInvocation(info *InvocationInfo, notifications []SARIFNotification) SA
 
 func toFileURI(path string) string {
 	if strings.HasPrefix(path, "/") {
-		return "file://" + path
+		return (&url.URL{Scheme: "file", Path: path}).String()
 	}
-	return path
+	return (&url.URL{Path: path}).String()
 }
 
 const repoBaseURL = "https://github.com/mkacmar/crack"

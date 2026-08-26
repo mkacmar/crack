@@ -3,6 +3,7 @@ package output
 import (
 	"bytes"
 	"encoding/json"
+	"net/url"
 	"testing"
 	"time"
 
@@ -142,4 +143,36 @@ func TestSARIFInvocation(t *testing.T) {
 			t.Errorf("expected 0 invocations, got %d", len(sarifReport.Runs[0].Invocations))
 		}
 	})
+}
+
+func TestToFileURI(t *testing.T) {
+	tests := []struct {
+		path string
+		want string
+	}{
+		{path: "/usr/bin/ls", want: "file:///usr/bin/ls"},
+		{path: "/tmp/with space/x", want: "file:///tmp/with%20space/x"},
+		{path: "/tmp/hash#1/x", want: "file:///tmp/hash%231/x"},
+		{path: "/tmp/query?y/x", want: "file:///tmp/query%3Fy/x"},
+		{path: "/tmp/100%done/x", want: "file:///tmp/100%25done/x"},
+		{path: "/tmp/caf\u00e9.bin", want: "file:///tmp/caf%C3%A9.bin"},
+		{path: "relative/path", want: "relative/path"},
+		{path: "relative/with space", want: "relative/with%20space"},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.path, func(t *testing.T) {
+			got := toFileURI(tt.path)
+			if got != tt.want {
+				t.Errorf("toFileURI(%q) = %q, want %q", tt.path, got, tt.want)
+			}
+			u, err := url.Parse(got)
+			if err != nil {
+				t.Fatalf("toFileURI(%q) = %q, which does not parse: %v", tt.path, got, err)
+			}
+			if u.Path != tt.path {
+				t.Errorf("toFileURI(%q) round-trips to %q", tt.path, u.Path)
+			}
+		})
+	}
 }
