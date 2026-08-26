@@ -16,16 +16,6 @@ type FileResult struct {
 	Skipped  bool
 }
 
-func (r *FileResult) PassedRules() int {
-	count := 0
-	for _, res := range r.Findings {
-		if res.Status == rule.StatusPassed {
-			count++
-		}
-	}
-	return count
-}
-
 func (r *FileResult) FailedRules() int {
 	count := 0
 	for _, res := range r.Findings {
@@ -34,8 +24,4 @@ func (r *FileResult) FailedRules() int {
 		}
 	}
 	return count
-}
-
-type Report struct {
-	Results []FileResult
 }
