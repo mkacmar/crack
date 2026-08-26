@@ -14,6 +14,7 @@ import (
 	"go.kacmar.sk/crack/internal/suggestions"
 	"go.kacmar.sk/crack/internal/version"
 	"go.kacmar.sk/crack/rule"
+	"go.kacmar.sk/crack/rule/registry"
 )
 
 type SARIFReport struct {
@@ -288,8 +289,8 @@ func (s *SARIFWriter) registerRule(finding suggestions.DecoratedFinding) int {
 		HelpUri:              ruleHelpURL(finding.Name, version.Version),
 		DefaultConfiguration: SARIFConfiguration{Level: "warning"},
 	}
-	if finding.Message != "" && finding.Message != finding.Name {
-		r.FullDescription = SARIFMessage{Text: finding.Message}
+	if known, ok := registry.Find[rule.Rule](registry.ByID(finding.RuleID)); ok {
+		r.FullDescription = SARIFMessage{Text: known.Description()}
 	}
 	s.ruleIndex[finding.RuleID] = len(s.rules)
 	s.rules = append(s.rules, r)

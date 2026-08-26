@@ -10,6 +10,7 @@ import (
 	"go.kacmar.sk/crack/internal/analyzer"
 	"go.kacmar.sk/crack/internal/suggestions"
 	"go.kacmar.sk/crack/rule"
+	"go.kacmar.sk/crack/rule/elf"
 )
 
 // renderSARIF streams the given results through a SARIFWriter and parses the finished document.
@@ -174,5 +175,28 @@ func TestToFileURI(t *testing.T) {
 				t.Errorf("toFileURI(%q) round-trips to %q", tt.path, u.Path)
 			}
 		})
+	}
+}
+
+func TestSARIFRuleFullDescription(t *testing.T) {
+	res := DecoratedFileResult{
+		FileResult: analyzer.FileResult{Path: "/usr/bin/test"},
+		Findings: []suggestions.DecoratedFinding{{
+			Finding: rule.Finding{
+				Result: rule.Result{Status: rule.StatusFailed, Message: "Not PIE"},
+				RuleID: elf.PIERuleID,
+				Name:   "Position Independent Executable",
+			},
+		}},
+	}
+
+	rules := renderSARIF(t, nil, false, false, res).Runs[0].Tool.Driver.Rules
+	if len(rules) != 1 {
+		t.Fatalf("expected 1 rule, got %d", len(rules))
+	}
+
+	got, want := rules[0].FullDescription.Text, (elf.PIERule{}).Description()
+	if got != want {
+		t.Errorf("fullDescription = %q, want the rule's description %q", got, want)
 	}
 }
