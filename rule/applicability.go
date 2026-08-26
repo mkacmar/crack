@@ -51,15 +51,8 @@ func CheckApplicability(app Applicability, profile binary.Profile) Applicability
 		return NotApplicableArchitecture
 	}
 
-	if profile.Toolchain.Compiler != toolchain.Unknown {
-		hasCompiler := false
-		for comp := range app.Compilers {
-			if comp == profile.Toolchain.Compiler {
-				hasCompiler = true
-				break
-			}
-		}
-		if len(app.Compilers) > 0 && !hasCompiler {
+	if profile.Toolchain.Compiler != toolchain.Unknown && len(app.Compilers) > 0 {
+		if _, ok := app.Compilers[profile.Toolchain.Compiler]; !ok {
 			return NotApplicableCompiler
 		}
 	}
