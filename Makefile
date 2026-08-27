@@ -1,9 +1,13 @@
-.PHONY: build build-release test test-unit test-e2e test-e2e-coverage clean lint fmt install-tools doc
+.PHONY: build build-release install uninstall test test-unit test-e2e test-e2e-coverage clean lint fmt install-tools doc
 
 BINARY = crack
 ENTRYPOINT = ./cmd/crack
 DIST_DIR = dist
 COVERAGE_DIR = coverage
+
+PREFIX ?= /usr/local
+BINDIR ?= $(PREFIX)/bin
+DESTDIR ?=
 
 CGO_ENABLED ?= 0
 EXTRA_LDFLAGS ?=
@@ -31,6 +35,15 @@ build-release: lint test
 	GOOS=darwin GOARCH=arm64 $(GO_BUILD) -ldflags "$(RELEASE_LDFLAGS)" -o $(DIST_DIR)/$(VERSION)/$(BINARY)_darwin_arm64 $(ENTRYPOINT)
 	GOOS=windows GOARCH=amd64 $(GO_BUILD) -ldflags "$(RELEASE_LDFLAGS)" -o $(DIST_DIR)/$(VERSION)/$(BINARY)_windows_amd64.exe $(ENTRYPOINT)
 	@cd $(DIST_DIR)/$(VERSION) && sha256sum $(BINARY)_* > SHA256SUMS
+
+install:
+	@mkdir -p $(DIST_DIR)
+	$(GO_BUILD) -ldflags "$(LDFLAGS)" -o $(DIST_DIR)/$(BINARY) $(ENTRYPOINT)
+	mkdir -p $(DESTDIR)$(BINDIR)
+	install -m 755 $(DIST_DIR)/$(BINARY) $(DESTDIR)$(BINDIR)/$(BINARY)
+
+uninstall:
+	rm -f $(DESTDIR)$(BINDIR)/$(BINARY)
 
 test: test-unit test-e2e
 
