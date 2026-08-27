@@ -25,12 +25,12 @@ build:
 
 build-release: lint test
 	@mkdir -p $(DIST_DIR)/$(VERSION)
-	GOOS=linux GOARCH=amd64 $(GO_BUILD) -ldflags "$(RELEASE_LDFLAGS)" -o $(DIST_DIR)/$(VERSION)/$(BINARY)_$(VERSION)_linux_amd64 $(ENTRYPOINT)
-	GOOS=linux GOARCH=arm64 $(GO_BUILD) -ldflags "$(RELEASE_LDFLAGS)" -o $(DIST_DIR)/$(VERSION)/$(BINARY)_$(VERSION)_linux_arm64 $(ENTRYPOINT)
-	GOOS=darwin GOARCH=amd64 $(GO_BUILD) -ldflags "$(RELEASE_LDFLAGS)" -o $(DIST_DIR)/$(VERSION)/$(BINARY)_$(VERSION)_darwin_amd64 $(ENTRYPOINT)
-	GOOS=darwin GOARCH=arm64 $(GO_BUILD) -ldflags "$(RELEASE_LDFLAGS)" -o $(DIST_DIR)/$(VERSION)/$(BINARY)_$(VERSION)_darwin_arm64 $(ENTRYPOINT)
-	GOOS=windows GOARCH=amd64 $(GO_BUILD) -ldflags "$(RELEASE_LDFLAGS)" -o $(DIST_DIR)/$(VERSION)/$(BINARY)_$(VERSION)_windows_amd64.exe $(ENTRYPOINT)
-	@cd $(DIST_DIR)/$(VERSION) && sha256sum $(BINARY)_$(VERSION)_* > $(BINARY)_$(VERSION)_SHA256SUMS
+	GOOS=linux GOARCH=amd64 $(GO_BUILD) -ldflags "$(RELEASE_LDFLAGS)" -o $(DIST_DIR)/$(VERSION)/$(BINARY)_linux_amd64 $(ENTRYPOINT)
+	GOOS=linux GOARCH=arm64 $(GO_BUILD) -ldflags "$(RELEASE_LDFLAGS)" -o $(DIST_DIR)/$(VERSION)/$(BINARY)_linux_arm64 $(ENTRYPOINT)
+	GOOS=darwin GOARCH=amd64 $(GO_BUILD) -ldflags "$(RELEASE_LDFLAGS)" -o $(DIST_DIR)/$(VERSION)/$(BINARY)_darwin_amd64 $(ENTRYPOINT)
+	GOOS=darwin GOARCH=arm64 $(GO_BUILD) -ldflags "$(RELEASE_LDFLAGS)" -o $(DIST_DIR)/$(VERSION)/$(BINARY)_darwin_arm64 $(ENTRYPOINT)
+	GOOS=windows GOARCH=amd64 $(GO_BUILD) -ldflags "$(RELEASE_LDFLAGS)" -o $(DIST_DIR)/$(VERSION)/$(BINARY)_windows_amd64.exe $(ENTRYPOINT)
+	@cd $(DIST_DIR)/$(VERSION) && sha256sum $(BINARY)_* > SHA256SUMS
 
 test: test-unit test-e2e
 
