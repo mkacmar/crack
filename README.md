@@ -21,11 +21,23 @@ Based on recommendations from:
 
 ## Installation
 
+Prebuilt binaries for Linux and macOS on `amd64` and `arm64`, and for Windows on `amd64`, are on the [releases page](https://github.com/mkacmar/crack/releases).
+
+### Install script
+
+```sh
+curl -fsSL https://raw.githubusercontent.com/mkacmar/crack/main/install.sh | sh
+```
+
+Installs the latest release into `~/.local/bin` and checks the download against `SHA256SUMS`. It does not check the signature over `SHA256SUMS`, which the [project page](https://kacmar.sk/projects/crack.html) shows how to verify.
+
+### From source
+
+Requires the Go toolchain:
+
 ```sh
 go install go.kacmar.sk/crack/cmd/crack@latest
 ```
-
-Or download pre-built binaries from [releases](https://github.com/mkacmar/crack/releases).
 
 ## Usage
 
