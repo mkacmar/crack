@@ -71,7 +71,7 @@ func parseList[T any](input string, parse func(string) (T, error)) ([]T, error) 
 	}
 
 	var results []T
-	for _, item := range strings.Split(input, ",") {
+	for item := range strings.SplitSeq(input, ",") {
 		item = strings.TrimSpace(item)
 		if item == "" {
 			continue

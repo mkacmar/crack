@@ -33,8 +33,8 @@ func (f *fakeBinary) DynEntries() ([]DynEntry, error)   { return f.dynEntry, nil
 func makeInterp(path string) Prog {
 	data := []byte(path + "\x00")
 	return Prog{
-		ProgHeader: elf.ProgHeader{Type: elf.PT_INTERP},
-		data:       func() ([]byte, error) { return data, nil },
+		Type: elf.PT_INTERP,
+		data: func() ([]byte, error) { return data, nil },
 	}
 }
 
@@ -52,8 +52,8 @@ func makeDynamic(libs ...string) (Section, []DynEntry) {
 	}
 
 	sec := Section{
-		SectionHeader: elf.SectionHeader{Name: ".dynstr"},
-		data:          func() ([]byte, error) { return strtab, nil },
+		Name: ".dynstr",
+		data: func() ([]byte, error) { return strtab, nil },
 	}
 	return sec, entries
 }

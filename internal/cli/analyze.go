@@ -110,8 +110,7 @@ Local debuginfo:
 func parseRules(rulesFlag, targetPlatform, targetCompiler string) ([]rule.ELFRule, error) {
 	var selectedRules []rule.ELFRule
 	if rulesFlag != "" {
-		ids := strings.Split(rulesFlag, ",")
-		for _, id := range ids {
+		for id := range strings.SplitSeq(rulesFlag, ",") {
 			id = strings.TrimSpace(id)
 			r, ok := registry.Find[rule.ELFRule](registry.ByID(id))
 			if !ok {

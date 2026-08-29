@@ -74,7 +74,7 @@ func (r NoInsecureRPATHRule) Execute(bin elf.Binary) rule.Result {
 func findInsecurePaths(rpath string) []string {
 	var insecure []string
 	hasEmpty := false
-	for _, p := range strings.Split(rpath, ":") {
+	for p := range strings.SplitSeq(rpath, ":") {
 		if isInsecurePath(p) {
 			if p == "" {
 				if !hasEmpty {

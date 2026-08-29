@@ -1,7 +1,6 @@
 package elf
 
 import (
-	"debug/elf"
 	"encoding/binary"
 	"testing"
 
@@ -10,8 +9,8 @@ import (
 
 func makeSection(name string, data []byte) Section {
 	return Section{
-		SectionHeader: elf.SectionHeader{Name: name},
-		data:          func() ([]byte, error) { return data, nil },
+		Name: name,
+		data: func() ([]byte, error) { return data, nil },
 	}
 }
 

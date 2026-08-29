@@ -9,12 +9,10 @@ func Check[R Rule](rules []R, profile binary.Profile, execFn func(R) Result) []F
 	for _, r := range rules {
 		if reason := CheckApplicability(r.Applicability(), profile); reason != Applicable {
 			findings = append(findings, Finding{
-				Result: Result{
-					Status:  StatusSkipped,
-					Message: reason.Reason(profile),
-				},
-				RuleID: r.ID(),
-				Name:   r.Name(),
+				Status:  StatusSkipped,
+				Message: reason.Reason(profile),
+				RuleID:  r.ID(),
+				Name:    r.Name(),
 			})
 			continue
 		}

@@ -8,8 +8,8 @@ import (
 )
 
 func splitTarget(s string) (name, version string) {
-	if idx := strings.Index(s, ":"); idx != -1 {
-		return s[:idx], s[idx+1:]
+	if before, after, ok := strings.Cut(s, ":"); ok {
+		return before, after
 	}
 	return s, ""
 }

@@ -7,7 +7,6 @@ import (
 	"testing"
 	"time"
 
-	"go.kacmar.sk/crack/internal/analyzer"
 	"go.kacmar.sk/crack/internal/suggestions"
 	"go.kacmar.sk/crack/rule"
 	"go.kacmar.sk/crack/rule/elf"
@@ -55,13 +54,12 @@ func TestSARIFResultKind(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			res := DecoratedFileResult{
-				FileResult: analyzer.FileResult{Path: "/usr/bin/test"},
+				Path: "/usr/bin/test",
 				Findings: []suggestions.DecoratedFinding{{
-					Finding: rule.Finding{
-						Result: rule.Result{Status: tt.status, Message: "test message"},
-						RuleID: "test-rule",
-						Name:   "Test Rule",
-					},
+					Status:  tt.status,
+					Message: "test message",
+					RuleID:  "test-rule",
+					Name:    "Test Rule",
 				}},
 			}
 
@@ -94,13 +92,12 @@ func TestSARIFInvocation(t *testing.T) {
 	endTime := time.Date(2026, 1, 23, 10, 5, 0, 0, time.UTC)
 
 	res := DecoratedFileResult{
-		FileResult: analyzer.FileResult{Path: "/usr/bin/test"},
+		Path: "/usr/bin/test",
 		Findings: []suggestions.DecoratedFinding{{
-			Finding: rule.Finding{
-				Result: rule.Result{Status: rule.StatusPassed, Message: "test passed"},
-				RuleID: "test-rule",
-				Name:   "Test Rule",
-			},
+			Status:  rule.StatusPassed,
+			Message: "test passed",
+			RuleID:  "test-rule",
+			Name:    "Test Rule",
 		}},
 	}
 
@@ -180,13 +177,12 @@ func TestToFileURI(t *testing.T) {
 
 func TestSARIFRuleFullDescription(t *testing.T) {
 	res := DecoratedFileResult{
-		FileResult: analyzer.FileResult{Path: "/usr/bin/test"},
+		Path: "/usr/bin/test",
 		Findings: []suggestions.DecoratedFinding{{
-			Finding: rule.Finding{
-				Result: rule.Result{Status: rule.StatusFailed, Message: "Not PIE"},
-				RuleID: elf.PIERuleID,
-				Name:   "Position Independent Executable",
-			},
+			Status:  rule.StatusFailed,
+			Message: "Not PIE",
+			RuleID:  elf.PIERuleID,
+			Name:    "Position Independent Executable",
 		}},
 	}
 

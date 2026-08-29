@@ -42,7 +42,7 @@ func parseSymbols(data, strtab []byte, class elf.Class, bo binary.ByteOrder) ([]
 	}
 
 	syms := make([]elf.Symbol, 0, count-1)
-	for i := 0; i < count; i++ {
+	for i := range count {
 		off := i * entrySize
 		var sym elf.Symbol
 		var nameOff uint32
