@@ -85,9 +85,9 @@ func NewCache(opts Options) (*cache.DiskCache, error) {
 	return disk, nil
 }
 
-// artifactCache fetches cached debuginfod artifacts as random-access files.
+// artifactCache fetches cached debuginfod artifacts as random-access entries.
 type artifactCache interface {
-	Get(ctx context.Context, k key.Key) (*os.File, error)
+	Get(ctx context.Context, k key.Key) (cache.Entry, error)
 }
 
 // DebuginfodSource resolves ELF sections via a debuginfod cache.
@@ -129,10 +129,10 @@ type debuginfodResolver struct {
 func (r *debuginfodResolver) FetchSection(name string) ([]byte, error) {
 	r.logger.Debug("debuginfod source fetching section", slog.String("build_id", r.buildID), slog.String("section", name))
 
-	f, err := r.cache.Get(r.ctx, key.Section(r.buildID, name))
+	entry, err := r.cache.Get(r.ctx, key.Section(r.buildID, name))
 	if err == nil {
-		defer f.Close()
-		data, readErr := io.ReadAll(f)
+		defer entry.Close()
+		data, readErr := io.ReadAll(entry)
 		if readErr != nil {
 			return nil, fmt.Errorf("debuginfod read %s: %w", name, readErr)
 		}
@@ -149,19 +149,19 @@ func (r *debuginfodResolver) fetchSectionViaDebugInfo(name string) ([]byte, erro
 	r.logger.Debug("debuginfod section endpoint returned not-found, falling back to full debuginfo",
 		slog.String("build_id", r.buildID), slog.String("section", name))
 
-	f, err := r.cache.Get(r.ctx, key.DebugInfo(r.buildID))
+	entry, err := r.cache.Get(r.ctx, key.DebugInfo(r.buildID))
 	if err != nil {
 		if errors.Is(err, debuginfod.ErrNotFound) {
 			return nil, elf.ErrSectionMissing
 		}
 		return nil, fmt.Errorf("debuginfod fetch debuginfo: %w", err)
 	}
-	defer f.Close()
+	defer entry.Close()
 
-	return extractSection(f, name)
+	return extractSection(entry, name)
 }
 
-func extractSection(f *os.File, name string) ([]byte, error) {
+func extractSection(f io.ReaderAt, name string) ([]byte, error) {
 	ef, err := stdelf.NewFile(f)
 	if err != nil {
 		return nil, fmt.Errorf("debuginfod parse debuginfo: %w", err)
