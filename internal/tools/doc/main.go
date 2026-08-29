@@ -41,17 +41,20 @@ type compilerData struct {
 }
 
 func main() {
-	allRules := registry.All()
-	sort.Slice(allRules, func(i, j int) bool {
-		return allRules[i].ID() < allRules[j].ID()
-	})
-
-	doc, err := generateDoc(allRules)
+	doc, err := generateDoc(sortedRules())
 	if err != nil {
 		_, _ = fmt.Fprintf(os.Stderr, "error generating documentation: %v\n", err)
 		os.Exit(1)
 	}
 	fmt.Print(doc)
+}
+
+func sortedRules() []rule.Rule {
+	all := registry.All()
+	sort.Slice(all, func(i, j int) bool {
+		return all[i].ID() < all[j].ID()
+	})
+	return all
 }
 
 func generateDoc(rules []rule.Rule) (string, error) {
