@@ -175,8 +175,8 @@ func TestTargetFilterMatches(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if got := tt.filter.matches(tt.app); got != tt.want {
-				t.Errorf("matches() = %v, want %v", got, tt.want)
+			if got := tt.filter.Matches(tt.app); got != tt.want {
+				t.Errorf("Matches() = %v, want %v", got, tt.want)
 			}
 		})
 	}

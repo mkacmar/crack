@@ -9,6 +9,7 @@ import (
 	"log/slog"
 	"os"
 	"runtime"
+	"slices"
 	"strings"
 	"time"
 
@@ -35,7 +36,7 @@ type outputOptions struct {
 }
 
 type analyzeConfig struct {
-	rulesFlag         string
+	rules             string
 	targetPlatform    string
 	targetCompiler    string
 	inputFile         string
@@ -107,33 +108,36 @@ Local debuginfo:
 	}
 }
 
-func parseRules(rulesFlag, targetPlatform, targetCompiler string) ([]rule.ELFRule, error) {
-	var selectedRules []rule.ELFRule
-	if rulesFlag != "" {
-		for id := range strings.SplitSeq(rulesFlag, ",") {
-			id = strings.TrimSpace(id)
-			r, ok := registry.Find[rule.ELFRule](registry.ByID(id))
-			if !ok {
-				return nil, fmt.Errorf("unknown rule %q", id)
-			}
-			selectedRules = append(selectedRules, r)
-		}
-	} else {
-		selectedRules = preset.Default()
+func parseRuleID(s string) (string, error) {
+	if _, ok := registry.Find[rule.Rule](registry.ByID(s)); !ok {
+		return "", fmt.Errorf("unknown rule %q", s)
+	}
+	return s, nil
+}
+
+func parseRulePredicate(rules, targetPlatform, targetCompiler string) (func(rule.Rule) bool, error) {
+	ids, err := parseList(rules, parseRuleID)
+	if err != nil {
+		return nil, err
+	}
+	if len(ids) == 0 {
+		ids = preset.Default()
 	}
 
-	if targetPlatform != "" || targetCompiler != "" {
-		filter, err := ParseTargetFilter(targetPlatform, targetCompiler)
-		if err != nil {
-			return nil, err
-		}
-		selectedRules = rule.FilterRules(selectedRules, filter)
-		if len(selectedRules) == 0 {
-			return nil, fmt.Errorf("no rules match the specified target filter")
-		}
+	filter, err := ParseTargetFilter(targetPlatform, targetCompiler)
+	if err != nil {
+		return nil, err
 	}
 
-	return selectedRules, nil
+	predicate := func(r rule.Rule) bool {
+		return slices.Contains(ids, r.ID()) && filter.Matches(r.Applicability())
+	}
+
+	if len(registry.Where[rule.Rule](predicate)) == 0 {
+		return nil, fmt.Errorf("no rules match the specified target filter")
+	}
+
+	return predicate, nil
 }
 
 func parsePaths(fs *flag.FlagSet, inputFile string) ([]string, error) {
@@ -180,7 +184,7 @@ func (a *App) runAnalyze(prog string, args []string) int {
 		defer stopProfile()
 	}
 
-	selectedRules, err := parseRules(cfg.rulesFlag, cfg.targetPlatform, cfg.targetCompiler)
+	predicate, err := parseRulePredicate(cfg.rules, cfg.targetPlatform, cfg.targetCompiler)
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "Error: %v\n", err)
 		return ExitError
@@ -215,7 +219,7 @@ func (a *App) runAnalyze(prog string, args []string) int {
 	}
 
 	elfAnalyzer := analyzer.NewELFAnalyzer(analyzer.ELFAnalyzerOptions{
-		Rules:   selectedRules,
+		Rules:   registry.Where[rule.ELFRule](predicate),
 		Sources: a.buildDebuginfoSources(cfg, debuginfodCache),
 		Logger:  a.logger,
 	})
@@ -250,7 +254,7 @@ func (a *App) setupAnalyzeFlags(prog string) (*flag.FlagSet, *outputOptions, *an
 	opts := &outputOptions{}
 	cfg := &analyzeConfig{}
 
-	fs.StringVar(&cfg.rulesFlag, "rules", "", "")
+	fs.StringVar(&cfg.rules, "rules", "", "")
 	fs.StringVar(&cfg.targetPlatform, "target-platform", "", "")
 	fs.StringVar(&cfg.targetCompiler, "target-compiler", "", "")
 	fs.StringVar(&cfg.inputFile, "input", "", "")

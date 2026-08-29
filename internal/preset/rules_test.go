@@ -8,9 +8,9 @@ import (
 )
 
 func TestDefaultRulesAreRegistered(t *testing.T) {
-	for _, r := range Default() {
-		if _, ok := registry.Find[rule.Rule](registry.ByID(r.ID())); !ok {
-			t.Errorf("preset rule %q is not in the registry", r.ID())
+	for _, id := range Default() {
+		if _, ok := registry.Find[rule.Rule](registry.ByID(id)); !ok {
+			t.Errorf("preset rule %q is not in the registry", id)
 		}
 	}
 }

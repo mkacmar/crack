@@ -29,7 +29,9 @@ func (f *TargetFilter) isEmpty() bool {
 	return len(f.Platforms) == 0 && len(f.Compilers) == 0
 }
 
-func (f *TargetFilter) matches(app Applicability) bool {
+// Matches reports whether the applicability satisfies the filter.
+// An empty filter matches everything.
+func (f *TargetFilter) Matches(app Applicability) bool {
 	return matchesAnyTarget(f.Platforms, app.matchesPlatform) &&
 		matchesAnyTarget(f.Compilers, app.matchesCompiler)
 }
@@ -53,7 +55,8 @@ func (app Applicability) matchesCompiler(ct CompilerTarget) bool {
 	return ct.MaxVersion == nil || req.MinVersion.Major == 0 || ct.MaxVersion.IsAtLeast(req.MinVersion)
 }
 
-// FilterRules returns only rules matching the filter. Returns all rules if filter is nil.
+// FilterRules returns only rules matching the filter.
+// Returns all rules if filter is nil.
 func FilterRules[T Rule](rules []T, filter *TargetFilter) []T {
 	if filter == nil || filter.isEmpty() {
 		return rules
@@ -61,7 +64,7 @@ func FilterRules[T Rule](rules []T, filter *TargetFilter) []T {
 
 	var filtered []T
 	for _, r := range rules {
-		if filter.matches(r.Applicability()) {
+		if filter.Matches(r.Applicability()) {
 			filtered = append(filtered, r)
 		}
 	}
