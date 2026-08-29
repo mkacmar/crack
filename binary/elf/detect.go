@@ -78,3 +78,16 @@ func DetectLibC(b Binary) binary.LibC {
 	}
 	return binary.LibCNone
 }
+
+// DetectProfile returns the architecture, libc and toolchain of the binary.
+// A nil detector uses DefaultToolchainDetector.
+func DetectProfile(b Binary, detector ToolchainDetector) binary.Profile {
+	if detector == nil {
+		detector = DefaultToolchainDetector{}
+	}
+	return binary.Profile{
+		Architecture: DetectArchitecture(b),
+		LibC:         DetectLibC(b),
+		Toolchain:    detector.Detect(b),
+	}
+}

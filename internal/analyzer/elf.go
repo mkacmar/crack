@@ -49,11 +49,7 @@ func (a *ELFAnalyzer) Analyze(ctx context.Context, r io.ReaderAt) (binary.Profil
 		return binary.Profile{}, "", nil, err
 	}
 
-	profile := binary.Profile{
-		Architecture: elf.DetectArchitecture(bin),
-		LibC:         elf.DetectLibC(bin),
-		Toolchain:    a.detector.Detect(bin),
-	}
+	profile := elf.DetectProfile(bin, a.detector)
 
 	findings := rule.Check(a.rules, profile, func(r rule.ELFRule) rule.Result {
 		return r.Execute(bin)

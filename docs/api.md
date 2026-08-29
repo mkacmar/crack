@@ -14,11 +14,7 @@ The standard workflow is to parse a binary, classify it, run rules, and inspect 
 ```go
 bin, _ := elf.Open(f)
 
-profile := binary.Profile{
-    Architecture: elf.DetectArchitecture(bin),
-    LibC:         elf.DetectLibC(bin),
-    Toolchain:    elf.DefaultToolchainDetector{}.Detect(bin),
-}
+profile := elf.DetectProfile(bin, nil)
 
 rules := registry.Where[rule.ELFRule](nil)
 
@@ -27,7 +23,9 @@ findings := rule.Check(rules, profile, func(r rule.ELFRule) rule.Result {
 })
 ```
 
-[`Check`](https://pkg.go.dev/go.kacmar.sk/crack/rule#Check) handles applicability automatically - rules that don't match the binary's platform or compiler are skipped. See the [rules reference](rules.md) for available built-in rules.
+[`DetectProfile`](https://pkg.go.dev/go.kacmar.sk/crack/binary/elf#DetectProfile) returns the architecture, libc and toolchain of the binary - pass a [`ToolchainDetector`](https://pkg.go.dev/go.kacmar.sk/crack/binary/elf#ToolchainDetector) instead of `nil` to override compiler detection.
+[`Check`](https://pkg.go.dev/go.kacmar.sk/crack/rule#Check) then handles applicability automatically - rules that don't match the binary's platform or compiler are skipped.
+See the [rules reference](rules.md) for available built-in rules.
 
 For filtering, applicability checks, and other utilities, see the [package documentation](https://pkg.go.dev/go.kacmar.sk/crack).
 
