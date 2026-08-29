@@ -61,7 +61,7 @@ type SARIFRule struct {
 	ID                   string             `json:"id"`
 	Name                 string             `json:"name"`
 	HelpUri              string             `json:"helpUri,omitempty"`
-	FullDescription      SARIFMessage       `json:"fullDescription,omitempty"`
+	FullDescription      SARIFMessage       `json:"fullDescription,omitzero"`
 	DefaultConfiguration SARIFConfiguration `json:"defaultConfiguration"`
 }
 
