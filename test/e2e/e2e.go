@@ -6,6 +6,7 @@ import (
 	"os/exec"
 	"path/filepath"
 	"runtime"
+	"strings"
 	"testing"
 
 	"go.kacmar.sk/crack/internal/output"
@@ -20,8 +21,9 @@ const (
 type Expectation string
 
 type TestCase struct {
-	Binary string
-	Expect Expectation
+	Binary  string
+	Expect  Expectation
+	Message string
 }
 
 func RunRuleTests(t *testing.T, rule string, cases []TestCase) {
@@ -59,9 +61,12 @@ func RunRuleTests(t *testing.T, rule string, cases []TestCase) {
 			)
 			_ = cmd.Run()
 
-			state := getRuleState(t, sarifPath, rule)
+			state, message := getRuleResult(t, sarifPath, rule)
 			if state != tc.Expect {
 				t.Errorf("expected %s, got %s", tc.Expect, state)
+			}
+			if tc.Message != "" && !matchesMessage(message, tc.Message) {
+				t.Errorf("message = %q, want %q", message, tc.Message)
 			}
 		})
 	}
@@ -107,7 +112,12 @@ func validateBinaries(t *testing.T, binariesDir string, cases []TestCase) {
 	}
 }
 
-func getRuleState(t *testing.T, sarifPath, rule string) Expectation {
+// Failures carry an appended suggestion, so match to a word boundary rather than a bare prefix.
+func matchesMessage(got, want string) bool {
+	return got == want || strings.HasPrefix(got, want+" ")
+}
+
+func getRuleResult(t *testing.T, sarifPath, rule string) (Expectation, string) {
 	t.Helper()
 
 	data, err := os.ReadFile(sarifPath) // #nosec G304 -- test code with controlled paths
@@ -129,10 +139,10 @@ func getRuleState(t *testing.T, sarifPath, rule string) Expectation {
 
 	for _, r := range run.Results {
 		if r.RuleIndex >= 0 && r.RuleIndex < len(rules) && rules[r.RuleIndex].ID == rule {
-			return Expectation(r.Kind)
+			return Expectation(r.Kind), r.Message.Text
 		}
 	}
 
 	t.Fatalf("no result found for rule %q in SARIF output", rule)
-	return ""
+	return "", ""
 }
