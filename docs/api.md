@@ -58,6 +58,25 @@ func (r MinStackSizeRule) Execute(bin elf.Binary) rule.Result {
 }
 ```
 
+To run a custom rule alongside the built-ins, append it to the rules selected from the registry:
+
+```go
+rules := append(registry.Where[rule.ELFRule](nil), MinStackSizeRule{MinBytes: 8 << 20})
+
+findings := rule.Check(rules, profile, func(r rule.ELFRule) rule.Result {
+    return r.Execute(bin)
+})
+```
+
+The registry itself is read-only, so a custom rule is never registered.
+[`Where`](https://pkg.go.dev/go.kacmar.sk/crack/rule/registry#Where) selects from the built-in registry.
+[`FilterRules`](https://pkg.go.dev/go.kacmar.sk/crack/rule#FilterRules) narrows any slice, including one holding custom rules, to those matching a [`TargetFilter`](https://pkg.go.dev/go.kacmar.sk/crack/rule#TargetFilter), and returns every rule when the filter is nil:
+
+```go
+filter := &rule.TargetFilter{Platforms: []rule.PlatformTarget{{Architecture: binary.ArchAMD64}}}
+rules = rule.FilterRules(rules, filter)
+```
+
 ## Custom Compiler Detection
 
 Toolchain detection has two extension points. To recognize a private compiler that signs `.comment` or DWARF `DW_AT_producer`, implement [`StringDetector`](https://pkg.go.dev/go.kacmar.sk/crack/toolchain#StringDetector) and set it on [`DefaultToolchainDetector`](https://pkg.go.dev/go.kacmar.sk/crack/binary/elf#DefaultToolchainDetector):
