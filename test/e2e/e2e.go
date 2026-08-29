@@ -36,7 +36,7 @@ func RunRuleTests(t *testing.T, rule string, cases []TestCase) {
 	crackBin := filepath.Join(rootDir, "crack")
 
 	if _, err := os.Stat(binariesDir); os.IsNotExist(err) {
-		t.Skipf("binaries directory %q not found", binariesDir)
+		t.Fatalf("binaries directory %q not found, run 'git lfs pull'", binariesDir)
 	}
 
 	if _, err := os.Stat(crackBin); os.IsNotExist(err) {
