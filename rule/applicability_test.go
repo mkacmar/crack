@@ -153,6 +153,17 @@ func TestCheckApplicability(t *testing.T) {
 			want: Applicable,
 		},
 		{
+			name: "rule without a libc constraint applies to any libc",
+			app: Applicability{
+				Platform: binary.PlatformAll,
+			},
+			profile: binary.Profile{
+				Architecture: binary.ArchAMD64,
+				LibC:         binary.LibCGlibc,
+			},
+			want: Applicable,
+		},
+		{
 			name: "architecture failure shadows compiler failure",
 			app: Applicability{
 				Platform:  binary.Platform{Architecture: binary.ArchARM64},

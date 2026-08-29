@@ -57,7 +57,7 @@ func CheckApplicability(app Applicability, profile binary.Profile) Applicability
 		}
 	}
 
-	if profile.LibC != binary.LibCUnknown && !app.LibC.Matches(profile.LibC) {
+	if profile.LibC != binary.LibCUnknown && app.LibC != binary.LibCUnknown && !app.LibC.Matches(profile.LibC) {
 		return NotApplicableLibC
 	}
 
