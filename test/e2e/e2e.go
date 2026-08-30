@@ -2,6 +2,7 @@ package e2e
 
 import (
 	"encoding/json"
+	"errors"
 	"os"
 	"os/exec"
 	"path/filepath"
@@ -9,6 +10,7 @@ import (
 	"strings"
 	"testing"
 
+	"go.kacmar.sk/crack/internal/cli"
 	"go.kacmar.sk/crack/internal/output"
 )
 
@@ -59,7 +61,22 @@ func RunRuleTests(t *testing.T, rule string, cases []TestCase) {
 				"--sarif="+sarifPath,
 				binaryPath,
 			)
-			_ = cmd.Run()
+			out, err := cmd.CombinedOutput()
+			t.Cleanup(func() {
+				if t.Failed() && len(out) > 0 {
+					t.Logf("crack output:\n%s", out)
+				}
+			})
+
+			var exitErr *exec.ExitError
+			switch {
+			case errors.As(err, &exitErr):
+				if exitErr.ExitCode() == cli.ExitError {
+					t.Fatal("crack exited with an error")
+				}
+			case err != nil:
+				t.Fatalf("running crack: %v", err)
+			}
 
 			state, message := getRuleResult(t, sarifPath, rule)
 			if state != tc.Expect {
