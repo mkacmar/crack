@@ -203,18 +203,21 @@ func TestCheckApplicability(t *testing.T) {
 
 func TestApplicabilityResultString(t *testing.T) {
 	tests := []struct {
+		name string
 		r    ApplicabilityResult
 		want string
 	}{
-		{Applicable, ""},
-		{NotApplicableArchitecture, "architecture not applicable"},
-		{NotApplicableCompiler, "compiler not applicable"},
-		{NotApplicableLibC, "libc not applicable"},
+		{name: "Applicable", r: Applicable, want: ""},
+		{name: "NotApplicableArchitecture", r: NotApplicableArchitecture, want: "architecture not applicable"},
+		{name: "NotApplicableCompiler", r: NotApplicableCompiler, want: "compiler not applicable"},
+		{name: "NotApplicableLibC", r: NotApplicableLibC, want: "libc not applicable"},
 	}
 	for _, tc := range tests {
-		if got := tc.r.String(); got != tc.want {
-			t.Errorf("%v.String() = %q, want %q", tc.r, got, tc.want)
-		}
+		t.Run(tc.name, func(t *testing.T) {
+			if got := tc.r.String(); got != tc.want {
+				t.Errorf("String() = %q, want %q", got, tc.want)
+			}
+		})
 	}
 }
 
@@ -225,17 +228,20 @@ func TestApplicabilityResultReason(t *testing.T) {
 		LibC:         binary.LibCMusl,
 	}
 	tests := []struct {
+		name string
 		r    ApplicabilityResult
 		want string
 	}{
-		{Applicable, ""},
-		{NotApplicableArchitecture, "rule not applicable to amd64 architecture"},
-		{NotApplicableCompiler, "rule not applicable to clang binaries"},
-		{NotApplicableLibC, "rule not applicable to musl binaries"},
+		{name: "Applicable", r: Applicable, want: ""},
+		{name: "NotApplicableArchitecture", r: NotApplicableArchitecture, want: "rule not applicable to amd64 architecture"},
+		{name: "NotApplicableCompiler", r: NotApplicableCompiler, want: "rule not applicable to clang binaries"},
+		{name: "NotApplicableLibC", r: NotApplicableLibC, want: "rule not applicable to musl binaries"},
 	}
 	for _, tc := range tests {
-		if got := tc.r.Reason(profile); got != tc.want {
-			t.Errorf("%v.Reason() = %q, want %q", tc.r, got, tc.want)
-		}
+		t.Run(tc.name, func(t *testing.T) {
+			if got := tc.r.Reason(profile); got != tc.want {
+				t.Errorf("Reason() = %q, want %q", got, tc.want)
+			}
+		})
 	}
 }
