@@ -30,6 +30,9 @@ type Options struct {
 }
 
 func NewScanner(dispatcher *analyzer.Dispatcher, opts Options) *Scanner {
+	if opts.Workers < 1 {
+		panic("scanner.NewScanner: workers must be at least 1")
+	}
 	return &Scanner{
 		dispatcher: dispatcher,
 		logger:     opts.Logger.With(slog.String("component", "scanner")),
