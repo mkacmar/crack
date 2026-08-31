@@ -1,7 +1,9 @@
 package version
 
+const Unknown = "unknown"
+
 var (
 	Version   = "dev"
-	GitCommit = "unknown"
-	BuildTime = "unknown"
+	GitCommit = Unknown
+	BuildTime = Unknown
 )

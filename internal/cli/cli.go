@@ -47,10 +47,10 @@ func (a *App) Run(args []string) int {
 
 func (a *App) printVersion() {
 	fmt.Printf("crack %s\n", version.Version)
-	if version.GitCommit != "unknown" {
+	if version.GitCommit != version.Unknown {
 		fmt.Printf("  commit: %s\n", version.GitCommit)
 	}
-	if version.BuildTime != "unknown" {
+	if version.BuildTime != version.Unknown {
 		fmt.Printf("  built:  %s\n", version.BuildTime)
 	}
 }
