@@ -3,6 +3,7 @@ package output
 import (
 	"bytes"
 	"encoding/json"
+	"errors"
 	"net/url"
 	"testing"
 	"time"
@@ -194,5 +195,116 @@ func TestSARIFRuleFullDescription(t *testing.T) {
 	got, want := rules[0].FullDescription.Text, (elf.PIERule{}).Description()
 	if got != want {
 		t.Errorf("fullDescription = %q, want the rule's description %q", got, want)
+	}
+}
+
+func failedFinding(ruleID string) []suggestions.DecoratedFinding {
+	return []suggestions.DecoratedFinding{{
+		Status:  rule.StatusFailed,
+		Message: "test message",
+		RuleID:  ruleID,
+		Name:    ruleID,
+	}}
+}
+
+func artifactRef(t *testing.T, locations []SARIFLocation) SARIFArtifactLocation {
+	t.Helper()
+
+	if len(locations) != 1 {
+		t.Fatalf("got %d locations, want 1", len(locations))
+	}
+	ref := locations[0].PhysicalLocation.ArtifactLocation
+	if ref.Index == nil {
+		t.Fatal("artifactLocation.index is absent, want the artifact's index")
+	}
+	return ref
+}
+
+func TestSARIFLocationsResolveToArtifacts(t *testing.T) {
+	scanError := DecoratedFileResult{}
+	scanError.Path = "/usr/bin/broken"
+	scanError.Error = errors.New("boom")
+
+	tests := []struct {
+		name      string
+		res       DecoratedFileResult
+		locations func(*testing.T, SARIFRun) []SARIFLocation
+		wantURI   string
+	}{
+		{
+			name:    "result",
+			res:     DecoratedFileResult{Path: "/usr/bin/test", Findings: failedFinding("test-rule")},
+			wantURI: "file:///usr/bin/test",
+			locations: func(t *testing.T, run SARIFRun) []SARIFLocation {
+				t.Helper()
+				if len(run.Results) != 1 {
+					t.Fatalf("got %d results, want 1", len(run.Results))
+				}
+				return run.Results[0].Locations
+			},
+		},
+		{
+			name:    "scan error notification",
+			res:     scanError,
+			wantURI: "file:///usr/bin/broken",
+			locations: func(t *testing.T, run SARIFRun) []SARIFLocation {
+				t.Helper()
+				if len(run.Invocations) != 1 {
+					t.Fatalf("got %d invocations, want 1 carrying the notification", len(run.Invocations))
+				}
+				notifications := run.Invocations[0].ToolExecutionNotifications
+				if len(notifications) != 1 {
+					t.Fatalf("got %d notifications, want 1", len(notifications))
+				}
+				return notifications[0].Locations
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			run := renderSARIF(t, nil, false, false, tt.res).Runs[0]
+
+			ref := artifactRef(t, tt.locations(t, run))
+			if ref.URI != tt.wantURI {
+				t.Errorf("artifactLocation.uri = %q, want %q", ref.URI, tt.wantURI)
+			}
+			if *ref.Index != 0 {
+				t.Errorf("artifactLocation.index = %d, want 0", *ref.Index)
+			}
+			if got := run.Artifacts[*ref.Index].Location.URI; got != ref.URI {
+				t.Errorf("artifacts[%d].location.uri = %q, want %q", *ref.Index, got, ref.URI)
+			}
+		})
+	}
+}
+
+func TestSARIFArtifactsAreSharedByPath(t *testing.T) {
+	first := DecoratedFileResult{Path: "/usr/bin/a", Findings: failedFinding("rule-one")}
+	again := DecoratedFileResult{Path: "/usr/bin/a", Findings: failedFinding("rule-two")}
+	other := DecoratedFileResult{Path: "/usr/bin/b", Findings: failedFinding("rule-one")}
+
+	run := renderSARIF(t, nil, false, false, first, again, other).Runs[0]
+	if len(run.Artifacts) != 2 {
+		t.Fatalf("got %d artifacts, want 2", len(run.Artifacts))
+	}
+	if len(run.Results) != 3 {
+		t.Fatalf("got %d results, want 3", len(run.Results))
+	}
+
+	indices := make([]int, 0, len(run.Results))
+	for _, result := range run.Results {
+		ref := artifactRef(t, result.Locations)
+		if got := run.Artifacts[*ref.Index].Location.URI; got != ref.URI {
+			t.Errorf("artifacts[%d].location.uri = %q, want %q", *ref.Index, got, ref.URI)
+		}
+		indices = append(indices, *ref.Index)
+	}
+
+	if indices[0] != indices[1] {
+		t.Errorf("results for the same path point at artifacts %d and %d, want one shared entry", indices[0], indices[1])
+	}
+	if indices[2] == indices[0] {
+		t.Errorf("distinct paths share artifact %d, want separate entries", indices[2])
 	}
 }

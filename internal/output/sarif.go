@@ -86,11 +86,13 @@ type SARIFLocation struct {
 }
 
 type SARIFPhysicalLocation struct {
-	ArtifactIndex int `json:"artifactIndex"`
+	ArtifactLocation SARIFArtifactLocation `json:"artifactLocation"`
 }
 
+// Index is a pointer because the spec defaults it to -1, so index 0 has to be written out and a working directory carries none.
 type SARIFArtifactLocation struct {
-	URI string `json:"uri"`
+	URI   string `json:"uri"`
+	Index *int   `json:"index,omitzero"`
 }
 
 type SARIFArtifact struct {
@@ -174,7 +176,7 @@ func (s *SARIFWriter) Write(res DecoratedFileResult) error {
 		s.notifications = append(s.notifications, SARIFNotification{
 			Level:     "error",
 			Message:   SARIFMessage{Text: fmt.Sprintf("Scan error: %v", res.Error)},
-			Locations: []SARIFLocation{{PhysicalLocation: SARIFPhysicalLocation{ArtifactIndex: artifact}}},
+			Locations: locations(artifact),
 		})
 		return s.err
 	}
@@ -239,7 +241,7 @@ func (s *SARIFWriter) value(v any) {
 	s.err = json.MarshalEncode(s.enc, v)
 }
 
-func (s *SARIFWriter) result(finding suggestions.DecoratedFinding, artifact int) SARIFResult {
+func (s *SARIFWriter) result(finding suggestions.DecoratedFinding, artifact SARIFArtifactLocation) SARIFResult {
 	var kind, level string
 	switch finding.Status {
 	case rule.StatusPassed:
@@ -261,22 +263,28 @@ func (s *SARIFWriter) result(finding suggestions.DecoratedFinding, artifact int)
 		Kind:      kind,
 		Level:     level,
 		Message:   SARIFMessage{Text: message},
-		Locations: []SARIFLocation{{PhysicalLocation: SARIFPhysicalLocation{ArtifactIndex: artifact}}},
+		Locations: locations(artifact),
 	}
 }
 
-func (s *SARIFWriter) registerArtifact(res DecoratedFileResult) int {
+func locations(artifact SARIFArtifactLocation) []SARIFLocation {
+	return []SARIFLocation{{PhysicalLocation: SARIFPhysicalLocation{ArtifactLocation: artifact}}}
+}
+
+func (s *SARIFWriter) registerArtifact(res DecoratedFileResult) SARIFArtifactLocation {
 	uri := toFileURI(res.Path)
-	if i, ok := s.artifactIndex[uri]; ok {
-		return i
+	i, ok := s.artifactIndex[uri]
+	if !ok {
+		artifact := SARIFArtifact{Location: SARIFArtifactLocation{URI: uri}}
+		if res.Identity.SHA256 != "" {
+			artifact.Hashes = map[string]string{"sha-256": res.Identity.SHA256}
+		}
+		i = len(s.artifacts)
+		s.artifactIndex[uri] = i
+		s.artifacts = append(s.artifacts, artifact)
 	}
-	artifact := SARIFArtifact{Location: SARIFArtifactLocation{URI: uri}}
-	if res.Identity.SHA256 != "" {
-		artifact.Hashes = map[string]string{"sha-256": res.Identity.SHA256}
-	}
-	s.artifactIndex[uri] = len(s.artifacts)
-	s.artifacts = append(s.artifacts, artifact)
-	return s.artifactIndex[uri]
+	// The uri travels alongside the index so the document stays readable without resolving indices back through runs[0].artifacts.
+	return SARIFArtifactLocation{URI: uri, Index: &i}
 }
 
 func (s *SARIFWriter) registerRule(finding suggestions.DecoratedFinding) int {
