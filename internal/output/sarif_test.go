@@ -308,3 +308,17 @@ func TestSARIFArtifactsAreSharedByPath(t *testing.T) {
 		t.Errorf("distinct paths share artifact %d, want separate entries", indices[2])
 	}
 }
+
+func TestSARIFResultRuleID(t *testing.T) {
+	res := DecoratedFileResult{Path: "/usr/bin/test", Findings: failedFinding(elf.PIERuleID)}
+
+	run := renderSARIF(t, nil, false, false, res).Runs[0]
+	result := run.Results[0]
+
+	if result.RuleID != elf.PIERuleID {
+		t.Errorf("ruleId = %q, want %q", result.RuleID, elf.PIERuleID)
+	}
+	if got := run.Tool.Driver.Rules[result.RuleIndex].ID; got != result.RuleID {
+		t.Errorf("rules[%d].id = %q, want it to agree with ruleId %q", result.RuleIndex, got, result.RuleID)
+	}
+}

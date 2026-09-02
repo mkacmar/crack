@@ -74,6 +74,7 @@ type SARIFMessage struct {
 }
 
 type SARIFResult struct {
+	RuleID    string          `json:"ruleId"`
 	RuleIndex int             `json:"ruleIndex"`
 	Kind      string          `json:"kind,omitempty"`
 	Level     string          `json:"level,omitempty"`
@@ -259,6 +260,7 @@ func (s *SARIFWriter) result(finding suggestions.DecoratedFinding, artifact SARI
 	}
 
 	return SARIFResult{
+		RuleID:    finding.RuleID,
 		RuleIndex: s.registerRule(finding),
 		Kind:      kind,
 		Level:     level,
